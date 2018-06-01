@@ -82,7 +82,7 @@ def get_disk_space(path):
 
 
 def read_file(p):
-    with open(p, 'r') as f:
+    with open(p, 'r', encoding='utf-8') as f:
         return f.read().rstrip("\n")
 
 
