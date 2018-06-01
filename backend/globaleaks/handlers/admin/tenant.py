@@ -14,6 +14,7 @@ from globaleaks.handlers.admin import file
 from globaleaks.handlers.base import BaseHandler
 from globaleaks.orm import transact
 from globaleaks.rest import requests
+from globaleaks.utils import import_export
 from globaleaks.utils.utility import log
 from globaleaks.settings import Settings
 from globaleaks.state import State
@@ -100,6 +101,13 @@ def delete(session, id):
 
     db_refresh_memory_variables(session, [id])
 
+@transact
+def export_tenant(session, tid):
+    return import_export.create_export_tarball(session, tid)
+
+@transact
+def import_tenant(session, tarball_blob):
+    return import_export.read_import_tarball(session, tarball_blob)
 
 class TenantCollection(BaseHandler):
     check_roles = 'admin'
@@ -156,3 +164,18 @@ class TenantInstance(BaseHandler):
         log.info('Removing tenant with id: %d', tenant_id, tid=self.request.tid)
 
         return delete(tenant_id)
+
+class TenantImportExport(BaseHandler):
+    check_roles = 'admin'
+    invalidate_cache = True
+    root_tenant_only = True
+    invalidate_tenant_states = True
+
+    def get(self, tenant_id):
+        tenant_id = int(tenant_id)
+
+        return export_tenant(tenant_id)
+
+    def post(self):
+        import_tenant(self.request.content.read())
+        return None

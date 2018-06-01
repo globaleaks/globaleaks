@@ -16,13 +16,14 @@ import subprocess as sp
 import sys
 from datetime import datetime
 
-from globaleaks.utils import security
+from globaleaks.utils import security, import_export
 from globaleaks.db import get_db_file
-from globaleaks.orm import make_db_uri, get_engine
+from globaleaks.orm import make_db_uri, get_engine, get_session
 from globaleaks.models import config, config_desc
 from globaleaks.rest.requests import AdminNotificationDesc, AdminNodeDesc
 from globaleaks.settings import Settings
 
+from six import text_type
 
 def check_file(f):
     if not os.path.isfile(f):
@@ -52,7 +53,7 @@ def default_workdir():
 
 
 def default_db_path():
-    return Settings.db_path
+    return Settings.working_path
 
 
 def is_gl_running():
@@ -84,6 +85,18 @@ def backup(args):
     if must_stop: sp.check_call("service globaleaks start", shell=True)
     print("Success: The archived backup was created at:", args.backuppath)
 
+def export_tenant(args):
+    session = get_session(make_db_uri(args.dbpath))
+    data = import_export.create_export_tarball(session, args.tid)
+    with open(args.output, 'wb') as f:
+        f.write(data)
+    print("Written export tarball to " + args.output)
+
+def import_tenant(args):
+    with open(args.import_file, 'rb') as f:
+        tarball_blob = f.read()
+    session = get_session(make_db_uri(args.dbpath))
+    import_export.read_import_tarball(session, tarball_blob)
 
 def restore(args):
     check_dir(args.workdir)
@@ -240,6 +253,8 @@ Settings.eval_paths()
 parser = argparse.ArgumentParser(prog="gl-admin",
                  description="GlobaLeaks backend administator interface")
 
+parser.add_argument("-z", help="enable devel mode", default=False, action='store_true', dest="devel_mode")
+
 subp = parser.add_subparsers(title="commands")
 
 bck_p = subp.add_parser("backup", help="create a backup of the setup")
@@ -256,6 +271,17 @@ res_p.add_argument("backuppath", nargs="?", help="the path and name of the backu
                    default=default_backup_path())
 res_p.set_defaults(func=restore)
 
+export_p = subp.add_parser("export", help="exports a tenant from the system")
+add_db_path_arg(export_p)
+export_p.add_argument("--tid", help="Tenant ID to export")
+export_p.add_argument("--output", help="Output File")
+export_p.set_defaults(func=export_tenant)
+
+import_p = subp.add_parser("import", help="imports a tenant into the system")
+add_db_path_arg(import_p)
+import_p.add_argument("import_file", help="Import File")
+import_p.set_defaults(func=import_tenant)
+
 pw_p = subp.add_parser("resetpass", help="reset a user's password")
 add_db_path_arg(pw_p)
 pw_p.add_argument("--tid", help="the tenant id", default='1', type=int)
@@ -267,13 +293,13 @@ pw_p.set_defaults(func=reset_pass)
 rv_p = subp.add_parser("getvar", help="get database config variable")
 add_db_path_arg(rv_p)
 rv_p.add_argument("--tid", help="the tenant id", default='1', type=int)
-rv_p.add_argument("varname", help="the name of the config var", default='version', type=unicode)
+rv_p.add_argument("varname", help="the name of the config var", default='version', type=text_type)
 rv_p.set_defaults(func=get_var)
 
 sv_p = subp.add_parser("setvar", help="set database config variable")
 add_db_path_arg(sv_p)
 sv_p.add_argument("--tid", help="the tenant id", default='1', type=int)
-sv_p.add_argument("varname", help="the name of the config var", type=unicode)
+sv_p.add_argument("varname", help="the name of the config var", type=text_type)
 sv_p.add_argument("value", help="value which must be of the correct type Bool(0|1), Int(0-9^9), String(everything else)")
 sv_p.set_defaults(func=set_var)
 
@@ -289,4 +315,7 @@ dt_p.set_defaults(func=disable_api_token)
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    if args.devel_mode is True:
+        Settings.set_devel_mode()
+        Settings.eval_paths()
     args.func(args)
