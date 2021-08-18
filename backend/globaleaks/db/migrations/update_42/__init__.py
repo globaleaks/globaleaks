@@ -86,4 +86,4 @@ class MigrationScript(MigrationBase):
                                                 .filter(self.model_to['SubmissionStatus'].tid == tenant.id,
                                                         self.model_to['SubmissionStatus'].system_usage.in_(['open', 'opened'])).one()[0]
 
-                db_update_submission_status(self.session_new, '', itip, open_status_id, '')
+                db_update_submission_status(self.session_new, tenant.id, '', itip, open_status_id, '')
