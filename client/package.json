@@ -44,7 +44,6 @@
     "@ng-select/ng-select": "14.1.0",
     "@ngx-translate/core": "16.0.4",
     "@ngx-translate/http-loader": "16.0.1",
-    "@rollup/rollup-win32-x64-msvc": "^4.30.0",
     "@types/angular": "1.8.9",
     "@types/dompurify": "3.2.0",
     "@types/flowjs__flow.js": "2.13.3",
