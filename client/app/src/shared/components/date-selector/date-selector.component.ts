@@ -1,12 +1,11 @@
 import {Component, EventEmitter, Input, Output} from "@angular/core";
 import {NgbDate, NgbDatepickerModule} from "@ng-bootstrap/ng-bootstrap";
 import {FormsModule} from "@angular/forms";
-import {JsonPipe} from "@angular/common";
 
 @Component({
   selector: "ngbd-datepicker-range",
   standalone: true,
-  imports: [NgbDatepickerModule, FormsModule, JsonPipe],
+  imports: [NgbDatepickerModule, FormsModule],
   templateUrl: "./date-selector.component.html"
 })
 export class DateRangeSelectorComponent {

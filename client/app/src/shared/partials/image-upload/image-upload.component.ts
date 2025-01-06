@@ -16,7 +16,7 @@ import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
     selector: "src-image-upload",
     templateUrl: "./image-upload.component.html",
     standalone: true,
-    imports: [FormsModule, NgbTooltipModule, NgxFlowModule, NgOptimizedImage, TranslateModule, TranslatorPipe]
+    imports: [FormsModule, NgbTooltipModule, NgxFlowModule, TranslateModule, TranslatorPipe]
 })
 export class ImageUploadComponent implements AfterViewInit, OnDestroy, OnInit {
   private http = inject(HttpClient);

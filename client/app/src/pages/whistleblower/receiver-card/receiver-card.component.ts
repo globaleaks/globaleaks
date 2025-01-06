@@ -2,7 +2,7 @@ import {Component, Input, inject} from "@angular/core";
 import {Receiver} from "@app/models/app/public-model";
 import {SubmissionService} from "@app/services/helper/submission.service";
 import {TranslateService} from "@ngx-translate/core";
-import {NgClass, NgOptimizedImage} from "@angular/common";
+import {NgClass} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {MarkdownComponent} from "ngx-markdown";
 import {StripHtmlPipe} from "@app/shared/pipes/strip-html.pipe";
@@ -11,7 +11,7 @@ import {StripHtmlPipe} from "@app/shared/pipes/strip-html.pipe";
     selector: "src-receiver-card",
     templateUrl: "./receiver-card.component.html",
     standalone: true,
-    imports: [FormsModule, MarkdownComponent, NgClass, NgOptimizedImage, StripHtmlPipe]
+    imports: [FormsModule, MarkdownComponent, NgClass, StripHtmlPipe]
 })
 export class ReceiverCardComponent {
   protected translate = inject(TranslateService);

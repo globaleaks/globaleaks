@@ -1,7 +1,6 @@
 import {Component, inject} from "@angular/core";
 import {NgbActiveModal, NgbModal, NgbTooltipModule} from "@ng-bootstrap/ng-bootstrap";
 import {FormsModule} from "@angular/forms";
-import {NgClass} from "@angular/common";
 import {TranslateModule} from "@ngx-translate/core";
 import {TranslatorPipe} from "@app/shared/pipes/translate";
 
@@ -12,7 +11,6 @@ import {TranslatorPipe} from "@app/shared/pipes/translate";
     imports: [
       FormsModule,
       NgbTooltipModule,
-      NgClass,
       TranslateModule,
       TranslatorPipe
     ],

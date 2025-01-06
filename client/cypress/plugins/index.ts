@@ -25,7 +25,7 @@ export default (on, config) => {
     return new Promise((resolve, reject) => {
       const language = config.env.language;
 
-      const destPath = __dirname + "/../../../documentation/images/" + details.path.replace(".png", "").split('/').slice(-2).join('/') + "." + language + ".png";
+      const destPath = __dirname + "/../../../documentation/images/" + details.path.replace(".png", "").replace(".cy.ts", "").split('/').slice(-2).join('/') + "." + language + ".png";
 
       const destDir = path.dirname(destPath);
 

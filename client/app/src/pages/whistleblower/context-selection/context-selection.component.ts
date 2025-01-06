@@ -2,7 +2,6 @@ import {Component, EventEmitter, Input, Output, inject} from "@angular/core";
 import {AppDataService} from "@app/app-data.service";
 import {Context} from "@app/models/app/public-model";
 import {UtilsService} from "@app/shared/services/utils.service";
-import {NgOptimizedImage} from "@angular/common";
 import {MarkdownComponent} from "ngx-markdown";
 import {StripHtmlPipe} from "@app/shared/pipes/strip-html.pipe";
 import {OrderByPipe} from "@app/shared/pipes/order-by.pipe";
@@ -11,7 +10,7 @@ import {OrderByPipe} from "@app/shared/pipes/order-by.pipe";
     selector: "src-context-selection",
     templateUrl: "./context-selection.component.html",
     standalone: true,
-    imports: [MarkdownComponent, NgOptimizedImage, StripHtmlPipe, OrderByPipe]
+    imports: [MarkdownComponent, StripHtmlPipe, OrderByPipe]
 })
 export class ContextSelectionComponent {
   protected appDataService = inject(AppDataService);

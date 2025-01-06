@@ -1,3 +1,4 @@
+import {marked, Tokens} from "marked";
 
 
 const translationModule = TranslateModule.forRoot({
@@ -55,7 +56,21 @@ import {provideRouter} from "@angular/router";
 
 
 import { ApplicationRef } from '@angular/core';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+const renderer = new marked.Renderer();
+renderer.link = function (token: Tokens.Link): string {
+    const { href, title, text } = token;
+    const isImage = text.startsWith('![') && text.includes('](');
+    if (isImage) {
+        const match = text.match(/!\[(.*?)\]\((.*?)\)/);
+        if (match) {
+            const alt = match[1];
+            const src = match[2];
+            return `<a target="_blank" href="${href}"><img src="${src}" alt="${alt}" /></a>`;
+        }
+    }
+    return `<a target="_blank" href="${href}">${text}</a>`;
+};
+
 
 bootstrapApplication(AppComponent, {
     providers: [
@@ -65,26 +80,7 @@ bootstrapApplication(AppComponent, {
                 provide: MARKED_OPTIONS,
                 useValue: {
                     breaks: true,
-                    renderer: {
-                        link({ href, title, text, tokens }: { href: string; title?: string; text: string; tokens?: any[] }): string {
-                            // Check if the text contains an image tag (Markdown image syntax is wrapped in `![](...)`)
-                            const isImage = text.startsWith('![') && text.includes('](');
-
-                            if (isImage) {
-                              // Extract the image Markdown (e.g., ![Alt](src))
-                              const match = text.match(/!\[(.*?)\]\((.*?)\)/); // Regex to parse image Markdown
-                              if (match) {
-                                const alt = match[1]; // Alt text
-                                const src = match[2]; // Image URL
-                                // Render clickable image
-                                return `<a target="_blank" href="${href}"><img src="${src}" alt="${alt}" /></a>`;
-                              }
-                            }
-
-                            // Fallback to standard link rendering for non-image links
-                            return `<a target="_blank" href="${href}">${text}</a>`;
-                        },
-                    },
+                    renderer: renderer,
                 }
             }
         }), NgxFlowModule, NgOptimizedImage),
