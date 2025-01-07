@@ -1,4 +1,4 @@
-import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, inject} from "@angular/core";
+import {Component, EventEmitter, Input, OnInit, Output, inject} from "@angular/core";
 import {NgForm, FormsModule} from "@angular/forms";
 import {NgbModal, NgbTooltipModule} from "@ng-bootstrap/ng-bootstrap";
 import {AppDataService} from "@app/app-data.service";
@@ -9,22 +9,19 @@ import {NodeResolver} from "@app/shared/resolvers/node.resolver";
 import {PreferenceResolver} from "@app/shared/resolvers/preference.resolver";
 import {UtilsService} from "@app/shared/services/utils.service";
 import {Observable} from "rxjs";
-import {User, UserProfile} from "@app/models/resolvers/user-resolver-model";
+import {UserProfile} from "@app/models/resolvers/user-resolver-model";
 import {nodeResolverModel} from "@app/models/resolvers/node-resolver-model";
 import {preferenceResolverModel} from "@app/models/resolvers/preference-resolver-model";
 import {NgClass, DatePipe} from "@angular/common";
-import {ImageUploadDirective} from "@app/shared/directive/image-upload.directive";
-import {PasswordStrengthValidatorDirective} from "@app/shared/directive/password-strength-validator.directive";
-import {PasswordMeterComponent} from "@app/shared/components/password-meter/password-meter.component";
 import {TranslatorPipe} from "@app/shared/pipes/translate";
 
 @Component({
-    selector: "src-user-editor",
-    templateUrl: "./user-editor.component.html",
+    selector: "src-profile-editor",
+    templateUrl: "./profile-editor.component.html",
     standalone: true,
-    imports: [ImageUploadDirective, FormsModule, PasswordStrengthValidatorDirective, NgbTooltipModule, NgClass, PasswordMeterComponent, DatePipe, TranslatorPipe]
+    imports: [FormsModule, NgbTooltipModule, NgClass, DatePipe, TranslatorPipe]
 })
-export class UserEditorComponent implements OnInit {
+export class ProfileEditorComponent implements OnInit {
   private modalService = inject(NgbModal);
   private appDataService = inject(AppDataService);
   private preference = inject(PreferenceResolver);
@@ -32,18 +29,13 @@ export class UserEditorComponent implements OnInit {
   private nodeResolver = inject(NodeResolver);
   private utilsService = inject(UtilsService);
 
-  @Input() user: User;
-  @Input() users: User[];
+  @Input() user: UserProfile;
+  @Input() users: UserProfile[];
   @Input() index: number;
   @Input() editUser: NgForm;
   @Input() is_profile: boolean;
-  @Input() userProfiles: UserProfile[];
   @Output() dataToParent = new EventEmitter<string>();
-  @ViewChild("uploader") uploaderInput: ElementRef;
   editing = false;
-  setPasswordArgs: { user_id: string, password: string };
-  changePasswordArgs: { password_change_needed: string };
-  passwordStrengthScore: number = 0;
   defualtUsersArr = ['Admin', 'Analyst', 'Custodian', 'Receiver'];
   nodeData: nodeResolverModel;
   preferenceData: preferenceResolverModel;
@@ -64,49 +56,19 @@ export class UserEditorComponent implements OnInit {
     if (this.appDataService) {
       this.appServiceData = this.appDataService;
     }
-    this.setPasswordArgs = {
-      user_id: this.user.id,
-      password: ""
-    };
-    this.changePasswordArgs = {
-      password_change_needed: ""
-    };
   }
 
   toggleEditing() {
     this.editing = !this.editing;
   }
 
-  onPasswordStrengthChange(score: number) {
-    this.passwordStrengthScore = score;
-  }
-
-  disable2FA(user: User ) {
-    this.utilsService.runAdminOperation("disable_2fa", {"value": user.id}, true).subscribe();
-  }
-
-  setPassword(setPasswordArgs: { user_id: string, password: string }) {
-    this.utilsService.runAdminOperation("set_user_password", setPasswordArgs, false).subscribe();
-    this.user.newpassword = false;
-    this.setPasswordArgs.password = "";
-  }
-
-  saveUser(userData: User) {
+  saveUser(userData: UserProfile ) {
     const user = userData;
-    if (user.pgp_key_remove) {
-      user.pgp_key_public = "";
-    }
-    if (user.pgp_key_public !== "") {
-      user.pgp_key_remove = false;
-    }
     return this.utilsService.updateAdminUser(userData.id,userData).subscribe({
       next:()=>{
         this.sendDataToParent();
       },
       error:()=>{
-        if (this.uploaderInput) {
-          this.uploaderInput.nativeElement.value = "";
-        }
       }
     });
   }
@@ -115,11 +77,11 @@ export class UserEditorComponent implements OnInit {
     this.dataToParent.emit();
   }
 
-  deleteUser(user: User) {
+  deleteUser(user:UserProfile) {
     this.openConfirmableModalDialog(user, "").subscribe();
   }
 
-  openConfirmableModalDialog(arg: User, scope: any): Observable<string> {
+  openConfirmableModalDialog(arg: UserProfile, scope: any): Observable<string> {
     scope = !scope ? this : scope;
     return new Observable((observer) => {
       const modalRef = this.modalService.open(DeleteConfirmationComponent, {backdrop: 'static', keyboard: false});
@@ -136,26 +98,7 @@ export class UserEditorComponent implements OnInit {
     });
   }
 
-  resetUserPassword(user: User) {
-    this.utilsService.runAdminOperation("send_password_reset_email", {"value": user.id}, true).subscribe();
-  }
-
-  loadPublicKeyFile(files: FileList | null,user:User) {
-    if (files && files.length > 0) {
-      this.utilsService.readFileAsText(files[0])
-        .subscribe((txt: string) => {
-          this.user.pgp_key_public = txt;
-          return this.saveUser(user);
-        });
-    }
-  };
-
   getUserID() {
     return this.authenticationData.session?.user_id;
-  }
-
-  toggleUserEscrow(user: User) {
-    this.user.escrow = !this.user.escrow;
-    this.utilsService.runAdminOperation("toggle_user_escrow", {"value": user.id}, true).subscribe();
   }
 }

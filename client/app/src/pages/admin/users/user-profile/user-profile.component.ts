@@ -10,14 +10,14 @@ import {UtilsService} from "@app/shared/services/utils.service";
 import {NgbTooltipModule} from "@ng-bootstrap/ng-bootstrap";
 import {NgClass} from "@angular/common";
 import {FormsModule} from "@angular/forms";
-import {UserEditorComponent} from "../user-editor/user-editor.component";
 import {TranslatorPipe} from "@app/shared/pipes/translate";
 import {OrderByPipe} from "@app/shared/pipes/order-by.pipe";
+import {ProfileEditorComponent} from "../profile-editor/profile-editor.component";
 
 @Component({
   selector: 'src-user-profile',
   standalone: true,
-  imports: [FormsModule, NgbTooltipModule, NgClass, UserEditorComponent, TranslatorPipe, OrderByPipe],
+  imports: [FormsModule, NgbTooltipModule, NgClass, ProfileEditorComponent, TranslatorPipe, OrderByPipe],
   templateUrl: './user-profile.component.html',
 })
 export class UserProfileComponent implements OnInit {

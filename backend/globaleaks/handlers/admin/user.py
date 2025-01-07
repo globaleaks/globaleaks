@@ -27,9 +27,6 @@ def serialize_user_profile(user):
         'role': user.role,
         'enabled': user.enabled,
         'language': user.language,
-        'pgp_key_remove': False,
-        'pgp_key_fingerprint': user.pgp_key_fingerprint,
-        'pgp_key_public': user.pgp_key_public,
         'notification': user.notification,
         'can_edit_general_settings': user.can_edit_general_settings,
         'can_delete_submission': user.can_delete_submission,
@@ -58,8 +55,6 @@ def db_create_user_profile(session, request):
     for key, value in request.items():
         setattr(user, key, value)
     
-    parse_pgp_options(user, request)
-
     existing_user = session.query(models.UserProfile).filter(models.UserProfile.name == user.name).first()
     if existing_user:
         raise errors.DuplicateUserError
@@ -110,8 +105,6 @@ def db_admin_update_user_profile(session, user_id, request):
     :return: The updated user object
     """
     user = session.query(models.UserProfile).filter(models.UserProfile.id == user_id).first()
-    
-    parse_pgp_options(user, request)
     
     for key, value in request.items():
         if hasattr(user, key):
@@ -192,6 +185,9 @@ def db_create_user(session, tid, user_session, request, language):
 
     user.salt = GCE.generate_salt()
 
+    # The various options related in manage PGP keys are used here.
+    parse_pgp_options(user, request)
+
     if user_session and user_session.ek:
         db_set_user_password(session, tid, user, generateRandomPassword(16))
 
@@ -259,6 +255,9 @@ def db_admin_update_user(session, tid, user_session, user_id, request, language)
     # Prevent administrators to reset password change needed status
     if user.password_change_needed:
         request['password_change_needed'] = True
+
+    # The various options related in manage PGP keys are used here.
+    parse_pgp_options(user, request)
 
     user.update(request)
 

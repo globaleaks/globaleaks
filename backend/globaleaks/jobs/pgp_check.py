@@ -22,9 +22,9 @@ def db_get_expired_or_expiring_pgp_users(session, tids_list):
     threshold = datetime_now() + timedelta(15)
 
     query = (session.query(models.User, models.UserProfile).join(models.UserProfile, models.User.profile_id == models.UserProfile.id)
-             .filter(models.UserProfile.pgp_key_public != '',
-                     models.UserProfile.pgp_key_expiration != datetime_null(),
-                     models.UserProfile.pgp_key_expiration < threshold,
+             .filter(models.User.pgp_key_public != '',
+                     models.User.pgp_key_expiration != datetime_null(),
+                     models.User.pgp_key_expiration < threshold,
                      models.User.tid.in_(tids_list)))
     
     return query.all()
@@ -72,10 +72,10 @@ class PGPCheck(DailyJob):
             tenant_expiry_map.setdefault(user.tid, []).append(user_desc)
 
             log.info('Removing expired PGP key of: %s', user.username, tid=user.tid)
-            if profile.pgp_key_expiration < datetime_now():
-                profile.pgp_key_public = ''
-                profile.pgp_key_fingerprint = ''
-                profile.pgp_key_expiration = datetime_null()
+            if user.pgp_key_expiration < datetime_now():
+                user.pgp_key_public = ''
+                user.pgp_key_fingerprint = ''
+                user.pgp_key_expiration = datetime_null()
 
         for tid, expired_or_expiring in tenant_expiry_map.items():
             for user_desc in expired_or_expiring:

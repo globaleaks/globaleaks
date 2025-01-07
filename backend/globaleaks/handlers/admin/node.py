@@ -42,7 +42,18 @@ def db_update_enabled_languages(session, tid, languages, default_language):
 
     to_remove = list(set(cur_enabled_langs) - set(languages))
     if to_remove:
-        session.query(models.User).filter(models.User.tid == tid, models.User.language.in_(to_remove)).update({'language': default_language}, synchronize_session=False)
+        profile_ids = session.query(models.UserProfile.id) \
+            .join(models.User, models.User.profile_id == models.UserProfile.id) \
+            .filter(models.User.tid == tid, models.UserProfile.language.in_(to_remove)) \
+            .all()
+    
+        profile_ids = [pid[0] for pid in profile_ids]
+    
+        if profile_ids:
+            session.query(models.UserProfile) \
+                .filter(models.UserProfile.id.in_(profile_ids)) \
+                .update({'language': default_language}, synchronize_session=False)
+    
         db_del(session, models.EnabledLanguage, (models.EnabledLanguage.tid == tid, models.EnabledLanguage.name.in_(to_remove)))
 
 

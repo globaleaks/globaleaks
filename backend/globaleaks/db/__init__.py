@@ -119,8 +119,6 @@ def create_default_user_profiles(session, roles):
             "name": role.capitalize(),
             "role": role,
             "language": "en",
-            "pgp_key_public": "",
-            "pgp_key_remove": False
         }
         db_create_user_profile(session, user_desc)
 
@@ -278,7 +276,7 @@ def db_refresh_tenant_cache(session, to_refresh=None):
                     update_cache(profile[var_name], tid)
                 elif tid:
                     update_cache(default_cfg, tid)
-    query = (session.query(models.User.tid,models.User.mail_address,models.UserProfile.pgp_key_public)
+    query = (session.query(models.User.tid,models.User.mail_address,models.User.pgp_key_public)
             .join(models.UserProfile, models.User.profile_id == models.UserProfile.id)
             .filter(
                 models.User.role == 'admin',

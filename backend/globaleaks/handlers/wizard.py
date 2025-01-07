@@ -73,6 +73,9 @@ def db_wizard(session, tid, hostname, request):
 
         if admin_profile:
            admin_desc['profile_id'] = admin_profile.id
+           admin_profile.language = language
+           session.add(admin_profile)
+           session.commit()
 
         admin_user = db_create_user(session, tid, None, admin_desc, language)
         db_set_user_password(session, tid, admin_user, request['admin_password'])
@@ -94,6 +97,9 @@ def db_wizard(session, tid, hostname, request):
 
         if receiver_profile:
            receiver_desc['profile_id'] = receiver_profile.id
+           receiver_profile.language = language
+           session.add(receiver_profile)
+           session.commit()
 
         receiver_user = db_create_user(session, tid, None, receiver_desc, language)
         db_set_user_password(session, tid, receiver_user, request['receiver_password'])

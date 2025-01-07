@@ -358,8 +358,8 @@ export class HttpService {
     return this.httpClient.post<User | UserProfile >("api/admin/users", param);
   }
 
-  requestUpdateAdminUser(id: string, url: string, param: User | UserProfile ): Observable<User | UserProfile > {
-    return this.httpClient.put<User | UserProfile >(url + id, param);
+  requestUpdateAdminUser(id: string, param: User | UserProfile ): Observable<User | UserProfile > {
+    return this.httpClient.put<User | UserProfile >("api/admin/users/" + id, param);
   }
 
   requestDeleteAdminUser(id: string,url:string,is_profile:any): Observable<userResolverModel> {

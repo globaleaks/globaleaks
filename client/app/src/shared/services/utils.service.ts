@@ -611,8 +611,8 @@ export class UtilsService {
     return this.httpService.requestAddAdminUser(user);
   }
 
-  updateAdminUser(id: string, url:string, user: User | UserProfile ) {
-    return this.httpService.requestUpdateAdminUser(id, url, user);
+  updateAdminUser(id: string, user: User | UserProfile ) {
+    return this.httpService.requestUpdateAdminUser(id, user);
   }
 
   addAdminContext(context: NewContext) {

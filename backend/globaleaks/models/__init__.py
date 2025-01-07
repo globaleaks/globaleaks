@@ -951,6 +951,11 @@ class _User(Model):
 
     accepted_privacy_policy = Column(DateTime, default=datetime_null, nullable=False)
     clicked_recovery_key = Column(Boolean, default=False, nullable=False)
+    # BEGIN of PGP key fields
+    pgp_key_fingerprint = Column(UnicodeText, default='', nullable=False)
+    pgp_key_public = Column(UnicodeText, default='', nullable=False)
+    pgp_key_expiration = Column(DateTime, default=datetime_null, nullable=False)
+    # END of PGP key fields
 
     unicode_keys = ['username', 'role',
                     'language', 'mail_address',
@@ -1010,12 +1015,6 @@ class _UserProfile(Model):
     can_reopen_reports = Column(Boolean, default=True, nullable=False)
     can_edit_general_settings = Column(Boolean, default=False, nullable=False)
     language = Column(UnicodeText(12), nullable=False)
-    # BEGIN of PGP key fields
-    pgp_key_fingerprint = Column(UnicodeText, default='', nullable=False)
-    pgp_key_public = Column(UnicodeText, default='', nullable=False)
-    pgp_key_expiration = Column(DateTime, default=datetime_null, nullable=False)
-    # END of PGP key fields
-
 
 class _ReceiverFile(Model):
     """

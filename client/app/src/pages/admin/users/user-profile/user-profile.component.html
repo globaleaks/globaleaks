@@ -42,7 +42,7 @@
     @for (user of usersData | orderBy:'name'; track user; let index = $index) {
       <div class="userList">
         <form id="user-{{index}}" name="editUser" #editUser="ngForm" novalidate>
-          <src-user-editor [user]="user" [editUser]="editUser" [index]="index" [is_profile]="true" [users]="usersData"></src-user-editor>
+          <src-profile-editor [user]="user" [editUser]="editUser" [index]="index" [is_profile]="true" [users]="usersData"></src-profile-editor>
         </form>
       </div>
     }

@@ -118,7 +118,7 @@ def get_tip_export(session, tid, user_id, itip_id, language):
     if itip.status == 'new':
         db_update_submission_status(session, tid, user_id, itip, 'opened', None, profile)
 
-    return profile.pgp_key_public, serialize_rtip_export(session, user, itip, rtip, context, language)
+    return user.pgp_key_public, serialize_rtip_export(session, user, itip, rtip, context, language)
 
 
 def create_pdf_report(input_text, data):

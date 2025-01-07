@@ -1242,8 +1242,9 @@ class WhistleblowerFileDownload(BaseHandler):
 
     @transact
     def download_wbfile(self, session, tid, user_id, file_id):
-        ifile, wbfile, rtip, profile = db_get(session,
-                                           (models.InternalFile,
+        user, ifile, wbfile, rtip, profile = db_get(session,
+                                           (models.User,
+                                            models.InternalFile,
                                             models.WhistleblowerFile,
                                             models.ReceiverTip,
                                             models.UserProfile),
@@ -1268,7 +1269,7 @@ class WhistleblowerFileDownload(BaseHandler):
         log.debug("Download of file %s by receiver %s" %
                   (wbfile.internalfile_id, rtip.receiver_id))
 
-        return ifile.name, ifile.id, wbfile.id, rtip.crypto_tip_prv_key, rtip.deprecated_crypto_files_prv_key, profile.pgp_key_public
+        return ifile.name, ifile.id, wbfile.id, rtip.crypto_tip_prv_key, rtip.deprecated_crypto_files_prv_key, user.pgp_key_public
 
     @inlineCallbacks
     def get(self, wbfile_id):
@@ -1326,7 +1327,7 @@ class ReceiverFileDownload(BaseHandler):
             rfile, rtip, pgp_key = db_get(session,
                                           (models.ReceiverFile,
                                            models.ReceiverTip,
-                                           models.UserProfile.pgp_key_public),
+                                           models.User.pgp_key_public),
                                           (models.User.id == user_id,
                                            models.User.profile_id == models.UserProfile.id,
                                            models.User.id == models.ReceiverTip.receiver_id,
