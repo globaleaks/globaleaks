@@ -78,31 +78,6 @@ class SecureTemporaryFile:
 
         return data
 
-    def seek(self, offset):
-        """
-        Sets the position for the next read operation.
-
-        :param offset: The offset to seek to.
-        """
-        position = 0
-        self.dec = self.cipher.decryptor()
-        self.enc = self.cipher.encryptor()
-        os.lseek(self.fd, 0, os.SEEK_SET)
-        discard_size = offset - position
-        while discard_size > 0:
-            to_read = min(CHUNK_SIZE, discard_size)
-            data = self.dec.update(os.read(self.fd, to_read))
-            data = self.enc.update(data)
-            discard_size -= to_read
-
-    def tell(self):
-        """
-        Returns the current position in the file.
-
-        :return: The current position in the file.
-        """
-        return os.lseek(self.fd, 0, os.SEEK_CUR)
-
     def close(self):
         """
         Closes the file descriptor.
