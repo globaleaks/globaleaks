@@ -7,7 +7,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import ChaCha20
 CHUNK_SIZE = 4096
 
 class SecureTemporaryFile:
-    def __init__(self, filesdir, filename=None):
+    def __init__(self, filesdir):
         """
         Initializes an ephemeral file with ChaCha20 encryption.
         Creates a new random file path and generates a unique encryption key and nonce.
@@ -15,9 +15,9 @@ class SecureTemporaryFile:
         :param filesdir: The directory where the ephemeral file will be stored.
         :param filenames: Optional filename. If not provided, a UUID4 is used.
         """
-        filename = filename or str(uuid.uuid4())  # If filenames is None, generate a random UUID as a string
+        filename = str(uuid.uuid4())
         self.filepath = os.path.join(filesdir, filename)
-        self.cipher = Cipher(ChaCha20(os.urandom(32), uuid.UUID(filename).bytes[:16]), mode=None)
+        self.cipher = Cipher(ChaCha20(os.urandom(32), os.urandom(16)), mode=None)
         self.enc = self.cipher.encryptor()
         self.dec = self.cipher.decryptor()
 
