@@ -509,15 +509,6 @@ class PlatformSignupKeyword(NodeKeyword):
     def HTTPSSite(self):
         return 'https://' + self.data['signup']['subdomain'] + '.' + self.data['node']['rootdomain']
 
-    def Site(self):
-        if self.data['node']['hostname']:
-            return self.HTTPSSite()
-
-        elif self.data['node']['onionservice']:
-            return self.TorSite()
-
-        return ''
-
     def RecipientName(self):
         return self.data['signup']['name'] + ' ' + self.data['signup']['surname']
 
@@ -530,9 +521,6 @@ class PlatformSignupKeyword(NodeKeyword):
             site = ''
 
         return site + '/#/activation?token=' + self.data['signup']['activation_token']
-
-    def LoginUrl(self):
-        return self.Site() + '/#/login'
 
     def ExpirationDate(self):
         date = self.data['signup']['registration_date'] + timedelta(30)
