@@ -22,4 +22,5 @@ export class NewUser {
   can_transfer_access_to_reports = false;
   can_redact_information = false;
   can_mask_information = false;
+  profile_id = ""
 }

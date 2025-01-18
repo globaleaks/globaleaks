@@ -3,8 +3,12 @@ import os
 import sys
 import traceback
 import warnings
+from collections import defaultdict
+from operator import or_
 
+from globaleaks.handlers.admin.user import db_create_user_profile
 from sqlalchemy.exc import SAWarning
+from globaleaks.rest.cache import Cache
 
 from globaleaks import models, DATABASE_VERSION
 from globaleaks.handlers.admin.https import db_load_tls_configs
@@ -68,8 +72,10 @@ def initialize_db(session):
     :param session: An ORM session
     """
     from globaleaks.handlers.admin import tenant
-    tenant.db_create(session, {'active': True, 'mode': 'default', 'name': 'GLOBALEAKS', 'subdomain': ''})
-
+    roles = ['admin', 'receiver', 'analyst', 'custodian']
+    tenant.db_create(session, {'active': False, 'mode': 'default', 'profile_counter': 1000000, 'name': 'GLOBALEAKS', 'subdomain': ''},False)
+    tenant.db_create(session, {'active': True, 'mode': 'default', 'profile_counter': 1000000, 'name': 'GLOBALEAKS', 'subdomain': ''})
+    create_default_user_profiles(session, roles)
 
 def update_db():
     """
@@ -107,6 +113,14 @@ def update_db():
 
     return DATABASE_VERSION
 
+def create_default_user_profiles(session, roles):
+    for role in roles:
+        user_desc = {
+            "name": role.capitalize(),
+            "role": role,
+            "language": "en",
+        }
+        db_create_user_profile(session, user_desc)
 
 def db_get_tracked_files(session):
     """
@@ -156,8 +170,17 @@ def sync_initialize_snimap(session):
     for cfg in db_load_tls_configs(session):
         State.snimap.load(cfg['tid'], cfg)
 
+def update_cache(cfg, tid):
+    tenant_cache = State.tenants[tid].cache
+    if cfg.var_name in ['https_cert', 'tor_onion_key'] or cfg.var_name in ConfigFilters['node']:
+        tenant_cache[cfg.var_name] = cfg.value
+    elif cfg.var_name in ConfigFilters['notification']:
+        tenant_cache.setdefault('notification', {})[cfg.var_name] = cfg.value
+    elif cfg.var_name in ConfigFilters['node']:
+        tenant_cache[cfg.var_name] = cfg.value
 
 def db_refresh_tenant_cache(session, to_refresh=None):
+
     active_tids = set([tid[0] for tid in session.query(models.Tenant.id).filter(models.Tenant.active.is_(True))])
 
     cached_tids = set(State.tenants.keys())
@@ -187,7 +210,21 @@ def db_refresh_tenant_cache(session, to_refresh=None):
     if to_refresh is None or to_refresh == 1:
         tids = active_tids
     else:
-        tids = [to_refresh] if to_refresh in active_tids else []
+        if to_refresh in active_tids:
+            tids = [to_refresh]
+            if to_refresh < 1000001:
+                default_profile_exists = session.query(Config).filter_by(tid=to_refresh, var_name='default_profile').first()
+                if default_profile_exists:
+                    tids.append(default_profile_exists.tid)
+
+            elif to_refresh > 1000001:
+                matching_tids = [tid[0] for tid in session.query(Config.tid).filter_by(var_name='default_profile', value=str(to_refresh)).all()]
+                tids.extend(matching_tids)
+
+                for tid in matching_tids:
+                    Cache.invalidate(tid)
+        else:
+            tids = []
 
     if not tids:
         return
@@ -214,27 +251,52 @@ def db_refresh_tenant_cache(session, to_refresh=None):
                             .filter(models.EnabledLanguage.tid.in_(tids)):
         State.tenants[tid].cache['languages_enabled'].append(lang)
 
-    for cfg in session.query(Config).filter(Config.tid.in_(tids)):
-        tenant_cache = State.tenants[cfg.tid].cache
+    configs = defaultdict(dict)
+    default_configs = {}
 
-        if cfg.var_name in ['https_cert', 'tor_onion_key']:
-            tenant_cache[cfg.var_name] = cfg.value
-        elif cfg.var_name in ConfigFilters['node']:
-            tenant_cache[cfg.var_name] = cfg.value
-        elif cfg.var_name in ConfigFilters['notification']:
-            tenant_cache['notification'][cfg.var_name] = cfg.value
+    for cfg in session.query(Config).filter(or_(Config.tid.in_(tids), Config.tid == 1000001)):
+        if cfg.tid == 1000001:
+            default_configs[cfg.var_name] = cfg
+        else:
+            configs[cfg.tid][cfg.var_name] = cfg
 
-    for tid, mail, pub_key in session.query(models.User.tid, models.User.mail_address, models.User.pgp_key_public) \
-                                     .filter(models.User.role == 'admin',
-                                             models.User.enabled.is_(True),
-                                             models.User.notification.is_(True),
-                                             models.User.tid.in_(tids)):
+    for var_name, default_cfg in default_configs.items():
+        for tid, tenant in list(configs.items()):
+            if "default_profile" in tenant and tenant["default_profile"].value != 'default':
+                profile_id = int(tenant["default_profile"].value)
+                profile = configs[profile_id]
+            else:
+                profile_id = None
+                profile = None
+
+            if to_refresh == 1 or to_refresh is None or (to_refresh < 1000001 and to_refresh == tid) or (1000001 < to_refresh == profile_id) or (1000001 < to_refresh == tid):
+                if var_name in tenant:
+                    update_cache(tenant[var_name], tid)
+                elif profile and var_name in profile:
+                    update_cache(profile[var_name], tid)
+                elif tid:
+                    update_cache(default_cfg, tid)
+    query = (session.query(models.User.tid,models.User.mail_address,models.User.pgp_key_public)
+            .join(models.UserProfile, models.User.profile_id == models.UserProfile.id)
+            .filter(
+                models.User.role == 'admin',
+                models.UserProfile.enabled.is_(True),
+                models.UserProfile.notification.is_(True),
+                models.User.tid.in_(tids)
+            ))
+    results = query.all()
+    
+    for tid, mail, pub_key in results:
         State.tenants[tid].cache.notification.admin_list.extend([(mail, pub_key)])
 
-    for custodian in session.query(models.User) \
-                            .filter(models.User.role == 'custodian',
-                                    models.User.enabled.is_(True),
-                                    models.User.tid.in_(tids)):
+    custodians = (session.query(models.User).join(models.UserProfile, models.User.profile_id == models.UserProfile.id)
+        .filter(
+            models.User.role == 'custodian',
+            models.UserProfile.enabled.is_(True),
+            models.User.tid.in_(tids)
+        ))
+    
+    for custodian in custodians:
         State.tenants[custodian.tid].cache['custodian'] = True
 
     for redirect in session.query(models.Redirect).filter(models.Redirect.tid.in_(tids)):

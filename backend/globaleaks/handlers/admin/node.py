@@ -11,7 +11,7 @@ from globaleaks.rest import errors, requests
 from globaleaks.utils.crypto import GCE
 from globaleaks.utils.fs import read_file
 from globaleaks.utils.log import log
-
+from globaleaks.models import Config
 
 def db_update_enabled_languages(session, tid, languages, default_language):
     """
@@ -42,7 +42,18 @@ def db_update_enabled_languages(session, tid, languages, default_language):
 
     to_remove = list(set(cur_enabled_langs) - set(languages))
     if to_remove:
-        session.query(models.User).filter(models.User.tid == tid, models.User.language.in_(to_remove)).update({'language': default_language}, synchronize_session=False)
+        profile_ids = session.query(models.UserProfile.id) \
+            .join(models.User, models.User.profile_id == models.UserProfile.id) \
+            .filter(models.User.tid == tid, models.UserProfile.language.in_(to_remove)) \
+            .all()
+    
+        profile_ids = [pid[0] for pid in profile_ids]
+    
+        if profile_ids:
+            session.query(models.UserProfile) \
+                .filter(models.UserProfile.id.in_(profile_ids)) \
+                .update({'language': default_language}, synchronize_session=False)
+    
         db_del(session, models.EnabledLanguage, (models.EnabledLanguage.tid == tid, models.EnabledLanguage.name.in_(to_remove)))
 
 
@@ -72,7 +83,8 @@ def db_admin_serialize_node(session, tid, language, config_desc='node'):
         'https_possible': tid == 1 or root_config.get_val('reachable_via_web'),
         'encryption_possible': tid == 1 or root_config.get_val('encryption'),
         'escrow': config.get_val('crypto_escrow_pub_key') != '',
-        'logo': True if logo else False
+        'logo': True if logo else False,
+        'profile': session.query(Config).filter_by(tid=tid, var_name='default_profile').first() is not None if int(tid) < 1000001 else False
     })
 
     if 'version' in ret:
@@ -140,7 +152,7 @@ class NodeInstance(BaseHandler):
                        self.request.tid,
                        self.request.language,
                        config_desc=config[0])
-
+        ret["is_profile"] = True if self.request.tid > 1000001 else False
         returnValue(ret)
 
     @inlineCallbacks
