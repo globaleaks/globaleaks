@@ -265,7 +265,7 @@ class SessionHandler(BaseHandler):
         request = self.validate_request(self.request.content.read(), requests.SessionUpdateDesc)
 
         try:
-            self.session.token.validate(request['token'].encode())
+            self.session.token.validate(request['token'].encode().split(b":")[1])
             Sessions.reset_timeout(self.session)
         except:
             pass

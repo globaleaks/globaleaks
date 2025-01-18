@@ -17,15 +17,12 @@ class Token(object):
     def serialize(self):
         return {
             'id': self.id.decode(),
-            'creation_date': self.creation_date,
-            'complexity': 4
+            'creation_date': self.creation_date
         }
 
-    def validate(self, token_answer):
+    def validate(self, answer):
         try:
-            key, answer = token_answer.split(b":")
-
-            if not sha256(key + answer).endswith(b'00'):
+            if not sha256(self.id + answer).endswith(b'00'):
                 raise errors.InternalServerError("TokenFailure: Invalid Token")
         except:
             raise errors.InternalServerError("TokenFailure: Invalid token")
@@ -49,11 +46,11 @@ class TokenList(TempDict):
 
         return ret
 
-    def validate(self, token_answer):
+    def validate(self, answer):
         try:
-            key, answer = token_answer.split(b":")
+            key, answer = answer.split(b":")
             token = self.pop(key)
-            token.validate(token_answer)
+            token.validate(answer)
         except:
             raise errors.InternalServerError("TokenFailure: Invalid token")
 
