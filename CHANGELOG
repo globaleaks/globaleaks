@@ -1,3 +1,6 @@
+Changes in version 5.0.43
+    Correct regression on logs missing newlines introduced in 5.0.38
+
 Changes in version 5.0.42
     Fix possibility to vary expiration date if default data retention policy is disabled
 
