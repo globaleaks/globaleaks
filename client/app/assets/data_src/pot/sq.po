@@ -105,9 +105,6 @@ msgstr "Lejoji nxjerrësit të së fshehtës të shtojë te raportimi bashkëngj
 msgid "Allow the whistleblower to write comments"
 msgstr "Lejoji nxjerrësit të së fshehtës të shkruajë komente"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Lejoje këtë përdorues të rihapë administrimin e një raportimit"
-
 msgid "Allow users to sign up"
 msgstr "Lejoju përdoruesve të regjistrohen"
 

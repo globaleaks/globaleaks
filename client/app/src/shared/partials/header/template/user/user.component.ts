@@ -30,7 +30,7 @@ export class UserComponent {
   private cdr = inject(ChangeDetectorRef);
   protected authentication = inject(AuthenticationService);
   protected preferences = inject(PreferenceResolver);
-  protected utils = inject(UtilsService);
+  protected utilsService = inject(UtilsService);
   protected appDataService = inject(AppDataService);
   protected translationService = inject(TranslationService);
   private router = inject(Router);
@@ -45,7 +45,7 @@ export class UserComponent {
     this.activatedRoute.queryParams.subscribe(params => {
       const currentLang = params['lang'];
       const isSubmissionRoute = this.router.url.includes('/submission');
-      const storageLanguage = sessionStorage.getItem("default_language");
+      const storageLanguage = sessionStorage.getItem("language");
       const languagesEnabled = this.appDataService.public.node.languages_enabled;
 
       if (currentLang && languagesEnabled.includes(currentLang)) {
@@ -54,10 +54,10 @@ export class UserComponent {
         }
         else if (storageLanguage !== currentLang) {
           this.translationService.onChange(currentLang);
-          sessionStorage.setItem("default_language", currentLang);
+          sessionStorage.setItem("language", currentLang);
           if (!isSubmissionRoute) {
             this.appConfigService.reinit(true);
-            this.utils.reloadCurrentRouteFresh();
+            this.utilsService.reloadCurrentRouteFresh();
           }
         }
       }
@@ -68,7 +68,6 @@ export class UserComponent {
   onLogout(event: Event) {
     event.preventDefault();
     const promise = () => {
-      sessionStorage.removeItem("default_language");
       this.translationService.onChange(this.appDataService.public.node.default_language);
       this.appConfigService.reinit(false);
       this.appConfigService.onValidateInitialConfiguration();
@@ -79,9 +78,8 @@ export class UserComponent {
 
   onChangeLanguage() {
     this.cdr.detectChanges();
-    sessionStorage.removeItem("default_language");
     this.translationService.onChange(this.translationService.language);
     this.appConfigService.reinit(false);
-    this.utils.reloadCurrentRouteFresh(true);
+    this.utilsService.reloadCurrentRouteFresh(true);
   }
 }

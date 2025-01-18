@@ -1,11 +1,11 @@
 @if ((['checkbox', 'fieldgroup', 'multichoice'].indexOf(field.type) === -1) && (['whistleblower_identity'].indexOf(field.template_id) === -1)) {
   <div id="{{fieldId}}" class="question">
-    <label class="question-label" data-content="field.hint" [ngbTooltip]="field.hint" for="{{fieldId + '-input-' + 0}}">
+    <label class="question-label" for="{{fieldId + '-input-' + 0}}">
       @if (field.label) {
         <span class="title">{{field.label|translate}}</span>
       }
       @if (field.hint) {
-        <i class="fa-solid fa-question-circle"></i>
+        <i [ngbTooltip]="field.hint" class="fa-solid fa-question-circle"></i>
       }
       @if (field.required) {
         <span class="text-danger sup" ngbTooltip="{{'This field is mandatory' | translate}}">*</span>

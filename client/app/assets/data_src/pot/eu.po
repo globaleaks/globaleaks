@@ -114,9 +114,6 @@ msgstr "Salatzaileari salaketari eranskin gehiago gehitzea ahalbidetu"
 msgid "Allow the whistleblower to write comments"
 msgstr "Salatzaileei iruzkinak idaztea ahalbidetu"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Utzi erabiltzaileei erregistratzen"
 

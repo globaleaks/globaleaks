@@ -4,7 +4,7 @@
   }
   <div id="WhistleblowerBox" class="d-block mx-auto">
     @if (appDataService.public.node.disable_submissions || (!appDataService.public.node.https_whistleblower && !appDataService.connection.tor)) {
-      <div id="WhistleblowerSubmitBoxButtonDisabled" class="mb-4">
+      <div id="WhistleblowerSubmitBoxButtonDisabled" class="mt-4">
         <button class="btn btn-danger disabled">
           <i class="fa-solid fa-ban-circle"></i>
           <span id="submissions_disabled">{{'Submissions disabled'|translate}}</span>
@@ -12,12 +12,12 @@
       </div>
     }
     @if (!appDataService.public.node.https_whistleblower && !appDataService.connection.tor) {
-      <div class="mb-4">
+      <div class="mt-4">
         <p class="text-danger">{{'You are connecting to the server without anonymity and this server supports only anonymous submissions'|translate}}</p>
       </div>
     }
     @if (!appDataService.public.node.disable_submissions && (appDataService.public.node.https_whistleblower || appDataService.connection.tor)) {
-      <div id="WhistleblowerSubmitBox" class="mb-4">
+      <div id="WhistleblowerSubmitBox" class="mt-4">
         @if (appDataService.public.node.whistleblowing_question) {
           <markdown id="WhistleblowingQuestion" [data]="appDataService.public.node.whistleblowing_question | stripHtml"></markdown>
         }

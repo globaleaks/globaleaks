@@ -96,9 +96,6 @@ msgstr "Малюмат бериджиге берильген весикъала�
 msgid "Allow the whistleblower to write comments"
 msgstr "Малюмат бериджиге изаатларны къошмагъа изин бермек"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Къулланыджылыргъа къайд олунмагъа изин бермек"
 

@@ -108,9 +108,6 @@ msgstr "مخبر کو اٹیچمنٹ شامل کرنے کی اجازت دیں"
 msgid "Allow the whistleblower to write comments"
 msgstr "مخبر کو تبصرے لکھنے کے لئے کی اجازت دیں"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "صارفین کو سائن اپ کرنے کی اجازت دیں۔ "
 

@@ -446,7 +446,6 @@ def get_dummy_file(content=None):
 
     with temporary_file.open('w') as f:
         f.write(content)
-        f.finalize_write()
 
     State.TempUploadFiles[os.path.basename(temporary_file.filepath)] = temporary_file
 
@@ -461,7 +460,7 @@ def get_dummy_file(content=None):
         'type': content_type,
         'submission': False,
         "reference_id": '',
-        "visibility": 0
+        "visibility": b'public'
     }
 
 
@@ -746,12 +745,12 @@ class TestGL(unittest.TestCase):
             'path2': '/path2-' + x
         }
 
-    def emulate_file_upload(self, submission_id, n):
+    def emulate_file_upload(self, session, n):
         """
         This emulates the file upload of an incomplete submission
         """
         for _ in range(n):
-            Sessions.get(submission_id).files.append(self.get_dummy_file())
+            session.files.append(self.get_dummy_file())
 
     def pollute_events(self, number_of_times=10):
         for _ in range(number_of_times):

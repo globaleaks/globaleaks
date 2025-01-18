@@ -67,7 +67,7 @@
     <div class="form-group">
       <label>
         <span>{{ 'Size limit for file attachments' | translate }}</span>
-        <span>( <span>{{ 'megabytes' | translate}}</span>) </span>
+        <span>(<span>{{ 'megabytes' | translate}}</span>)</span>
       </label>
       <input class="form-control" [(ngModel)]="nodeResolver.dataModel.maximum_filesize" type="number" min="0" />
     </div>
@@ -145,7 +145,7 @@
               <td>
                 <label>
                   <span>{{ 'Available disk space' | translate }}</span>
-                  <span>( <span>{{ 'megabytes' | translate }}</span>) </span>
+                  <span>(<span>{{ 'megabytes' | translate }}</span>)</span>
                 </label>
               </td>
               <td>
@@ -159,7 +159,7 @@
               <td>
                 <label>
                   <span>{{ 'Available disk space' | translate }}</span>
-                  <span>( <span>{{ 'percentage' | translate }}</span>) </span>
+                  <span>(<span>{{ 'percentage' | translate }}</span>)</span>
                 </label>
               </td>
               <td>

@@ -109,9 +109,6 @@ msgstr "Povolit oznamovateli přidat přílohy k oznámení"
 msgid "Allow the whistleblower to write comments"
 msgstr "Povolit oznamovateli psát komentáře"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Povolit tomuto uživateli znovu otevřít správu sestavy"
-
 msgid "Allow users to sign up"
 msgstr "Povolit uživatelům registraci"
 

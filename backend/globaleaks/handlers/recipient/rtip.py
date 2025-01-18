@@ -203,7 +203,6 @@ def recalculate_data_retention(session, itip, report_reopen_request):
 
     :param session: An ORM session
     :param itip: The internaltip ORM object
-    :param report_reopen_request: boolean value, true if the report is being reopend
     """
     prev_expiration_date = itip.expiration_date
     if report_reopen_request:
@@ -221,7 +220,7 @@ def recalculate_data_retention(session, itip, report_reopen_request):
     return prev_expiration_date, itip.expiration_date
 
 
-def db_update_submission_status(session, tid, user_id, itip, status_id, substatus_id, profile, motivation=None):
+def db_update_submission_status(session, tid, user_id, itip, status_id, substatus_id, profile):
     """
     Transaction for registering a change of status of a submission
 
@@ -235,28 +234,15 @@ def db_update_submission_status(session, tid, user_id, itip, status_id, substatu
     if status_id == 'new':
         return
 
-    if itip.crypto_tip_pub_key and motivation is not None:
-        motivation = base64.b64encode(GCE.asymmetric_encrypt(itip.crypto_tip_pub_key, motivation)).decode()
-
-    can_reopen_reports = profile.can_reopen_reports
-    
-    report_reopen_request = itip.status == "closed" and status_id == "opened"
-
-    if report_reopen_request and not can_reopen_reports:
-        raise errors.ForbiddenOperation # mandatory permission setting missing
-
-    if report_reopen_request and motivation is None:
-        raise errors.ForbiddenOperation # motivation must be given when restoring closed tips
-
     itip.status = status_id
     itip.substatus = substatus_id or None
 
+    report_reopen_request = itip.status == "closed" and status_id == "opened"
     prev_expiration_date, curr_expiration_date = recalculate_data_retention(session, itip, report_reopen_request)
 
     log_data = {
       'status': itip.status,
-      'substatus': itip.substatus,
-      'motivation': motivation,
+      'substatus': itip.substatus
     }
 
     db_log(session, tid=tid, type='update_report_status', user_id=user_id, object_id=itip.id, data=log_data)
@@ -540,7 +526,7 @@ def db_redact_whistleblower_identity(session, tid, user_id, itip_id, redaction, 
 
 
 @transact
-def update_tip_submission_status(session, tid, user_id, rtip_id, status_id, substatus_id, motivation):
+def update_tip_submission_status(session, tid, user_id, rtip_id, status_id, substatus_id):
     """
     Transaction for registering a change of status of a submission
 
@@ -563,7 +549,7 @@ def update_tip_submission_status(session, tid, user_id, rtip_id, status_id, subs
                                models.ReceiverTip.receiver_id != user_id):
         db_notify_report_update(session, user, rtip, itip)
 
-    db_update_submission_status(session, tid, user_id, itip, status_id, substatus_id, profile, motivation)
+    db_update_submission_status(session, tid, user_id, itip, status_id, substatus_id, profile)
 
 
 def db_access_rtip(session, tid, user_id, itip_id):
@@ -627,7 +613,7 @@ def register_rfile_on_db(session, tid, user_id, itip_id, uploaded_file):
                                 models.InternalTip.tid == tid).one()
 
     rtip.last_access = datetime_now()
-    if uploaded_file['visibility'] == 0:
+    if uploaded_file['visibility'].decode() == 'public':
         itip.update_date = rtip.last_access
 
     if itip.crypto_tip_pub_key:
@@ -1003,7 +989,7 @@ def create_identityaccessrequest(session, tid, user_id, user_cc, itip_id, reques
 
 
 @transact
-def create_comment(session, tid, user_id, itip_id, content, visibility=0):
+def create_comment(session, tid, user_id, itip_id, content, visibility='public'):
     """
     Transaction for registering a new comment
     :param session: An ORM session
@@ -1017,7 +1003,7 @@ def create_comment(session, tid, user_id, itip_id, content, visibility=0):
     _, rtip, itip, _ = db_access_rtip(session, tid, user_id, itip_id)
 
     rtip.last_access = datetime_now()
-    if visibility == 0:
+    if visibility == 'public':
         itip.update_date = rtip.last_access
 
     _content = content
@@ -1213,7 +1199,7 @@ class RTipInstance(OperationHandler):
 
     def update_submission_status(self, req_args, rtip_id, *args, **kwargs):
         return update_tip_submission_status(self.request.tid, self.session.user_id, rtip_id,
-                                            req_args['status'], req_args['substatus'], req_args['motivation'])
+                                            req_args['status'], req_args['substatus'])
 
     def delete(self, itip_id):
         """

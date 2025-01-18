@@ -96,9 +96,6 @@ msgstr "Benarkan pemberi maklumat menambah lampiran kepada laporan"
 msgid "Allow the whistleblower to write comments"
 msgstr "Benarkan pemberi maklumat menulis komen"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Benarkan pengguna untuk mendaftar"
 

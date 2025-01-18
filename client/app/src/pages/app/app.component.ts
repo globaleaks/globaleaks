@@ -2,6 +2,7 @@ import {AfterViewInit, ChangeDetectorRef, Component, HostListener, OnDestroy, On
 import {AppConfigService} from "@app/services/root/app-config.service";
 import {AppDataService} from "@app/app-data.service";
 import {UtilsService} from "@app/shared/services/utils.service";
+import {TrustedTypesService} from "@app/services/helper/trusted-types.service";
 import {LangChangeEvent, TranslateService, TranslateModule} from "@ngx-translate/core";
 import {NavigationEnd, Router, RouterOutlet} from "@angular/router";
 import {BrowserCheckService} from "@app/shared/services/browser-check.service";
@@ -27,6 +28,7 @@ import {TranslateHttpLoader} from "@ngx-translate/http-loader";
 import {DEFAULT_INTERRUPTSOURCES, Idle} from "@ng-idle/core";
 import {CryptoService} from "@app/shared/services/crypto.service";
 import {HttpService} from "@app/shared/services/http.service";
+import {BodyDomObserverService} from "@app/shared/services/body-dom-observer.service";
 import {Keepalive} from "@ng-idle/keepalive";
 registerLocales();
 
@@ -34,7 +36,6 @@ export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, "l10n/", "");
 }
 
-(window as any).mockEngine = mockEngine;
 declare global {
   interface Window {
     GL: {
@@ -77,13 +78,14 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy{
   private idle = inject(Idle);
   private keepalive = inject(Keepalive);
   private httpService = inject(HttpService);
+  private bodyDomObserver = inject(BodyDomObserverService);
+  private TrustedTypesService = inject(TrustedTypesService);
 
   showSidebar: boolean = true;
   isNavCollapsed: boolean = true;
   showLoadingPanel = false;
   supportedBrowser = true;
   loading = false;
-
 
   constructor() {
     this.initIdleState();
@@ -134,13 +136,13 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy{
   }
 
   initIdleState() {
-    this.idle.setIdle(1500);
-    this.idle.setTimeout(300);
+    this.idle.setIdle(1800);
+    this.idle.setTimeout(false);
     this.keepalive.interval(30);
     this.idle.setInterrupts(DEFAULT_INTERRUPTSOURCES);
 
     this.keepalive.onPing.subscribe(() => {
-      if (this.authenticationService && this.authenticationService.session) {
+      if (this.authenticationService.session) {
         const token = this.authenticationService.session.token;
         this.cryptoService.proofOfWork(token.id).subscribe((result:any) => {
 	  const param = {'token': token.id + ":" + result};
@@ -151,15 +153,8 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy{
       }
     });
 
-    this.idle.onTimeout.subscribe(() => {
-      if (this.authenticationService && this.authenticationService.session) {
-        if (this.authenticationService.session.role === "whistleblower") {
-          window.location.replace("about:blank");
-        } else {
-          this.authenticationService.deleteSession();
-          this.authenticationService.loginRedirect();
-        }
-      }
+    this.idle.onIdleStart.subscribe(() => {
+      this.authenticationService.deleteSession();
     });
 
     this.reset();
@@ -167,7 +162,6 @@ export class AppComponent implements AfterViewInit, OnInit, OnDestroy{
 
   reset() {
     this.idle.watch();
-    this.authenticationService.reset();
   }
 
   protected readonly location = location;

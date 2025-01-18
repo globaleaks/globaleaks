@@ -126,9 +126,6 @@ msgstr "Разрешить информатору добавлять прило�
 msgid "Allow the whistleblower to write comments"
 msgstr ""
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Разрешить пользователям регистрироваться"
 

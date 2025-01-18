@@ -102,9 +102,6 @@ msgstr "Prijavitelju dovoli dodajanje prilog"
 msgid "Allow the whistleblower to write comments"
 msgstr "Prijavitelju dovoli pisanje komentarjev"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Dovolite temu uporabniku, da ponovno odpre upravljanje prijave"
-
 msgid "Allow users to sign up"
 msgstr "Dovoli uporabnikom, da se registrirajo"
 

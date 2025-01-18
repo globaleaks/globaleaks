@@ -14,7 +14,7 @@
     }
     <div class="embed-responsive embed-responsive-16by9">
       @if (filemodel) {
-        <img class="embed-responsive-item logo-image" alt="image" width="500" height="500" ngSrc="s/{{imageUploadId}}?timestamp={{getCurrentTimestamp()}}" />
+        <img class="embed-responsive-item logo-image" alt="image" src="s/{{imageUploadId}}?timestamp={{getCurrentTimestamp()}}" />
       }
       @if (!filemodel) {
         <div class="logo-image-empty"></div>

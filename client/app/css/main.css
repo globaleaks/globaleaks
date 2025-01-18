@@ -1,5 +1,5 @@
-.js-disabled-message {
-  display: none;
+#BrowserNotSupported, #JavaScriptDisabled {
+  padding: 10em;
 }
 
 .reveal {
@@ -572,10 +572,6 @@ textarea.form-control {
   }
 }
 
-.hidden {
-  display: none;
-}
-
 .modal-dialog {
   max-width: 900px;
 }
@@ -624,10 +620,6 @@ p:last-child {
 
 .question .question {
   padding-left: 1em;
-}
-
-#WhistleblowingQuestion {
-  white-space: pre-wrap;
 }
 
 #WhistleblowerSubmitBox,
@@ -1019,15 +1011,6 @@ i.fa-solid.fa-chevron-right {
   margin: 0;
 }
 
-#SupportLink {
-  color: #205282;
-  cursor: pointer;
-}
-
-#SupportLink:hover {
-  color: #5797d5;
-}
-
 @keyframes blink {
   0% { opacity: 0; }
   50% { opacity: 1; }
@@ -1135,4 +1118,48 @@ body .dropdown-visible > div.multiselect-dropdown > div > span.dropdown-btn {
 
 .tooltip {
   position: absolute;
+}
+
+.form-check-input {
+  appearance: auto;
+}
+
+.visually-hidden {
+  position: absolute;
+  height: 1px;
+  width: 1px;
+  clip: rect(1px,1px,1px,1px);
+  border: 0;
+  overflow: hidden
+}
+
+.custom-date-selector {
+  text-align: center;
+  padding: 0.185rem 0.25rem;
+  display: inline-block;
+  height: 2rem;
+  width: 2rem;
+  font-size: 1rem;
+}
+
+.custom-date-selector.focused {
+  background-color: #e6e6e6;
+}
+
+.custom-date-selector.range,
+.custom-date-selector:hover {
+  background-color: #205282;
+  color: white;
+}
+
+.custom-date-selector.faded {
+  background-color: rgba(2, 117, 216, 50%);
+}
+
+.ngb-dp-arrow-prev .fa-chevron-right {
+  transform: scaleX(-1);
+}
+
+.form-select {
+  padding: 0.3em !important;
 }

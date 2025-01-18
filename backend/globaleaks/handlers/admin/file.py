@@ -29,9 +29,6 @@ def get_files(session, tid):
     ret = []
 
     for sf in session.query(models.File).filter(models.File.tid == tid):
-        if sf.name in special_files or re.match(requests.uuid_regexp, sf.name):
-            continue
-
         ret.append({
             'id': sf.id,
             'name': sf.name

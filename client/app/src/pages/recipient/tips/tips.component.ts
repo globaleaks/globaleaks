@@ -7,7 +7,7 @@ import {RevokeAccessComponent} from "@app/shared/modals/revoke-access/revoke-acc
 import {PreferenceResolver} from "@app/shared/resolvers/preference.resolver";
 import {RTipsResolver} from "@app/shared/resolvers/r-tips-resolver.service";
 import {UtilsService} from "@app/shared/services/utils.service";
-import {TranslateService, TranslateModule} from "@ngx-translate/core";
+import {TranslateService} from "@ngx-translate/core";
 import {IDropdownSettings, NgMultiSelectDropDownModule} from "ng-multiselect-dropdown";
 import {filter, orderBy} from "lodash-es";
 import {TokenResource} from "@app/shared/services/token-resource.service";
@@ -28,7 +28,7 @@ import {OrderByPipe} from "@app/shared/pipes/order-by.pipe";
     selector: "src-tips",
     templateUrl: "./tips.component.html",
     standalone: true,
-    imports: [RouterLink, FormsModule, NgClass, NgMultiSelectDropDownModule, DateRangeSelectorComponent, NgbPagination, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationFirst, NgbPaginationLast, NgbTooltipModule, SlicePipe, DatePipe, TranslateModule, TranslatorPipe, OrderByPipe]
+    imports: [RouterLink, FormsModule, NgClass, NgMultiSelectDropDownModule, DateRangeSelectorComponent, NgbPagination, NgbPaginationPrevious, NgbPaginationNext, NgbPaginationFirst, NgbPaginationLast, NgbTooltipModule, SlicePipe, DatePipe, TranslatorPipe, OrderByPipe]
 })
 export class TipsComponent implements OnInit {
   private http = inject(HttpClient);
@@ -106,14 +106,15 @@ export class TipsComponent implements OnInit {
   openGrantAccessModal(): void {
     this.utils.runUserOperation("get_users_names", {}, false).subscribe({
       next: response => {
+        const names = response as Record<string, string>;
         const selectableRecipients: Receiver[] = [];
         this.appDataService.public.receivers.forEach(async (receiver: Receiver) => {
           if (receiver.id !== this.authenticationService.session.user_id) {
+            receiver.name = names[receiver.id];
             selectableRecipients.push(receiver);
           }
         });
         const modalRef = this.modalService.open(GrantAccessComponent, {backdrop: 'static', keyboard: false});
-        modalRef.componentInstance.usersNames = response;
         modalRef.componentInstance.selectableRecipients = selectableRecipients;
         modalRef.componentInstance.confirmFun = (receiver_id: Receiver) => {
           const req = {
@@ -137,14 +138,15 @@ export class TipsComponent implements OnInit {
     this.utils.runUserOperation("get_users_names", {}, false).subscribe(
       {
         next: response => {
+          const names = response as Record<string, string>;
           const selectableRecipients: Receiver[] = [];
           this.appDataService.public.receivers.forEach(async (receiver: Receiver) => {
             if (receiver.id !== this.authenticationService.session.user_id) {
+              receiver.name = names[receiver.id];
               selectableRecipients.push(receiver);
             }
           });
           const modalRef = this.modalService.open(RevokeAccessComponent, {backdrop: 'static', keyboard: false});
-          modalRef.componentInstance.usersNames = response;
           modalRef.componentInstance.selectableRecipients = selectableRecipients;
           modalRef.componentInstance.confirmFun = (receiver_id: Receiver) => {
             const req = {
@@ -233,7 +235,7 @@ export class TipsComponent implements OnInit {
     for (const tip of this.RTips.dataModel) {
       tip.context = this.appDataService.contexts_by_id[tip.context_id];
       tip.context_name = tip.context.name;
-      tip.submissionStatusStr = this.translateService.instant(this.utils.getSubmissionStatusText(tip.status, tip.substatus, this.appDataService.submissionStatuses));
+      tip.submissionStatusStr = this.utils.getSubmissionStatusText(tip.status, tip.substatus, this.appDataService.submissionStatuses);
       if (!uniqueKeys.includes(tip.submissionStatusStr)) {
         uniqueKeys.push(tip.submissionStatusStr);
         this.dropdownStatusData.push({id: this.dropdownStatusData.length + 1, label: tip.submissionStatusStr});
@@ -382,8 +384,8 @@ export class TipsComponent implements OnInit {
   @HostListener("document:click", ["$event"])
   onClick(event: MouseEvent) {
     const clickedElement = event.target as HTMLElement;
-    const isContainerClicked = clickedElement.classList.contains("ngb-dtepicker-container") || clickedElement.classList.contains("dropdown-multi-select-container") ||
-      clickedElement.closest(".ngb-dtepicker-container") !== null || clickedElement.closest(".dropdown-multi-select-container") !== null;
+    const isContainerClicked = clickedElement.classList.contains("ngb-datepicker-container") || clickedElement.classList.contains("dropdown-multi-select-container") ||
+      clickedElement.closest(".ngb-datepicker-container") !== null || clickedElement.closest(".dropdown-multi-select-container") !== null;
     if (!isContainerClicked) {
       this.closeAllDatePickers();
     }

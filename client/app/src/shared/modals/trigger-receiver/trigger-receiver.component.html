@@ -11,7 +11,7 @@
       {{ item.name }}
     </ng-template>
     <ng-template ng-option-tmp let-item="item">
-      <span [innerHTML]="item.name"></span>
+      <span>{{item.name}}</span>
     </ng-template>
   </ng-select>
   @if (arg.trigger_receiver) {

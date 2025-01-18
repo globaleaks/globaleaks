@@ -96,9 +96,6 @@ msgstr "افشاګر ته اجازه ورکړئ چې له دې رپوټ سره �
 msgid "Allow the whistleblower to write comments"
 msgstr "افشاګر ته اجازه ورکړئ تر څو تبصرې ولیکي"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "د نوم لیکنې لپاره کارنونو ته اجازه ورکول"
 

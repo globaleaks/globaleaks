@@ -5,7 +5,7 @@ import txtorcon
 
 from txtorcon import build_local_tor_connection
 from twisted.internet import reactor
-from twisted.internet.defer import Deferred, returnValue
+from twisted.internet.defer import Deferred
 from txtorcon import TorConfig
 
 from globaleaks.services.service import Service
@@ -34,7 +34,7 @@ class Tor(Service):
         self.tor_conn = None
 
     def stop(self):
-        super(Tor, self).stop()
+        super().stop()
 
         if self.tor_conn is None:
             return
@@ -90,10 +90,10 @@ class Tor(Service):
             return
 
         if hasattr(self.state.tenants[tid], 'ephs') and self.state.tenants[tid].ephs:
-           try:
-               self.state.tenants[tid].ephs.remove()
-           except AttributeError:
-               yield self.state.tenants[tid].ephs.remove_from_tor(self.tor_conn.protocol)
+            try:
+                self.state.tenants[tid].ephs.remove()
+            except AttributeError:
+                yield self.state.tenants[tid].ephs.remove_from_tor(self.tor_conn.protocol)
 
     def operation(self):
         restart_deferred = Deferred()

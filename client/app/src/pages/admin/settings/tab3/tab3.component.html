@@ -15,7 +15,7 @@
             <div class="col-md-12">
               <ng-select [(ngModel)]="selected.value" [items]="languagesNotEnabled | filter:'name':selected.value" bindLabel="name" [searchable]="true" [placeholder]="'Search' | translate" (ngModelChange)="enableLanguage($event)">
                 <ng-template ng-option-tmp let-item="item">
-                  <span [innerHTML]="item.name"></span>
+                  <span>{{item.name}}</span>
                   <span>[{{ item.code }}]</span>
                 </ng-template>
               </ng-select>

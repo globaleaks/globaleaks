@@ -18,7 +18,6 @@ import {OrderByPipe} from "@app/shared/pipes/order-by.pipe";
 import {TranslateModule} from "@ngx-translate/core";
 import {NgbTooltipModule} from "@ng-bootstrap/ng-bootstrap";
 
-
 @Component({
     selector: "src-tab2",
     templateUrl: "./tab2.component.html",
@@ -37,6 +36,8 @@ export class Tab2Component implements OnInit {
   @ViewChild("uploader") uploaderInput: ElementRef;
 
   files: FlowFile[] = [];
+  files_names: string[] = [];
+  special_files_names = ['css', 'favicon', 'logo', 'script'];
   flow: FlowDirective;
   preferenceData: preferenceResolverModel;
   authenticationData: AuthenticationService;
@@ -79,7 +80,7 @@ export class Tab2Component implements OnInit {
   onFileSelected(files: FileList | null) {
     if (files && files.length > 0) {
       const file = files[0];
-      const flowJsInstance = this.utilsService.flowDefault;
+      const flowJsInstance = this.utilsService.getFlowInstance();
 
       flowJsInstance.opts.target = "api/admin/files/custom";
       flowJsInstance.opts.allowDuplicateUploads = true;
@@ -91,11 +92,13 @@ export class Tab2Component implements OnInit {
         this.appConfigService.reinit(false);
         this.utilsService.reloadComponent();
       });
+
       flowJsInstance.on("fileError", (_) => {
         if (this.uploaderInput) {
           this.uploaderInput.nativeElement.value = "";
         }
       });
+
       this.utilsService.onFlowUpload(flowJsInstance, file)
     }
   }
@@ -117,6 +120,10 @@ export class Tab2Component implements OnInit {
     this.utilsService.getFiles().subscribe(
       (updatedFiles) => {
         this.files = updatedFiles;
+	this.files_names.splice(0, this.files_names.length);
+	this.files.forEach(file => {
+          this.files_names.push(file.name);
+	});
       }
     );
   }

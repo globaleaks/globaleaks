@@ -8,8 +8,8 @@ from globaleaks.utils.singleton import Singleton
 this_directory = os.path.dirname(__file__)
 
 possible_client_paths = [
-    os.path.abspath(os.path.join(this_directory, '../../client/build/')),
-    '/usr/share/globaleaks/client'
+    '/usr/share/globaleaks/client',
+    os.path.abspath(os.path.join(this_directory, '../../client/build/'))
 ]
 
 
@@ -96,16 +96,19 @@ class SettingsClass(object, metaclass=Singleton):
         self.log_path = os.path.abspath(os.path.join(self.working_path, 'log'))
         self.logfile = os.path.abspath(os.path.join(self.log_path, 'globaleaks.log'))
         self.accesslogfile = os.path.abspath(os.path.join(self.log_path, "access.log"))
+        self.csp_report_file = os.path.abspath(os.path.join(self.log_path, "csp-report.log"))
 
         # Client path detection
+        client_found=False
+        self.client_path = possible_client_paths[0]
         for path in possible_client_paths:
             if os.path.isfile(os.path.join(path, 'index.html')):
                 self.client_path = path
+                client_found=True
                 break
 
-        if self.client_path is None:
+        if not client_found:
             print("Unable to find a directory to load the client from")
-            sys.exit(1)
 
         self.appdata_file = os.path.join(self.client_path, 'data/appdata.json')
         self.questionnaires_path = os.path.join(self.client_path, 'data/questionnaires')

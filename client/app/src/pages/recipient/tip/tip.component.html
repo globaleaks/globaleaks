@@ -50,7 +50,7 @@
           </span>
         }
         @if (!tip || tip.context) {
-          @if (!tip || preferencesService.dataModel.can_postpone_expiration && tip.context.tip_timetolive > 0) {
+          @if (!tip || preferencesService.dataModel.can_postpone_expiration) {
             <span id="tip-action-postpone"
               (click)="tipPostpone()" ngbTooltip="{{'Edit the expiration date' | translate}}"
               class="btn btn-outline-secondary">
@@ -78,7 +78,7 @@
             <i class="fa-solid fa-dot-circle"></i>
           </span>
         }
-        @if (preferencesService.dataModel.can_reopen_reports && tip.status === 'closed') {
+        @if (tip.status === 'closed') {
           <span id="tip-action-reopen-status" (click)="openModalReopen()"
             ngbTooltip="{{'Reopen' | translate}}" class="btn btn-outline-secondary">
             <i class="fa-solid fa-dot-circle"></i>

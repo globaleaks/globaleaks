@@ -123,9 +123,9 @@ describe("globaleaks process", function () {
     cy.login_admin();
     cy.visit("/#/admin/channels");
     cy.get("#edit_context").first().click();
-    cy.get('select[name="contextResolver.questionnaire_id"]').select('questionnaire 1');
+    cy.get('select[name="contextResolver.questionnaire_id"]').should("be.visible").select('questionnaire 1');
     cy.get("#advance_context").click();
-    cy.get('select[name="contextResolver.additional_questionnaire_id"]').select('questionnaire 2');
+    cy.get('select[name="contextResolver.additional_questionnaire_id"]').should("be.visible").select('questionnaire 2');
     cy.get("#save_context").click();
     cy.logout();
   });
@@ -143,8 +143,8 @@ describe("globaleaks process", function () {
     cy.wait(6000);
     cy.get("#stop_recording").click();
     cy.get("#NextStepButton").click();
-    cy.get("input[type='text']").eq(1).should("be.visible").type("abc");
-    cy.get("input[type='text']").eq(2).should("be.visible").type("xyz");
+    cy.get("input[type='text']").eq(2).should("be.visible").type("abc");
+    cy.get("input[type='text']").eq(3).should("be.visible").type("xyz");
     cy.get("select").first().select(1);
     cy.get("#SubmitButton").should("be.visible");
     cy.get("#SubmitButton").click();

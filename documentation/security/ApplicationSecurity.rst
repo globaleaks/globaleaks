@@ -129,10 +129,10 @@ The default configuration of the application sees this feature disabled.
 
 Content-Security-Policy
 +++++++++++++++++++++++
-The backend implements a strict `Content Security Policy (CSP) <https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP>`_ preventing any interaction with third-party resources and restricting the execution of untrusted user input:
+The backend implements a strict `Content Security Policy (CSP) <https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP>`_ preventing any interaction with third-party resources and restricting execution of code by means of `Trusted Types <https://www.w3.org/TR/trusted-types/>`_.
 ::
 
-  Content-Security-Policy: base-uri 'none'; default-src 'none'; form-action 'none'; frame-ancestors 'none'; sandbox;
+  Content-Security-Policy: base-uri 'none'; connect-src 'self'; default-src 'none'; font-src 'self'; form-action 'none'; frame-ancestors 'none'; frame-src 'self'; img-src 'self'; media-src 'self'; script-src 'self' 'report-sample'; style-src 'self' 'report-sample'; trusted-types angular angular#bundler default dompurify; require-trusted-types-for 'script'; report-uri /api/report;
 
 Specific policies are implemented in adherence to the principle of least privilege.
 
@@ -141,6 +141,8 @@ For example:
 * The `index.html` source of the app is the only resource allowed to load scripts from the same origin;
 * Every dynamic content is strictly sandboxed on a null origin;
 * Every untrusted user input or third-party library is executed in a sandbox, limiting its interaction with other application components.
+
+The application implements a dedicated API handler /api/report to receive and log samples of attempts of violations of the content security policy.
 
 Cross-Origin-Embedder-Policy
 ++++++++++++++++++++++++++++
@@ -223,10 +225,10 @@ In such cases, the following HTTP header is used:
 
 Anchor tags and external urls
 -----------------------------
-The client opens external URLs in a new tab, independent of the application context, by setting ``rel='noreferrer'`` and ``target='_blank'``` on every anchor tag.
+The client opens external URLs in a new tab, independent of the application context, by setting ``target='_blank'``` on remote or untrusted anchor tag.
 ::
 
-  <a href="url" rel="noreferrer" target="_blank">link title</a>
+  <a href="url" target="_blank">link title</a>
 
 Input validation
 ----------------
@@ -240,7 +242,9 @@ Additionally, a set of rules is applied to each request type to limit potential 
 
 On the client
 +++++++++++++
-Each server output is strictly validated by the client at rendering time using the Angular component `ngSanitize.$sanitize <http://docs.angularjs.org/api/ngSanitize.$sanitize>`__.
+Each server output is strictly validated by the client at rendering time using the Angular component `ngSanitize.$sanitize <http://docs.angularjs.org/api/ngSanitize.$sanitize>`_.
+
+Few configurations accepts Markdown input and every input is strictly validated stripping every HTML tag with `DOMPurify <https://github.com/cure53/DOMPurify>`_
 
 Form autocomplete off
 ---------------------
@@ -420,7 +424,7 @@ The default configuration has this feature disabled.
 
 Encryption of temporary files
 -----------------------------
-Files uploaded and temporarily stored on disk during the upload process are encrypted with a temporary, symmetric AES key to prevent any unencrypted data from being written to disk. Encryption is performed in streaming mode using `AES 128-bit` in `CTR mode`. Key files are stored in memory and are unique for each file being uploaded.
+Files uploaded and temporarily stored on disk during the upload process are encrypted with a ChaCha20 and temporary 256bit keys to prevent any unencrypted data from being written to disks. Key files are stored in memory and are unique for each file being uploaded.
 
 Secure file delete
 ------------------

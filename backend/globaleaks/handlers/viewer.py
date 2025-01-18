@@ -23,8 +23,11 @@ class ViewerHandler(StaticFileHandler):
                                    b"frame-ancestors 'self';"
                                    b"img-src blob:;"
                                    b"media-src blob:;"
-                                   b"script-src 'self';"
-                                   b"style-src 'self';")
+                                   b"script-src 'self' 'report-sample';"
+                                   b"style-src 'self' 'report-sample';"
+                                   b"trusted-types;"
+                                   b"require-trusted-types-for 'script';"
+                                   b"report-uri /api/report;")
 
             self.request.setHeader(b"Cross-Origin-Resource-Policy", "cross-origin")
 

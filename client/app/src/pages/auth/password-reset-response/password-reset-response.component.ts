@@ -34,7 +34,6 @@ export class PasswordResetResponseComponent implements OnInit {
     requestObservable.subscribe(
       {
         next: response => {
-
           if (response.status === "success") {
             this.router.navigate([("/login")], {queryParams: {token: response.token}}).then();
           } else {

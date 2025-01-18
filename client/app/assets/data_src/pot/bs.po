@@ -101,9 +101,6 @@ msgstr "Dozvolite da zviždač doda priloge uz svoju prijavu"
 msgid "Allow the whistleblower to write comments"
 msgstr "Dozvolite zviždaču da piše komentare"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Dozvolite korisnicima da se prijave"
 

@@ -12,20 +12,18 @@
   </div>
   @if (!collapsed) {
     <div class="card-body">
-      @if (tipService.tip.status !== 'closed') {
-        <div class="row">
-          <div class="col-md-12 clearfix">
-            <textarea id="TipCommunicationCommentsInput" [(ngModel)]="newCommentContent" name="newCommentContent" maxlength="4096" class="form-control" autocomplete="off"></textarea>
-            <span class="float-end">{{newCommentContent.length ? newCommentContent.length : '0'}}/4096</span>
-          </div>
-          <div class="col-md-12 clearfix">
-            <button id="comment-action-send" class="btn btn-primary" (click)="newComment()" [disabled]="!newCommentContent">
-              <i class="fa-solid fa-comment"></i>
-              <span>{{'Send'|translate}}</span>
-            </button>
-          </div>
+      <div class="row">
+        <div class="col-md-12 clearfix">
+          <textarea id="TipCommunicationCommentsInput" [(ngModel)]="newCommentContent" name="newCommentContent" maxlength="4096" class="form-control" autocomplete="off"></textarea>
+          <span class="float-end">{{newCommentContent.length ? newCommentContent.length : '0'}}/4096</span>
         </div>
-      }
+        <div class="col-md-12 clearfix">
+          <button id="comment-action-send" class="btn btn-primary" (click)="newComment()" [disabled]="!newCommentContent">
+            <i class="fa-solid fa-comment"></i>
+            <span>{{'Send'|translate}}</span>
+          </button>
+        </div>
+      </div>
       @if (tipService.tip.comments && tipService.tip.comments.length) {
         <div>
           @for (comment of getSortedComments(comments | orderBy:'creation_date': true | filter : 'visibility' : key) | slice: (currentCommentsPage-1) * itemsPerPage : (currentCommentsPage-1) * itemsPerPage + itemsPerPage; track comment; let index = $index) {
@@ -56,12 +54,7 @@
                       <div class="preformatted">{{comment.content}}</div>
                     }
                     @if (comment.type === 'auditlog_update_report_status') {
-                      <div>
-                        <div>{{'Status'|translate}}: {{utilsService.getSubmissionStatusText(comment.data.status,comment.data.substatus,appDataService.submissionStatuses) | translate}}</div>
-                        @if (comment.data.motivation) {
-                          <div>{{'Motivation'|translate}}: {{comment.data.motivation}}</div>
-                        }
-                      </div>
+                      <div>{{'Status'|translate}}: {{utilsService.getSubmissionStatusText(comment.data.status,comment.data.substatus,appDataService.submissionStatuses) | translate}}</div>
                     }
                     @if (comment.type === 'auditlog_update_report_expiration') {
                       <div>{{'Expiration date'|translate}}: {{comment.data.curr_expiration_date * 1000 | date:'dd-MM-yyyy'}}</div>

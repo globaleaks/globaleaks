@@ -36,7 +36,6 @@ export class preferenceResolverModel {
   accepted_privacy_policy: string;
   contexts: string[];
   permissions: { can_upload_files: boolean }
-  can_reopen_reports: boolean;
   can_redact_information: boolean;
   can_mask_information: boolean;
 }

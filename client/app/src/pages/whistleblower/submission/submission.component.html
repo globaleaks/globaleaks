@@ -60,13 +60,8 @@
                 @for (step of submissionService.context.questionnaire.steps | orderBy:'order'; track step; let index = $index) {
                   <div>
                     @if (step && step.enabled && submissionService) {
-                      <div id="step-{{index}}"  [class.hidden]="navigation !== index" role="tabpanel">
+                      <div id="step-{{index}}"  [class.d-none]="navigation !== index" role="tabpanel">
                         <div ngForm #stepForm="ngForm" ngFormChanges (ngFormChange)="onFormChange()">
-                          @if (validate[navigation] && stepForm.invalid) {
-                            <div>
-                              <src-step-error [navigation]="navigation" [field_id_map]="field_id_map" [stepForm]="stepForm"></src-step-error>
-                            </div>
-                          }
                           @if (step.description) {
                             <markdown class="description" [data]="step.description | stripHtml"></markdown>
                           }

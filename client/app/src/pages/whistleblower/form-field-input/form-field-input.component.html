@@ -126,7 +126,7 @@
                 <markdown class="form-group tos-text" [data]="field.attrs.text.value | stripHtml"></markdown>
                 @if (field.attrs.attachment.value) {
                   <div>
-                    <a [href]="field.attrs.attachment_url.value" rel="noreferrer" target="_blank">{{field.attrs.attachment_text.value}}</a>
+                    <a [href]="field.attrs.attachment_url.value" target="_blank">{{field.attrs.attachment_text.value}}</a>
                   </div>
                 }
                 <div class="form-check">
@@ -137,12 +137,12 @@
             }
             @case ('voice') {
               <div id="{{fieldEntry}}">
-                <src-voice-recorder (notifyFileUpload)="notifyFileUpload.emit()" [fileUploadUrl]="fileUploadUrl" [uploads]="uploads" [field]="field" [entryIndex]="entryIndex" [fieldEntry]="fieldEntry"></src-voice-recorder>
+                <src-voice-recorder (notifyFileUpload)="notifyFileUpload.emit()" [fileUploadUrl]="fileUploadUrl" [entry]="entry" [uploads]="uploads" [field]="field" [entryIndex]="entryIndex" [fieldEntry]="fieldEntry"></src-voice-recorder>
               </div>
             }
             @case ('fileupload') {
               <div id="{{fieldEntry}}">
-                <src-rfile-upload-button [file_id]="fieldEntry" (notifyFileUpload)="notifyFileUpload.emit()" [fileUploadUrl]="fileUploadUrl" [uploads]="uploads" [field]="field" [formUploader]="true"></src-rfile-upload-button>
+                <src-rfile-upload-button [file_id]="fieldEntry" (notifyFileUpload)="notifyFileUpload.emit()" [entry]="entry" [fileUploadUrl]="fileUploadUrl" [uploads]="uploads" [field]="field" [formUploader]="true"></src-rfile-upload-button>
               </div>
             }
             @case ('fieldgroup') {
@@ -228,7 +228,7 @@
         <div>
           @if (option.set && option.hint1) {
             <div>
-              <i class="fa-solid fa-info-circle"></i> {{option.hint1}}
+              <i class="fa-solid fa-info-circle"></i> <markdown [data]="option.hint1 | stripHtml"></markdown>
             </div>
           }
         </div>
@@ -239,7 +239,7 @@
     <div>
       @if (option.set && option.hint2) {
         <div [ngClass]="{'text-danger': option.block_submission}">
-          <i class="fa-solid fa-info-circle"></i> {{option.hint2}}
+          <i class="fa-solid fa-info-circle"></i> <markdown [data]="option.hint2 | stripHtml"></markdown>
         </div>
       }
     </div>

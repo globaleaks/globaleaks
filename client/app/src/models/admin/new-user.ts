@@ -20,7 +20,6 @@ export class NewUser {
   can_delete_submission = false;
   can_postpone_expiration = true;
   can_transfer_access_to_reports = false;
-  can_reopen_reports = false;
   can_redact_information = false;
   can_mask_information = false;
   profile_id = ""

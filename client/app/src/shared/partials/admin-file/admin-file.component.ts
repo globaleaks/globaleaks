@@ -17,7 +17,7 @@ import {TranslatorPipe} from "@app/shared/pipes/translate";
     standalone: true,
     imports: [NgClass, NgxFlowModule, TranslateModule, TranslatorPipe]
 })
-export class AdminFileComponent implements OnInit {
+export class AdminFileComponent {
   protected node = inject(NodeResolver);
   protected appConfigService = inject(AppConfigService);
   protected appDataService = inject(AppDataService);
@@ -25,14 +25,8 @@ export class AdminFileComponent implements OnInit {
   protected authenticationService = inject(AuthenticationService);
 
   @Input() adminFile: AdminFile;
-  nodeData: { [key: string]: string[] | boolean } = {};
+  @Input() present: boolean;
   @ViewChild("uploader") uploaderInput!: ElementRef<HTMLInputElement>;
-
-  ngOnInit() {
-    this.nodeData["css"] = this.appDataService.public.node.css;
-    this.nodeData["script"] = this.appDataService.public.node.script;
-    this.nodeData["favicon"] = this.appDataService.public.node.favicon;
-  }
 
   onFileSelected(files: FileList | null, filetype: string) {
     if (files && files.length > 0) {

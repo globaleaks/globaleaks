@@ -4,12 +4,14 @@ import {SubmissionService} from "@app/services/helper/submission.service";
 import {TranslateService} from "@ngx-translate/core";
 import {NgClass, NgOptimizedImage} from "@angular/common";
 import {FormsModule} from "@angular/forms";
+import {MarkdownComponent} from "ngx-markdown";
+import {StripHtmlPipe} from "@app/shared/pipes/strip-html.pipe";
 
 @Component({
     selector: "src-receiver-card",
     templateUrl: "./receiver-card.component.html",
     standalone: true,
-    imports: [NgClass, FormsModule, NgOptimizedImage]
+    imports: [FormsModule, MarkdownComponent, NgClass, NgOptimizedImage, StripHtmlPipe]
 })
 export class ReceiverCardComponent {
   protected translate = inject(TranslateService);

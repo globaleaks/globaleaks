@@ -19,7 +19,6 @@ import {NgClass} from "@angular/common";
 import {ContextSelectionComponent} from "../context-selection/context-selection.component";
 import {ReceiverSelectionComponent} from "../receiver-selection/receiver-selection.component";
 import {NgFormChangeDirective} from "@app/shared/directive/ng-form-change.directive";
-import {StepErrorComponent} from "../step-error/step-error.component";
 import {MarkdownComponent} from "ngx-markdown";
 import {FormComponent} from "../form/form.component";
 import {RFilesUploadStatusComponent} from "@app/shared/partials/rfiles-upload-status/r-files-upload-status.component";
@@ -33,7 +32,7 @@ import {OrderByPipe} from "@app/shared/pipes/order-by.pipe";
     templateUrl: "./submission.component.html",
     providers: [SubmissionService],
     standalone: true,
-    imports: [ContextSelectionComponent, FormsModule, NgClass, ReceiverSelectionComponent, NgFormChangeDirective, StepErrorComponent, MarkdownComponent, FormComponent, RFilesUploadStatusComponent, TranslateModule, TranslatorPipe, StripHtmlPipe, OrderByPipe]
+    imports: [ContextSelectionComponent, FormsModule, NgClass, ReceiverSelectionComponent, NgFormChangeDirective, MarkdownComponent, FormComponent, RFilesUploadStatusComponent, TranslateModule, TranslatorPipe, StripHtmlPipe, OrderByPipe]
 })
 export class SubmissionComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -61,7 +60,6 @@ export class SubmissionComponent implements OnInit {
   score = 0;
   done: boolean;
   uploads: { [key: string]: any } = {};
-  field_id_map: { [key: string]: Field };
   questionnaire: Questionnaire;
   contextsOrderPredicate: string = this.appDataService.public.node.show_contexts_in_alphabetical_order ? "name" : "order";
   selectable_contexts: Context[];
@@ -102,7 +100,6 @@ export class SubmissionComponent implements OnInit {
     this.fieldUtilitiesService.onAnswersUpdate(this);
     this.utilsService.scrollToTop();
 
-    this.field_id_map = this.fieldUtilitiesService.build_field_id_map(this.questionnaire);
     this.show_steps_navigation_bar = this.context?.allow_recipients_selection || this.questionnaire.steps.length > 1;
     this.receiversOrderPredicate = this.submissionService.context.show_receivers_in_alphabetical_order ? "name" : "";
 
@@ -281,7 +278,7 @@ export class SubmissionComponent implements OnInit {
        });
     }
 
-    this.fieldUtilitiesService.onAnswersUpdate(this);
+   this.fieldUtilitiesService.onAnswersUpdate(this);
 
     if (!this.runValidation()) {
       this.utilsService.scrollToTop();

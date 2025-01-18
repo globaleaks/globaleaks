@@ -103,9 +103,6 @@ msgstr "揭密者可對此報告附加資料檔案"
 msgid "Allow the whistleblower to write comments"
 msgstr "允許吹哨者作評論"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "可接受新用戶註冊"
 

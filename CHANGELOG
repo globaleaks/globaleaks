@@ -1,3 +1,117 @@
+Changes in version 5.0.43
+    Correct regression on logs missing newlines introduced in 5.0.38
+
+Changes in version 5.0.42
+    Fix possibility to vary expiration date if default data retention policy is disabled
+
+Changes in version 5.0.41
+    Re-add markdown support to recipients and context descriptions (#4364)
+    Bump client dependencies to latest version
+
+Changes in version 5.0.40
+    Fix visualization of enforced recipients broken in 5.0.0
+
+Changes in version 5.0.39
+    Ensure voice questions could work when defined in question templates
+    Bump pdfjs again to v4 with proper packaging
+    Bump client dependencies to latest version
+
+Changes in version 5.0.38
+    Correct PDF viewer re-including pdfjs v3
+
+Changes in version 5.0.37
+    Fix visualization of uploaded configuration files
+    Revise detection and messaging about unsupported browsers
+    Bump client dependencies to latest versions
+
+Changes in version 5.0.36
+    Fix loading of customizations in compatibility with new CSP
+
+Changes in version 5.0.35
+    Revise implementation of CSP in relation to 'report-sample' directive
+
+Changes in version 5.0.34
+    Revise Trusted-Types implementation enforcing usage of a 'default' policy
+    Implement handler to collect reporting of attemps of violation to the Content Security Policy
+    [doc] Extend documentation adding detail about the revisions on the Content Security Policy
+
+Changes in version 5.0.33
+    Complete implementation of CSP policy based on Trusted-Types
+    Enforce validation of every admin config or user input by means of DOMPurify
+    Restrict usage of CSS inline scripts (#4345) as previously done on v4
+    Fix bug in gl-admin utility preventing possibility to reset 2fa
+    Correct feature of re-ordering of questions options (#4348)
+    Fix issues #4341, #4344
+    Improve packaging of css libraries and overrides
+    Bump client dependencies to latest versions
+    Update translations
+
+Changes in version 5.0.32
+    Revise language changes utilities in relation to issue #4315
+    Fixed validation of multistep questionnaires and extend validation to files (#4336)
+    Remove redundant rel=noreferrer made unnecessary by ReferrerPolicy header
+    Revise markdown implementation ensuring links are opened always in a new tab
+    Ensure to strip every HTML tag (including safe tags) with DOMPurify before parsing markdown.
+    [doc] Revise application security document in reference to external links protections
+    [doc] Extend documentation adding detail on usage of DOMPurify to filter markdown input
+    Fix issues #4340 and #4338
+
+Changes in version 5.0.31
+    Revise mock implementation fixing continous reloading on some setups
+
+Changes in version 5.0.30
+    Temporarily rollback changes related to enforcing mandatory file uploads or oral messages
+    introduced in 5.0.26 that seems to be causing improper form validation.
+
+Changes in version 5.0.29
+    Fix regression on questionnaire validation introduced in release 5.0.26 (#4321)
+
+Changes in version 5.0.28
+    Fix bug in relation to loader not getting removed
+    Revise margins on UI components of the homepage
+    Fix bug and performance on mock implementation using MutationObserver
+    Bump client dependencies to latest version
+    Update translations
+
+Changes in version 5.0.27
+    Fix issue #4308
+    Fix color of SupportLink
+    Bump client dependencies to latest versions
+
+Changes in version 5.0.26
+    Deprecate (at least temporarely) states motivations for reasons discussed on #4201 with the core globaleaks community.
+    Revise regular expression for email validation to allow domains with tld longer than 5 characters (#4309)
+    Fix inclusion of pdfjs library fix issue on opening PDF files with integrated file viewer
+    Fix issue on loading of images causing white page on settings page (#4311)
+    Fix mandatory checks on file uploads and voice recordings
+    Fix exception on email generation when users has disabled notifications
+    Bump client dependencies to latest versions
+
+Changes in version 5.0.25
+    Revise receiver and context images style (#4303)
+    Revise path checks in relation to adminonly configurations
+    Properly communicate to users when a password reset token is expired
+    Bump client dependencies to latest version
+
+Changes in version 5.0.24
+    Fix proper visualization of checkboxes and datepickers
+
+Changes in version 5.0.23
+    Fix visualization of steps with no questions (#4298)
+
+Changes in version 5.0.22
+    Correct position of tooltips on questions' hint
+    Enable recipients whistleblowers to leave comments even if report status is closed (#4293)
+    Revise configuration of chunk file uploader
+    Bump client dependencies to latest version
+    Fix pagination style merging changes of 4205edef
+    Fix exception when file upload happens during expired user session
+
+Changes in version 5.0.21
+    Fix translation of report statuses in case labels are left empty by mistake
+    Bump client dependencies to latest versions
+    Uptate translations
+
 Changes in version 5.0.20
     Fix retrival of account recovery key when 2FA is enabled
 

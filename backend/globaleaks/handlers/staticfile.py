@@ -38,7 +38,10 @@ class StaticFileHandler(BaseHandler):
                                    b"frame-src 'self';"
                                    b"img-src 'self';"
                                    b"media-src 'self';"
-                                   b"script-src 'self' 'sha256-l4srTx31TC+tE2K4jVVCnC9XfHivkiSs/v+DPWccDDM=';"
-                                   b"style-src 'self' 'sha256-pru43GdcNLwb4MwzOriCI9/9cKBzE5xeoLWHlKai1As=';")
+                                   b"script-src 'self' 'sha256-l4srTx31TC+tE2K4jVVCnC9XfHivkiSs/v+DPWccDDM=' 'report-sample';"
+                                   b"style-src 'self' 'report-sample';"
+                                   b"trusted-types angular angular#bundler dompurify default;"
+                                   b"require-trusted-types-for 'script';"
+                                   b"report-uri /api/report;")
 
         return self.write_file(filename, abspath)

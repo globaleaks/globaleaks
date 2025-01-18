@@ -15,8 +15,6 @@ from globaleaks.state import State
 default_questionnaires = ['default']
 default_questions = ['whistleblower_identity']
 
-special_files = ['css', 'favicon', 'logo', 'script']
-
 trigger_map = {
     'field': models.FieldOptionTriggerField,
     'step': models.FieldOptionTriggerStep
@@ -261,15 +259,12 @@ def db_serialize_node(session, tid, language):
     """
     languages = db_get_languages(session, tid)
     ret = ConfigFactory(session, tid).serialize('public_node')
-    ret.update(ConfigL10NFactory(session, tid,).serialize('public_node', language))
+    ret.update(ConfigL10NFactory(session, tid).serialize('public_node', language))
 
     ret['start_time'] = State.start_time
     ret['root_tenant'] = tid == 1
     ret['languages_enabled'] = languages if ret['wizard_done'] else list(LANGUAGES_SUPPORTED_CODES)
     ret['languages_supported'] = LANGUAGES_SUPPORTED
-
-    for x in special_files:
-        ret[x] = session.query(models.File.id).filter(models.File.tid == tid, models.File.name == x).one_or_none()
 
     if tid != 1:
         root_tenant_node = ConfigFactory(session, 1)
@@ -291,10 +286,6 @@ def db_serialize_node(session, tid, language):
             ret['whistleblowing_question'] = root_tenant_l10n.get_val('whistleblowing_question', language)
             ret['whistleblowing_button'] = root_tenant_l10n.get_val('whistleblowing_button', language)
             ret['disclaimer_text'] = root_tenant_l10n.get_val('disclaimer_text', language)
-
-            for x in special_files:
-                if not ret[x]:
-                    ret[x] = session.query(models.File.id).filter(models.File.tid == 1, models.File.name == x).one_or_none()
 
     return ret
 
@@ -410,7 +401,7 @@ def serialize_field(session, tid, field, language, data=None, serialize_template
         children.sort(key=lambda f: (f['y'], f['x']))
 
     # Enable voice features if questions of type voice are enabled
-    if tid in State.tenants and field.type == 'voice':
+    if tid in State.tenants and f_to_serialize.type == 'voice':
         State.tenants[tid].microphone = True
 
     ret = {

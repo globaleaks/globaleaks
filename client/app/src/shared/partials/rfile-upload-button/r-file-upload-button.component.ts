@@ -1,7 +1,7 @@
 import {AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, inject} from "@angular/core";
 import {FlowDirective, Transfer, NgxFlowModule} from "@flowjs/ngx-flow";
 import {AppDataService} from "@app/app-data.service";
-import {ControlContainer, NgForm} from "@angular/forms";
+import {ControlContainer, FormsModule, NgForm} from "@angular/forms";
 import {Subscription} from "rxjs";
 import {FlowOptions} from "@flowjs/flow.js";
 import {Field} from "@app/models/resolvers/field-template-model";
@@ -18,7 +18,7 @@ import {TranslatorPipe} from "@app/shared/pipes/translate";
     templateUrl: "./r-file-upload-button.component.html",
     viewProviders: [{ provide: ControlContainer, useExisting: NgForm }],
     standalone: true,
-    imports: [NgxFlowModule, NgClass, RFileUploadStatusComponent, RFilesUploadStatusComponent, AsyncPipe, TranslateModule, TranslatorPipe]
+    imports: [NgxFlowModule, NgClass, FormsModule, RFileUploadStatusComponent, RFilesUploadStatusComponent, AsyncPipe, TranslateModule, TranslatorPipe]
 })
 export class RFileUploadButtonComponent implements AfterViewInit, OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
@@ -32,6 +32,7 @@ export class RFileUploadButtonComponent implements AfterViewInit, OnInit, OnDest
   @Input() uploads: { [key: string]: any };
   @Input() field: Field | undefined = undefined;
   @Input() file_id: string;
+  @Input() entry: any;
   @Output() notifyFileUpload: EventEmitter<any> = new EventEmitter<any>();
   @ViewChild("flow") flow: FlowDirective;
 
@@ -41,32 +42,25 @@ export class RFileUploadButtonComponent implements AfterViewInit, OnInit, OnDest
   errorFile: Transfer;
   confirmButton = false;
   flowConfig: FlowOptions;
+  fileModel: File | null = null;
 
   ngOnInit(): void {
     this.file_id = this.file_id ? this.file_id:"status_page";
-    this.flowConfig = this.utilsService.flowDefault.opts;
 
+    this.flowConfig = this.utilsService.getFlowOptions();
     this.flowConfig.target = this.fileUploadUrl;
     this.flowConfig.singleFile = (this.field !== undefined && !this.field.multi_entry);
     this.flowConfig.query = {reference_id: this.field ? this.field.id:""};
-    this.flowConfig.headers = {"X-Session": this.authenticationService.session.id};
+
     this.fileInput = this.field ? this.field.id : "status_page";
   }
 
   ngAfterViewInit() {
     this.autoUploadSubscription = this.flow.transfers$.subscribe((event,) => {
-
       this.confirmButton = false;
       this.showError = false;
 
-      if (!this.uploads) {
-        this.uploads = {};
-      }
-      if (this.uploads && !this.uploads[this.fileInput]) {
-        this.uploads[this.fileInput] = [];
-      }
       event.transfers.forEach((file)=> {
-
         if (file.paused && this.errorFile) {
           this.errorFile.flowFile.cancel();
           return;
@@ -80,12 +74,19 @@ export class RFileUploadButtonComponent implements AfterViewInit, OnInit, OnDest
           this.confirmButton = true;
         }
       });
-      this.flow.flowJs.opts.headers={"X-Session": this.authenticationService.session.id};
-      this.uploads[this.fileInput] = this.flow;
-      this.notifyFileUpload.emit(this.uploads);
+
+      if (this.uploads) {
+        this.uploads[this.fileInput] = this.flow;
+        this.notifyFileUpload.emit(this.uploads);
+      }
     });
   }
 
+  receiveData(data: any) {
+    if(this.flow.flowJs.files.length == 0){
+      this.fileModel = data;
+    }
+  }
 
   ngOnDestroy() {
     this.autoUploadSubscription.unsubscribe();

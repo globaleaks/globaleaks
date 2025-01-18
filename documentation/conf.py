@@ -52,15 +52,18 @@ htmlhelp_basename = 'globaleaks'
 html_static_path = ['_static']
 
 html_context = {
-'description': 'GlobaLeaks is free, open souce whistleblowing software enabling anyone to easily set up and maintain a secure reporting platforms',
-'keywords': 'globaleaks, whistleblowing, globaleaks-whistleblowing-software',
-'author': 'GLOBALEAKS',
+  'description': 'GlobaLeaks is free, open souce whistleblowing software enabling anyone to easily set up and maintain a secure reporting platforms',
+  'keywords': 'globaleaks, whistleblowing, globaleaks-whistleblowing-software',
+  'author': 'GLOBALEAKS',
+  'display_github': True,
+  'github_user': 'globaleaks',
+  'github_repo': 'globaleaks-whistleblowing-software',
+  'github_version': 'main',
+  'conf_py_path': '/documentation/'
 }
 
 latex_elements = {
-  'sphinxsetup': 'TitleColor={HTML}{3679BB}, \
-  InnerLinkColor={HTML}{3679BB}, \
-  OuterLinkColor={HTML}{3679BB}',
+  'sphinxsetup': 'TitleColor={HTML}{3679BB}, InnerLinkColor={HTML}{3679BB}, OuterLinkColor={HTML}{3679BB}',
 }
 
 latex_documents = []

@@ -7,11 +7,12 @@ import {Field} from "@app/models/resolvers/field-template-model";
 import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
 import {UtilsService} from "@app/shared/services/utils.service";
 import {NgClass} from "@angular/common";
-import {FormsModule} from "@angular/forms";
+import {ControlContainer, FormsModule, NgForm} from "@angular/forms";
 
 @Component({
     selector: "src-voice-recorder",
     templateUrl: "./voice-recorder.component.html",
+    viewProviders: [{ provide: ControlContainer, useExisting: NgForm }],
     standalone: true,
     imports: [NgClass, FormsModule]
 })
@@ -27,7 +28,8 @@ export class VoiceRecorderComponent implements OnInit {
   @Input() fileUploadUrl: string;
   @Input() entryIndex: number;
   @Input() fieldEntry: string;
-  _fakeModel: File;
+  @Input() entry: any;
+  _fakeModel: string;
   fileInput: string;
   seconds: number = 0;
   activeButton: string | null = null;
@@ -44,16 +46,13 @@ export class VoiceRecorderComponent implements OnInit {
 
   @Output() notifyFileUpload: EventEmitter<any> = new EventEmitter<any>();
   private audioContext: AudioContext|null;
-  entry: any;
   iframeUrl: SafeResourceUrl;
   @ViewChild("viewer") viewerFrame: ElementRef;
 
   ngOnInit(): void {
     this.iframeUrl = this.sanitizer.bypassSecurityTrustResourceUrl("viewer/index.html");
     this.fileInput = this.field ? this.field.id : "status_page";
-    this.uploads={}
     this.fileUploadUrl="api/whistleblower/submission/attachment";
-    this.uploads[this.fileInput] = {files: []};
 
     this.initAudioContext()
   }
@@ -82,11 +81,11 @@ export class VoiceRecorderComponent implements OnInit {
     this.activeButton = 'record';
     this.seconds = 0;
     this.startTime = Date.now();
-    this.flow = this.utilsService.flowDefault;
+    this.flow = this.utilsService.getFlowInstance();
     this.flow.opts.target =  this.fileUploadUrl;
     this.flow.opts.singleFile =  this.field !== undefined && !this.field.multi_entry;
     this.flow.opts.query = {type: "audio.webm", reference_id: fileId};
-    this.flow.opts.headers = {"X-Session": this.authenticationService.session.id};
+
     this.secondsTracker = setInterval(() => {
       this.seconds += 1;
       if (this.seconds >= parseInt(this.field.attrs.max_len.value)) {
@@ -101,28 +100,28 @@ export class VoiceRecorderComponent implements OnInit {
 
     this.enableNoiseSuppression(stream).subscribe();
     if(this.audioContext){
-    const mediaStreamDestination = this.audioContext.createMediaStreamDestination();
-    const source = this.audioContext.createMediaStreamSource(stream);
-    const anonymizationFilter = this.anonymizeSpeaker(this.audioContext);
-    source.connect(anonymizationFilter.input);
-    anonymizationFilter.output.connect(mediaStreamDestination);
+      const mediaStreamDestination = this.audioContext.createMediaStreamDestination();
+      const source = this.audioContext.createMediaStreamSource(stream);
+      const anonymizationFilter = this.anonymizeSpeaker(this.audioContext);
+      source.connect(anonymizationFilter.input);
+      anonymizationFilter.output.connect(mediaStreamDestination);
 
-    source.connect(anonymizationFilter.input);
-    anonymizationFilter.output.connect(mediaStreamDestination);
+      source.connect(anonymizationFilter.input);
+      anonymizationFilter.output.connect(mediaStreamDestination);
 
-    const recorder = new MediaRecorder(mediaStreamDestination.stream);
-    recorder.onstop = () => {
-      this.onRecorderStop().subscribe();
-    };
-    recorder.ondataavailable = this.onRecorderDataAvailable.bind(this);
-    recorder.start();
+      const recorder = new MediaRecorder(mediaStreamDestination.stream);
+      recorder.onstop = () => {
+        this.onRecorderStop().subscribe();
+      };
+      recorder.ondataavailable = this.onRecorderDataAvailable.bind(this);
+      recorder.start();
 
-    this.mediaRecorder = new MediaRecorder(stream);
-    this.mediaRecorder.onstop = () => {
-      recorder.stop();
-    };
+      this.mediaRecorder = new MediaRecorder(stream);
+      this.mediaRecorder.onstop = () => {
+        recorder.stop();
+      };
 
-    this.mediaRecorder.start();
+      this.mediaRecorder.start();
     }
   };
 
@@ -184,6 +183,7 @@ export class VoiceRecorderComponent implements OnInit {
       }
 
       if (this.seconds >= parseInt(this.field.attrs.min_len.value) && this.seconds <= parseInt(this.field.attrs.max_len.value)) {
+        this._fakeModel = "audio";
         this.flow.addFile(this.recording_blob);
         window.addEventListener("message", (message: MessageEvent) => {
           const iframe = this.viewerFrame.nativeElement;
@@ -200,6 +200,7 @@ export class VoiceRecorderComponent implements OnInit {
         this.audioPlayer = true;
         this.uploads[this.fileInput] = this.flow;
         this.submissionService.setSharedData(this.flow);
+        this.notifyFileUpload.emit(this.uploads);
 
         if (this.entry) {
           if (!this.entry.files) {
@@ -216,6 +217,7 @@ export class VoiceRecorderComponent implements OnInit {
 
   deleteRecording(): void {
     this.audioPlayer = false;
+    this._fakeModel = "";
     if (this.flow) {
       this.flow.cancel();
     }

@@ -101,9 +101,6 @@ msgstr "その内部告発者が、報告に添付ファイルを追加するこ
 msgid "Allow the whistleblower to write comments"
 msgstr "その内部告発者が、コメントを書くことを許可"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "ユーザーによるサインアップを許可"
 

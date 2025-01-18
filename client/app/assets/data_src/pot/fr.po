@@ -134,9 +134,6 @@ msgstr "Permettre au lanceur d’alerte d’ajouter des fichiers joints"
 msgid "Allow the whistleblower to write comments"
 msgstr "Permettre au lanceur d’alerte de rédiger des commentaires"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Permettre à cet utilisateur de rouvrir la gestion d’un rapport."
-
 msgid "Allow users to sign up"
 msgstr "Permettre aux utilisateurs de s’inscrire"
 

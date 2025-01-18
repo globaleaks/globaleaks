@@ -1,74 +1,109 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8
 import os
+import uuid
+from cryptography.hazmat.primitives.ciphers import Cipher
+from cryptography.hazmat.primitives.ciphers.algorithms import ChaCha20
 
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+CHUNK_SIZE = 4096
 
-from globaleaks.utils.utility import uuid4
-
-crypto_backend = default_backend()
-
-
-class SecureTemporaryFile(object):
+class SecureTemporaryFile:
     def __init__(self, filesdir):
         """
-        Create the AES Key to encrypt the uploaded file and initialize the cipher
+        Initializes an ephemeral file with ChaCha20 encryption.
+        Creates a new random file path and generates a unique encryption key and nonce.
+
+        :param filesdir: The directory where the ephemeral file will be stored.
+        :param filenames: Optional filename. If not provided, a UUID4 is used.
         """
-        self.fd = None
-        self.key = os.urandom(32)
-        self.key_id = uuid4()
-        self.key_counter_nonce = os.urandom(16)
-        self.cipher = Cipher(algorithms.AES(self.key), modes.CTR(self.key_counter_nonce), backend=crypto_backend)
-        self.filepath = os.path.join(filesdir, self.key_id)
-        self.size = 0
+        filename = str(uuid.uuid4())
+        self.filepath = os.path.join(filesdir, filename)
+        self.cipher = Cipher(ChaCha20(os.urandom(32), os.urandom(16)), mode=None)
         self.enc = self.cipher.encryptor()
-        self.dec = None
+        self.dec = self.cipher.decryptor()
 
-    def open(self, mode):
-        if mode == 'w':
-            self.fd = open(self.filepath, 'ab+')
-        else:
-            self.fd = open(self.filepath, 'rb')
-            self.dec = self.cipher.decryptor()
+        self.fd = None
 
+    @property
+    def size(self):
+        """
+        Returns the size of the encrypted file that is the same of the plaintext file
+        """
+        try:
+            return os.stat(self.filepath).st_size
+        except:
+            return 0
+
+    def open(self, flags, mode=0o660):
+        """
+        Opens the ephemeral file for reading or writing.
+
+        :param mode: 'w' for writing, 'r' for reading.
+        :return: The file object.
+        """
+        self.fd = os.open(self.filepath, os.O_RDWR | os.O_CREAT | os.O_APPEND, mode)
+        os.chmod(self.filepath, mode)
         return self
 
     def write(self, data):
-        if isinstance(data, str):
-            data = data.encode()
+        """
+        Writes encrypted data to the file.
 
-        self.fd.write(self.enc.update(data))
-        self.size += len(data)
+        :param data: Data to write to the file, can be a string or bytes.
+        """
+        os.write(self.fd, self.enc.update(data))
 
-    def finalize_write(self):
-        self.fd.write(self.enc.finalize())
+    def read(self, size=None):
+        """
+        Reads data from the current position in the file.
 
-    def read(self, c=None):
-        if c is None:
-            data = self.fd.read()
-        else:
-            data = self.fd.read(c)
+        :param size: The number of bytes to read. If None, reads until the end of the file.
+        :return: The decrypted data read from the file.
+        """
+        data = b""
+        bytes_read = 0
 
-        if data:
-            return self.dec.update(data)
+        while True:
+            # Determine how much to read in this chunk
+            chunk_size = min(CHUNK_SIZE, size - bytes_read) if size is not None else CHUNK_SIZE
 
-        return self.dec.finalize()
+            chunk = os.read(self.fd, chunk_size)
+            if not chunk:  # End of file
+                break
+
+            data += self.dec.update(chunk)
+            bytes_read += len(chunk)
+
+            if size is not None and bytes_read >= size:
+                break
+
+        return data
 
     def close(self):
+        """
+        Closes the file descriptor.
+        """
         if self.fd is not None:
-            self.fd.close()
+            os.close(self.fd)
             self.fd = None
 
     def __enter__(self):
+        """
+        Allows the use of the file in a 'with' statement.
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Ensures the file is closed when exiting a 'with' statement.
+        """
         self.close()
 
     def __del__(self):
+        """
+        Ensures the file is cleaned up by closing it and removing the file.
+        """
         self.close()
-
         try:
-            os.remove(self.filepath)
-        except:
+            os.unlink(self.filepath)
+        except FileNotFoundError:
             pass

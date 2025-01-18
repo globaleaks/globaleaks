@@ -18,9 +18,10 @@ class MockEngine {
 
   private applyMock(mock: Mock): void {
     const e = document.querySelector(mock.selector) as HTMLElement | null;
-    if (e) {
-      if (!mock.value || mock.language !== GL.language) {
-        mock.language = GL.language;
+    if (e !== null && !e.classList.contains("Mock")) {
+      e.classList.add("Mock");
+      if (!mock.value || mock.language !== window.GL.language) {
+        mock.language = window.GL.language;
         if (typeof mock.mock === "function") {
           mock.value = mock.mock(e);
         } else {
@@ -28,22 +29,16 @@ class MockEngine {
         }
       }
 
+      if (!mock.value) {
+        return;
+      }
+
       if (mock.type === "replace") {
-        if (mock.value && e.innerHTML !== mock.value) {
+        if (e.innerHTML !== mock.value) {
           e.innerHTML = mock.value;
         }
-
-        if (mock.value) {
-          mock.value = e.innerHTML;
-        }
       } else {
-        let custom_elem = e.querySelector(".Mock") as HTMLElement | null;
-
-        if (!custom_elem) {
-          custom_elem = document.createElement("div");
-          custom_elem.classList.add("Mock");
-        }
-
+        let custom_elem = document.createElement("div");
         custom_elem.innerHTML = mock.value;
 
         if (mock.type === "add-before") {
@@ -92,12 +87,5 @@ class MockEngine {
     this.run();
   }
 }
-
-const GL = {
-  language: 'en',
-  get mockEngine() {
-    return mockEngine;
-  }
-};
 
 export const mockEngine = new MockEngine();

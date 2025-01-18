@@ -12,23 +12,23 @@ from globaleaks.utils import log
 
 
 class TestLogUtilities(unittest.TestCase):
-    def test_log_remove_escapes(self):
+    def test_escapes_string(self):
         for c in map(chr, range(32)):
-            self.assertNotEqual(log.log_remove_escapes(c), c)
+            self.assertNotEqual(log.escape_string(c), c)
 
         for c in map(chr, range(127, 140)):
-            self.assertNotEqual(log.log_remove_escapes(c), c)
+            self.assertNotEqual(log.escape_string(c), c)
 
         start = ''.join(map(chr, range(32))) + ''.join(map(chr, range(127, 140)))
 
         end = ''
         for c in map(chr, range(32)):
-            end += log.log_remove_escapes(c)
+            end += log.escape_string(c)
 
         for c in map(chr, range(127, 140)):
-            end += log.log_remove_escapes(c)
+            end += log.escape_string(c)
 
-        self.assertEqual(log.log_remove_escapes(start), end)
+        self.assertEqual(log.escape_string(start), end)
 
     def test_log(self):
         log.log.err("err")

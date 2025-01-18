@@ -157,14 +157,15 @@ export class TipComponent implements OnInit {
   openGrantTipAccessModal(): void {
     this.utils.runUserOperation("get_users_names", {}, false).subscribe({
       next: response => {
+        const names = response as Record<string, string>;
         const selectableRecipients: Receiver[] = [];
         this.appDataService.public.receivers.forEach(async (receiver: Receiver) => {
           if (receiver.id !== this.authenticationService.session.user_id && !this.tip.receivers_by_id[receiver.id]) {
+            receiver.name = names[receiver.id];
             selectableRecipients.push(receiver);
           }
         });
         const modalRef = this.modalService.open(GrantAccessComponent, {backdrop: 'static', keyboard: false});
-        modalRef.componentInstance.usersNames = response;
         modalRef.componentInstance.selectableRecipients = selectableRecipients;
         modalRef.componentInstance.confirmFun = (receiver_id: Receiver) => {
           const req = {
@@ -187,14 +188,15 @@ export class TipComponent implements OnInit {
     this.utils.runUserOperation("get_users_names", {}, false).subscribe(
       {
         next: response => {
+          const names = response as Record<string, string>;
           const selectableRecipients: Receiver[] = [];
           this.appDataService.public.receivers.forEach(async (receiver: Receiver) => {
             if (receiver.id !== this.authenticationService.session.user_id && this.tip.receivers_by_id[receiver.id]) {
+              receiver.name = names[receiver.id];
               selectableRecipients.push(receiver);
             }
           });
           const modalRef = this.modalService.open(RevokeAccessComponent, {backdrop: 'static', keyboard: false});
-          modalRef.componentInstance.usersNames = response;
           modalRef.componentInstance.selectableRecipients = selectableRecipients;
           modalRef.componentInstance.confirmFun = (receiver_id: Receiver) => {
             const req = {
@@ -218,14 +220,15 @@ export class TipComponent implements OnInit {
     this.utils.runUserOperation("get_users_names", {}, false).subscribe(
       {
         next: response => {
+          const names = response as Record<string, string>;
           const selectableRecipients: Receiver[] = [];
           this.appDataService.public.receivers.forEach(async (receiver: Receiver) => {
             if (receiver.id !== this.authenticationService.session.user_id && !this.tip.receivers_by_id[receiver.id]) {
+              receiver.name = names[receiver.id];
               selectableRecipients.push(receiver);
             }
           });
           const modalRef = this.modalService.open(TransferAccessComponent, {backdrop: 'static', keyboard: false});
-          modalRef.componentInstance.usersNames = response;
           modalRef.componentInstance.selectableRecipients = selectableRecipients;
           modalRef.result.then(
             (receiverId) => {
@@ -255,14 +258,12 @@ export class TipComponent implements OnInit {
     const modalRef = this.modalService.open(ChangeSubmissionStatusComponent, {backdrop: 'static', keyboard: false});
     modalRef.componentInstance.arg={
       tip:this.tip,
-      motivation:this.tip.motivation,
       submission_statuses:this.prepareSubmissionStatuses(),
     };
 
-    modalRef.componentInstance.confirmFunction = (status:any,motivation: string) => {
+    modalRef.componentInstance.confirmFunction = (status:any) => {
       this.tip.status = status.status;
       this.tip.substatus = status.substatus;
-      this.tip.motivation = motivation;
       this.updateSubmissionStatus();
     };
     modalRef.componentInstance.cancelFun = null;
@@ -270,17 +271,16 @@ export class TipComponent implements OnInit {
 
   openModalReopen(){
     const modalRef = this.modalService.open(ReopenSubmissionComponent, {backdrop: 'static', keyboard: false});
-    modalRef.componentInstance.confirmFunction = (motivation: string) => {
+    modalRef.componentInstance.confirmFunction = () => {
       this.tip.status = "opened";
       this.tip.substatus = "";
-      this.tip.motivation = motivation;
       this.updateSubmissionStatus();
     };
     modalRef.componentInstance.cancelFun = null;
   }
 
   updateSubmissionStatus() {
-    const args = {"status":  this.tip.status, "substatus": this.tip.substatus ? this.tip.substatus : "", "motivation":  this.tip.motivation || ""};
+    const args = {"status":  this.tip.status, "substatus": this.tip.substatus ? this.tip.substatus : ""};
     this.httpService.tipOperation("update_status", args, this.tip.id)
       .subscribe(
         () => {
@@ -374,7 +374,7 @@ export class TipComponent implements OnInit {
       contexts_by_id: this.appDataService.contexts_by_id,
       expiration_date: this.utils.getPostponeDate(this.appDataService.contexts_by_id[this.tip.context_id].tip_timetolive),
       dateOptions: {
-        minDate: new Date(this.tip.expiration_date),
+        minDate: this.utils.isNever(this.tip.expiration_date) ? this.utils.getPostponeDate(this.appDataService.contexts_by_id[this.tip.context_id].tip_reminder) : new Date(this.tip.expiration_date),
         maxDate: this.utils.getPostponeDate(Math.max(365, this.appDataService.contexts_by_id[this.tip.context_id].tip_timetolive * 2))
       },
       opened: false,

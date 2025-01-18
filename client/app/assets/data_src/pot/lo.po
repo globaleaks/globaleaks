@@ -96,9 +96,6 @@ msgstr "ອະນຸຍາດໃຫ້ຜູ້ແຈ້ງເບາະແສເ
 msgid "Allow the whistleblower to write comments"
 msgstr "ອະນຸຍາດໃຫ້ຜູ້ແຈ້ງເບາະແສຂຽນຄຳຄິດເຫັນໄດ້"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "ອະນຸຍາດໃຫ້ຜູ້ໃຊ້ລົງທະບຽນ"
 

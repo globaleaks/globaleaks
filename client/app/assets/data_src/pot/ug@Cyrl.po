@@ -96,9 +96,6 @@ msgstr "Паш қилғучиниң доклатқа қошумчә қистур
 msgid "Allow the whistleblower to write comments"
 msgstr "Паш қилғучиниң баһа йезишигә рухсәт қил"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Ишләткүчиләрниң тизимлитишиға рухсәт қил"
 

@@ -101,9 +101,6 @@ msgstr "Atļaut trauksmes cēlējam pievienot pielikumus"
 msgid "Allow the whistleblower to write comments"
 msgstr "Atļaut trauksmes cēlējam rakstīt komentārus"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Atļaut lietotājiem reģistrēties"
 

@@ -99,19 +99,16 @@ msgid "Advanced"
 msgstr "Avançat"
 
 msgid "Allow the recipient to edit the reports' expiration date"
-msgstr "Permet al destinatari canviar la data d'expiració de les denúncies"
+msgstr "Permet a este usuari canviar la data d'expiració de les denúncies"
 
 msgid "Allow the recipient to delete reports"
-msgstr "Permet al destinatari eliminar denúncies"
+msgstr "Permet a este usuari esborrar denúncies"
 
 msgid "Allow the whistleblower to add attachments"
 msgstr "Permet a l'informador afegir arxius adjunts a l'enviament"
 
 msgid "Allow the whistleblower to write comments"
 msgstr "Permet a l'informador escriure comentaris"
-
-msgid "Allow this user to reopen management of a report"
-msgstr "Permetre a este usuari reobrir la gestió d'una denúncia"
 
 msgid "Allow users to sign up"
 msgstr "Permetre als usuaris registrar-se"

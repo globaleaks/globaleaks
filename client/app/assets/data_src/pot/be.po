@@ -97,9 +97,6 @@ msgstr "Дазволіць выкрывальніку дадаваць да сп
 msgid "Allow the whistleblower to write comments"
 msgstr "Дазволіць выкрывальніку пакідаць каментары"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Дазволіць рэгістрацыю карыстальнікаў"
 

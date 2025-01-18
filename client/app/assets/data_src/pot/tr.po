@@ -123,9 +123,6 @@ msgstr "Muhbir dosya ekleyebilsin"
 msgid "Allow the whistleblower to write comments"
 msgstr "Muhbir yorum yazabilsin"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Bu kullanıcı bir ihbarın yönetimini yeniden açabilsin "
-
 msgid "Allow users to sign up"
 msgstr "Kullanıcılar hesap açabilsin"
 

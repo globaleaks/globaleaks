@@ -172,7 +172,6 @@ export class PreferenceTab1Component implements OnInit {
         next: _ => {
           this.translationService.onChange(this.preferenceResolver.dataModel.language);
           this.cdr.detectChanges();
-          sessionStorage.removeItem("default_language");
           this.translationService.onChange(this.languageModel);
           this.appConfigService.reinit(false);
           this.utilsService.reloadCurrentRouteFresh(true);

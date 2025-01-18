@@ -216,8 +216,8 @@ def disable_2fa(args):
     admin_username = input("Username: ")
     admin_password = getpass()
 
-    QUERY = "SELECT id, salt, hash WHERE tid=? AND username=?"
-    c.execute(QUERY, (tid, admin_username))
+    QUERY = "SELECT id, salt, hash FROM user WHERE tid=? AND username=?"
+    c.execute(QUERY, (args.tid, admin_username))
 
     admin_user = c.fetchone()
     if admin_user is None:
@@ -226,7 +226,7 @@ def disable_2fa(args):
 
     admin_id, admin_salt, admin_hash = admin_user[0], admin_user[1], admin_user[2]
 
-    if not GCE.check_password(admin_password, user_salt, admin_hash):
+    if not GCE.check_password(admin_password, admin_salt, admin_hash):
         print("Failed! Invalid password")
         sys.exit(1)
 
@@ -244,8 +244,8 @@ def disable_2fa(args):
     QUERY = "UPDATE user SET two_factor_secret=? WHERE id=?;"
     c.execute(QUERY, ('', user_id))
 
-    QUERY = "INSERT INTO auditlog(tid, date, type, user_id, object_id) VALUES(?,?,?,?,?,?);"
-    c.execute(QUERY, (args.tid, datetime_now(), 'disable_2fa', 0, admin_id, user_id))
+    QUERY = "INSERT INTO auditlog(tid, date, type, user_id, object_id) VALUES(?,?,?,?,?);"
+    c.execute(QUERY, (args.tid, datetime_now(), 'disable_2fa', admin_id, user_id))
 
     conn.commit()
     conn.close()

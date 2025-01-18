@@ -9,21 +9,19 @@
         <div class="tenant-badge"
           >
           @if (tenant.onionservice) {
-            <a class="badge bg-primary" [href]="'https://' + tenant.onionservice"
-            rel="noreferrer" target="_blank">{{tenant.onionservice}}</a>
+            <a class="badge bg-primary" [href]="'https://' + tenant.onionservice" target="_blank">{{tenant.onionservice}}</a>
           }
           @if (tenant.subdomain) {
             <span>
               @if (nodeResolver.dataModel.onionservice && tenant.subdomain) {
                 <a class="badge bg-primary"
-                  [href]="'https://' + tenant.subdomain + '.' + nodeResolver.dataModel.onionservice"
-                  rel="noreferrer" target="_blank">{{ tenant.subdomain }}
+                  [href]="'https://' + tenant.subdomain + '.' + nodeResolver.dataModel.onionservice" target="_blank">{{ tenant.subdomain }}
                 .{{ nodeResolver.dataModel.onionservice }}</a>
               }
             </span>
           }
           @if (tenant.hostname) {
-            <a class="badge bg-primary" [href]="'https://' + tenant.hostname" rel="noreferrer" target="_blank"> {{ tenant.hostname }} </a>
+            <a class="badge bg-primary" [href]="'https://' + tenant.hostname" target="_blank"> {{ tenant.hostname }} </a>
           }
         </div>
       }

@@ -13,7 +13,7 @@ if [[ "$1" != "" ]]; then
 
 	sed -i "s/\"version\":.*/\"version\": \"$1\",/g" "$ROOTDIR"/client/package.json
 
-	awk -v ver="$1" 'BEGIN{cnt=0} /"version":/ && cnt<2 {sub(/"version": "[^"]*"/, "\"version\": \"" ver "\""); cnt++} 1' "$ROOTDIR/client/package-lock.json" > tmp && mv tmp "$ROOTDIR/client/package-lock.json"
+	awk -v ver="$1" 'BEGIN{cnt=0} /"version":/ && cnt<2 {sub(/"version": "[^"]*"/, "\"version\": \"" ver "\""); cnt++} 1' "$ROOTDIR/client/npm-shrinkwrap.json" > tmp && mv tmp "$ROOTDIR/client/npm-shrinkwrap.json"
 
 	sed -i "s/^releaseDate:.*/releaseDate: '$(date +'%Y-%m-%d')'/g" "$ROOTDIR"/publiccode.yml
 

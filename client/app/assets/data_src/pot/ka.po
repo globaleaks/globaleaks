@@ -96,9 +96,6 @@ msgstr "დართეთ ნება ინსტრუქტორს და
 msgid "Allow the whistleblower to write comments"
 msgstr "დართეთ ნება ინტრუქტორმა დააკომენტაროს"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "მომხმარებლებისთვის რეგისტრაციის ნების დართვა"
 

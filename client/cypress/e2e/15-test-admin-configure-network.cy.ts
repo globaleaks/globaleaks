@@ -30,18 +30,21 @@ describe("admin configure network", () => {
       fileName: "key.pem",
       mimeType: "application/x-pem-file"
     }, {"force": true});
+    cy.get("#deleteKey").should('be.visible')
 
     cy.get("div.card.cert input[type=file]").selectFile({
       contents: "../backend/globaleaks/tests/data/https/valid/cert.pem",
       fileName: "cert.pem",
       mimeType: "application/x-pem-file"
     }, {"force": true});
+    cy.get("#deleteCert").should('be.visible')
 
     cy.get("div.card.chain input[type=file]").selectFile({
       contents: "../backend/globaleaks/tests/data/https/valid/chain.pem",
       fileName: "chain.pem"
     }, {"force": true});
 
+    cy.get("#deleteChain").should('be.visible')
     cy.get("#deleteChain").click();
     cy.get("#modal-action-ok").click();
 

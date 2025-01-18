@@ -136,9 +136,6 @@ msgstr "Permitir que o denunciante adicione anexos"
 msgid "Allow the whistleblower to write comments"
 msgstr "Permitir que o denunciante escreva comentários"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Permitir que este usuário reabra o gerenciamento de um relatório"
-
 msgid "Allow users to sign up"
 msgstr "Permitir que os utilizadores se inscrevam"
 

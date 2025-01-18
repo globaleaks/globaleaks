@@ -341,7 +341,7 @@ class BaseHandler(object):
         file_id = self.request.args[b'flowIdentifier'][0].decode()
 
         if file_id not in self.state.TempUploadFiles:
-            if self.session.user_role == 'whistleblower':
+            if self.session and self.session.user_role == 'whistleblower':
                 State.RateLimitingTable.check(self.request.path + b'#' + self.session.user_id.encode(),
                                               State.tenants[1].cache.threshold_attachments_per_hour_per_report)
                 State.RateLimitingTable.check(self.request.path + b'#' + self.request.client_ip.encode(),
@@ -363,8 +363,6 @@ class BaseHandler(object):
 
             if self.request.args[b'flowChunkNumber'][0] != self.request.args[b'flowTotalChunks'][0]:
                 return None
-
-            f.finalize_write()
 
         mime_type, _ = mimetypes.guess_type(self.request.args[b'flowFilename'][0].decode())
         if mime_type is None:

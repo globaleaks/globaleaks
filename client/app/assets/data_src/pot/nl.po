@@ -140,9 +140,6 @@ msgstr "De klokkenluider toestaan bestanden toe te voegen aan een inzending"
 msgid "Allow the whistleblower to write comments"
 msgstr "De klokkenluider toestaan reacties achter te laten"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Gebruikers toestaan zich in te schijven"
 

@@ -98,9 +98,6 @@ msgstr "Whistleblower pisinnaatiguk kakkiussanik ilanngussisinnaanngorlugu"
 msgid "Allow the whistleblower to write comments"
 msgstr "Whistleblower pisinnaatiguk oqaatigiumasaanik allattuisinnaatillugu"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Atuisoq nalunaarusiamik ammaqqissinnaatileqqiguk"
-
 msgid "Allow users to sign up"
 msgstr "Atuisut allatsissinnaangortikkit"
 

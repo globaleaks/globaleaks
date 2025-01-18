@@ -98,9 +98,6 @@ msgstr "La fløyteblåseren legge til vedlegg i rapporten"
 msgid "Allow the whistleblower to write comments"
 msgstr "Tillat fløyteblåseren å skrive kommentarer"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Tillat at denne brukeren gjenåpner administrasjon av en rapport"
-
 msgid "Allow users to sign up"
 msgstr "Tillat brukere å registrere seg"
 

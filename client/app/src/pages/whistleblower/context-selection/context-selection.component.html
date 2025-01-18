@@ -16,14 +16,14 @@
           <div class="row">
             <div class="col-md-4">
               @if (context.picture) {
-                <img class="context-image" alt="context picture" width="500" height="500" ngSrc="/s/{{context.id}}"/>
+                <img class="context-image" alt="context picture" src="/s/{{context.id}}"/>
               }
             </div>
           </div>
         }
         @if (context.description) {
           <div class="row">
-            <div class="col-md-12 description">{{context.description}}</div>
+            <markdown class="col-md-12" [data]="context.description | stripHtml"></markdown>
           </div>
         }
       </div>

@@ -36,7 +36,6 @@ export class WbTipData {
   fields: Children[];
   whistleblower_identity_field: Children;
   answers: Answers;
-  motivation: string;
   redactions: RedactionData[];
 }
 

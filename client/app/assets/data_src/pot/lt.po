@@ -97,9 +97,6 @@ msgstr "Leisti pranešėjui prie pranešimo pridėti priedų"
 msgid "Allow the whistleblower to write comments"
 msgstr "Leisti pranešėjui rašyti komentarus"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Leisti šiam naudotojui iš naujo atidaryti pranešimo valdymą"
-
 msgid "Allow users to sign up"
 msgstr "Leisti naudotojams registruotis"
 

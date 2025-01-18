@@ -10,15 +10,9 @@
       </option>
     }
   </select>
-  <div class="mt-2">
-    <span>{{ 'Motivation' | translate }}</span>
-  </div>
-  <div class="form-group">
-    <textarea name="reason" class="form-control" [(ngModel)]="arg.motivation"></textarea>
-  </div>
 </div>
 <div class="modal-footer">
-  <button id="modal-action-ok" class="btn btn-primary" (click)="confirm(arg.status,arg.motivation)">
+  <button id="modal-action-ok" class="btn btn-primary" (click)="confirm(arg.status)">
     <i class="fa-solid fa-check"></i>
     <span>{{ 'Confirm' | translate }}</span>
   </button>

@@ -104,9 +104,6 @@ msgstr "Ба хабардиҳанда иҷозаи илова кардани з�
 msgid "Allow the whistleblower to write comments"
 msgstr "Ба хабардиҳанда иҷозаи навиштани шарҳҳоро додан"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Ба корбарон иҷозаи сабти ном шуданро додан"
 

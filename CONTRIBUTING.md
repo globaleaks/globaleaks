@@ -77,9 +77,11 @@ Before you submit your Pull Request consider the following guidelines:
 
 7. Run the full GlobaLeaks test suite and ensure that all tests pass.
 
-8. Commit your changes using a descriptive commit message.
+8. Ensure overall code quality and test coverage metrics are not reduced by more than 0.5%
 
-9. In GitHub, send a pull request to `GlobaLeaks:main`.
+9. Commit your changes using a descriptive commit message.
+
+10. In GitHub, send a pull request to `devel` branch.
 
 ## <a name="donate"></a> Donations <img src="https://raw.githubusercontent.com/globaleaks/globaleaks-whistleblowing-software/stable/brand/assets/heart.svg" alt="heart icon" width="24" />
 As a pure community-driven project without major corporate backing, we also welcome [donations](https://github.com/sponsors/globaleaks).

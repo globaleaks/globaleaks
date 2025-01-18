@@ -19,8 +19,8 @@ key_regexp_or_empty = r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9
 uuid_regexp = r'^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$'
 uuid_regexp_or_empty = r'^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$|^$'
 user_role_regexp = r'^(admin|analyst|custodian|receiver)$'
-email_regexp = r'^(([\w+-\.]){0,100}[\w]{1,100}@([\w+-\.]){0,100}[\w]{1,100})$'
-email_regexp_or_empty = r'^(([\w+-\.]){0,100}[\w]{1,100}@([\w+-\.]){0,100}[\w]{1,100})$|^$'
+email_regexp = r'^(([\w+-\.]){0,100}[\w]{1,100}@([\w+-\.]){0,100}[\w]{2,})$'
+email_regexp_or_empty = r'^(([\w+-\.]){0,100}[\w]{1,100}@([\w+-\.]){0,100}[\w]{2,})$|^$'
 hostname_regexp = r'^[0-9a-z\-\.]+$'
 hostname_regexp_or_empty = r'^[0-9a-z\-\.]+$|^$'
 subdomain_regexp = r'^[0-9a-z\-]+$'
@@ -151,7 +151,6 @@ AdminUserProfileDesc = {
     'can_grant_access_to_reports': bool,
     'can_redact_information': bool,
     'can_mask_information': bool,
-    'can_reopen_reports': bool,
     'can_transfer_access_to_reports': bool,
     'forcefully_selected': bool,
     'language': str,

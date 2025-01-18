@@ -114,9 +114,6 @@ msgstr "Engedélyezi a bejelentőknek, hogy mellékleteket adjanak hozzá a bead
 msgid "Allow the whistleblower to write comments"
 msgstr "A bejelentő írhat megjegyzéseket"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Felhasználók feliratkozásának engedélyezése"
 

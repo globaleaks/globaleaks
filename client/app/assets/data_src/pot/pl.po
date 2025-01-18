@@ -116,9 +116,6 @@ msgstr "Sygnaliści mogą dodawać załączniki"
 msgid "Allow the whistleblower to write comments"
 msgstr "Sygnalista może pisać komentarze"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Zezwól temu użytkownikowi na ponowne otwarcie zarządzania zgłoszeniem"
-
 msgid "Allow users to sign up"
 msgstr "Zezwalaj użytkownikom na rejestrację"
 

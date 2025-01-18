@@ -4,20 +4,9 @@
     <i class="fa-solid fa-times"></i>
   </button>
 </div>
-<div class="modal-body">
-  <span>{{ 'Motivation' | translate }}</span>
-  <span ngbTooltip="{{'This field is mandatory' | translate}}" class="text-danger sup">*</span>
-  <div class="form-group">
-    <textarea name="motivation" class="form-control" [ngClass]="{'is-invalid': !arg.motivation}"
-    [(ngModel)]="arg.motivation" required></textarea>
-    @if (!arg.motivation) {
-      <span class="text-danger">{{ 'This field is mandatory' | translate }}</span>
-    }
-  </div>
-</div>
+<div class="modal-body"></div>
 <div class="modal-footer">
-  <button type="button" id="modal-action-ok" class="btn btn-primary" [disabled]="!arg.motivation"
-    (click)="confirm(arg.motivation)">
+  <button type="button" id="modal-action-ok" class="btn btn-primary" (click)="confirm()">
     <i class="fa-solid fa-check"></i>
     <span>{{ 'Confirm' | translate }}</span>
   </button>

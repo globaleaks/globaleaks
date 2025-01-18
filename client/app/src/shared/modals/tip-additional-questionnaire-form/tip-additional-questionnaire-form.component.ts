@@ -11,7 +11,6 @@ import {Field} from "@app/models/resolvers/field-template-model";
 import {WhistleblowerSubmissionService} from "@app/pages/whistleblower/whistleblower-submission.service";
 import {NgClass} from "@angular/common";
 import {NgFormChangeDirective} from "../../directive/ng-form-change.directive";
-import {StepErrorComponent} from "@app/pages/whistleblower/step-error/step-error.component";
 import {FormComponent} from "@app/pages/whistleblower/form/form.component";
 import {RFilesUploadStatusComponent} from "../../partials/rfiles-upload-status/r-files-upload-status.component";
 import {TranslateModule} from "@ngx-translate/core";
@@ -22,7 +21,7 @@ import {OrderByPipe} from "@app/shared/pipes/order-by.pipe";
     selector: "src-tip-additional-questionnaire-form",
     templateUrl: "./tip-additional-questionnaire-form.component.html",
     standalone: true,
-    imports: [FormsModule, NgClass, NgFormChangeDirective, StepErrorComponent, FormComponent, RFilesUploadStatusComponent, TranslateModule, TranslatorPipe, OrderByPipe]
+    imports: [FormsModule, NgClass, NgFormChangeDirective, FormComponent, RFilesUploadStatusComponent, TranslateModule, TranslatorPipe, OrderByPipe]
 })
 export class TipAdditionalQuestionnaireFormComponent implements OnInit {
   protected whistleblowerSubmissionService = inject(WhistleblowerSubmissionService);
@@ -41,7 +40,6 @@ export class TipAdditionalQuestionnaireFormComponent implements OnInit {
   score: number = 0;
   questionnaire: Questionnaire3;
   answers: Answers = {};
-  field_id_map: { [key: string]: Field };
   done: boolean = false;
   uploads: { [key: string]: any };
   file_upload_url: string = "api/whistleblower/wbtip/wbfiles";
@@ -161,7 +159,6 @@ export class TipAdditionalQuestionnaireFormComponent implements OnInit {
     this.uploads = {};
     this.questionnaire = this.wbTipService.tip.additional_questionnaire;
     this.fieldUtilitiesService.onAnswersUpdate(this);
-    this.field_id_map = this.fieldUtilitiesService.build_field_id_map(this.questionnaire);
   };
 
   completeSubmission() {

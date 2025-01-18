@@ -17,7 +17,7 @@ export class PreferenceResolver {
   dataModel: preferenceResolverModel = new preferenceResolverModel();
 
   resolve(): Observable<boolean> {
-    if (this.authenticationService.isSessionActive()) {
+    if (this.authenticationService.session) {
       return this.httpService.requestUserPreferenceResource().pipe(
         map((response: preferenceResolverModel) => {
           this.dataModel = response;

@@ -118,9 +118,6 @@ msgstr "Permetti al segnalante di aggiungere allegati alla segnalazione"
 msgid "Allow the whistleblower to write comments"
 msgstr "Permetti al segnalante di scrivere commenti"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Permetti a questo utente di riaprire la gestione di una segnalazione"
-
 msgid "Allow users to sign up"
 msgstr "Permetti agli utenti di registrarsi"
 

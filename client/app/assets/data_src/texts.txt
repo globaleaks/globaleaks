@@ -25,7 +25,6 @@ Allow the recipient to edit the reports' expiration date
 Allow the recipient to delete reports
 Allow the whistleblower to add attachments
 Allow the whistleblower to write comments
-Allow this user to reopen management of a report
 Allow users to sign up
 Allow whistleblowers to select their recipients
 Allowed IP addresses

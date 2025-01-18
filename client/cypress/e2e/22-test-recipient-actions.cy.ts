@@ -7,10 +7,8 @@ describe("recipient admin tip actions", () => {
 
     cy.get("#tip-action-change-status").click();
     cy.get('#assignSubmissionStatus').select(2);
-    cy.get('textarea[name="reason"]').type("This is a close status test motivation");
     cy.get("#modal-action-ok").click();
     cy.get("#tip-action-reopen-status").click();
-    cy.get('textarea[name="motivation"]').type("This is a reopen status test motivation");
     cy.get("#modal-action-ok").click();
 
     cy.logout();
@@ -20,7 +18,7 @@ describe("recipient admin tip actions", () => {
     cy.login_receiver();
 
     cy.visit("/#/recipient/reports");
-    cy.get("#tip-action-open-new-tab").click();
+    cy.get("#tip-action-act-as-whistleblower").click();
     cy.visit("/#/recipient/reports");
 
     cy.logout();
@@ -77,7 +75,6 @@ describe("recipient admin tip actions", () => {
     cy.get("#tip-0").first().click();
     cy.get("#tip-action-change-status").click();
     cy.get('#assignSubmissionStatus').select(1);
-    cy.get('textarea[name="reason"]').type("This is a test motivation");
     cy.get("#modal-action-ok").click();
     cy.logout();
   });
@@ -125,8 +122,8 @@ describe("recipient admin tip actions", () => {
     cy.get('.multiselect-item-checkbox').eq(0).click();
 
     cy.get('.TipInfoSubmissionDate .fas.fa-calendar').click();
-    cy.get('.custom-day').first().click();
-    cy.get('.custom-day').eq(4).click({ shiftKey: true });
+    cy.get('.custom-date-selector').first().click();
+    cy.get('.custom-date-selector').eq(4).click({ shiftKey: true });
     cy.contains('button.btn.btn-danger', 'Reset').click();
 
     cy.logout();

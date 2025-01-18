@@ -97,9 +97,6 @@ msgstr "Информаторға ебәрелгән документарға ҡ�
 msgid "Allow the whistleblower to write comments"
 msgstr "Информаторға комментарийҙар өҫтәргә рөхсәт итергә"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Ҡулланыусыларға теркәлеү рөхсәте бирергә"
 

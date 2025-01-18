@@ -106,9 +106,6 @@ msgstr "Tillad whistlebloweren at tilføje vedhæftelser til indsendelsen"
 msgid "Allow the whistleblower to write comments"
 msgstr "Tillad whistlebloweren at skrive kommentarer"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Tillad denne bruger at genåbne håndtering af en rapport"
-
 msgid "Allow users to sign up"
 msgstr "Tillad brugere at tilmelde sig"
 

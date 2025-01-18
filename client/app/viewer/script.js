@@ -11,8 +11,12 @@ let pdfDoc = null;
 let pageNum = 1;
 let pageCount = 0;
 
+
 function receiveMessage(evt) {
+  const pdfViewer = document.getElementById('pdf-viewer');
+  const mediaViewer = document.getElementById('media-viewer');
   const url = URL.createObjectURL(evt.data.blob);
+
   if (evt.data.tag === "pdf") {
     pdfViewer.style.display = "block";
     mediaViewer.style.display = "none";
@@ -20,29 +24,52 @@ function receiveMessage(evt) {
   } else {
     pdfViewer.style.display = "none";
     mediaViewer.style.display = "block";
+
+    // Clear existing content in mediaViewer
+    while (mediaViewer.firstChild) {
+      mediaViewer.removeChild(mediaViewer.firstChild);
+    }
+
+    let viewerElement;
+
     if (evt.data.tag === "audio") {
-      mediaViewer.innerHTML =
-        "<audio id=\"viewer\" src=\"" + url + "\" controls /></audio>";
+      viewerElement = document.createElement("audio");
+      viewerElement.id = "viewer";
+      viewerElement.src = url;
+      viewerElement.controls = true;
     } else if (evt.data.tag === "image") {
-      mediaViewer.innerHTML =
-        "<img id=\"viewer\" src=\"" + url + "\" />";
+      viewerElement = document.createElement("img");
+      viewerElement.id = "viewer";
+      viewerElement.src = url;
     } else if (evt.data.tag === "video") {
-      mediaViewer.innerHTML =
-        "<video id=\"viewer\" src=\"" + url + "\" controls /></video>";
+      viewerElement = document.createElement("video");
+      viewerElement.id = "viewer";
+      viewerElement.src = url;
+      viewerElement.controls = true;
     } else if (evt.data.tag === "txt") {
       evt.data.blob.text().then(function (text) {
-        mediaViewer.innerHTML =
-          "<pre id=\"viewer\">" + text + "</pre>";
+        viewerElement = document.createElement("pre");
+        viewerElement.id = "viewer";
+        viewerElement.textContent = text;
+        mediaViewer.appendChild(viewerElement);
       });
+      return; // Exit early to avoid appending an undefined `viewerElement`
+    }
+
+    // Append the created viewer element
+    if (viewerElement) {
+      mediaViewer.appendChild(viewerElement);
     }
   }
 }
+
 
 function createPdfViewer(url) {
   pdfjsLib.getDocument(url).promise.then(function (pdfDoc_) {
     pdfDoc = pdfDoc_;
     pageCount = pdfDoc.numPages;
-    pdfControlPageCount.innerHTML = pageCount;
+
+    pdfControlPageCount.innerText = pageCount;
     pdfControlPage.innerText = 0;
     renderPage(pageNum);
   });

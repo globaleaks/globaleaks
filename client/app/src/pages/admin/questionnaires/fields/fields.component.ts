@@ -297,9 +297,14 @@ export class FieldsComponent implements OnInit {
     if (target < 0 || target >= this.field.options.length) {
       return;
     }
-    const indexA = this.field.options[target];
+
+    const tmp = this.field.options[target];
+
     this.field.options[target] = this.field.options[index];
-    this.field.options[index] = indexA;
+    this.field.options[target].order = target;
+
+    this.field.options[index] = tmp;
+    this.field.options[index].order = index;
   }
 
   flipBlockSubmission(option: Option): void {

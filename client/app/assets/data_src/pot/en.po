@@ -90,9 +90,6 @@ msgstr "Allow the whistleblower to add attachments"
 msgid "Allow the whistleblower to write comments"
 msgstr "Allow the whistleblower to write comments"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Allow this user to reopen management of a report"
-
 msgid "Allow users to sign up"
 msgstr "Allow users to sign up"
 

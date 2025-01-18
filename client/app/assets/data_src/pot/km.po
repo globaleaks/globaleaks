@@ -100,9 +100,6 @@ msgstr "អនុញ្ញាតអ្នករាយការណ៍បន្ថ
 msgid "Allow the whistleblower to write comments"
 msgstr "អនុញ្ញាតអ្នករាយការណ៍អោយសរសេរមតិយោបល់"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "អនុញ្ញាតអ្នកប្រើប្រាស់ចុះឈ្មោះ"
 

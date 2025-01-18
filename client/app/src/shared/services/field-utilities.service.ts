@@ -54,22 +54,6 @@ export class FieldUtilitiesService {
     return "col-md-" + ((row_length > 12) ? 1 : (12 / row_length));
   }
 
-  flatten_field = (id_map: any, field: any): void => {
-    if (field.children.length === 0) {
-      id_map[field.id] = field;
-      return id_map;
-    } else {
-      id_map[field.id] = field;
-      return field.children.reduce(this.flatten_field, id_map);
-    }
-  };
-
-  build_field_id_map(questionnaire: any) {
-    return questionnaire.steps.reduce((id_map: any, cur_step: any) => {
-      return cur_step.children.reduce(this.flatten_field, id_map);
-    }, {});
-  }
-
   findField(answers_obj: any, field_id: any): any {
     let r;
 
@@ -197,8 +181,10 @@ export class FieldUtilitiesService {
               }
             }
           }
-        } else if (field.type === "fileupload") {
-          entry.required_status = field.required && (!scope.uploads[field.id] || !scope.uploads[field.id].size);
+        } else if (["fileupload"].indexOf(field.type) > -1) {
+          entry.required_status = field.required && (!scope.uploads[field.id] || !scope.uploads[field.id].flowJs.files.length);
+        } else if (["voice"].indexOf(field.type) > -1) {
+          entry.required_status = field.required && (!scope.uploads[field.id] || !scope.uploads[field.id].files.length);
         } else {
           entry.required_status = field.required && !entry["value"];
         }

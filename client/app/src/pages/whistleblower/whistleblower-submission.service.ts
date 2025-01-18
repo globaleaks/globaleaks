@@ -40,6 +40,8 @@ export class WhistleblowerSubmissionService {
       return;
     }
 
+    scope.fieldUtilitiesService.onAnswersUpdate(scope);
+
     if (!scope.runValidation()) {
       scope.utilsService.scrollToTop();
       return;

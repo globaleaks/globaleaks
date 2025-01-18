@@ -1,3 +1,4 @@
+import {Location} from '@angular/common';
 import {Injectable, inject} from "@angular/core";
 import {HttpService} from "@app/shared/services/http.service";
 import {UtilsService} from "@app/shared/services/utils.service";
@@ -8,15 +9,13 @@ import {Router, NavigationEnd, ActivatedRoute} from "@angular/router";
 import {AuthenticationService} from "@app/services/helper/authentication.service";
 import {LanguagesSupported} from "@app/models/app/public-model";
 import {TitleService} from "@app/shared/services/title.service";
-import {CustomFileLoaderServiceService} from "@app/services/helper/custom-file-loader-service.service";
 import {NgZone} from "@angular/core";
-import {mockEngine} from "@app/services/helper/mocks";
 
 @Injectable({
   providedIn: "root"
 })
 export class AppConfigService {
-  private customFileLoaderServiceService = inject(CustomFileLoaderServiceService);
+  private location = inject(Location);
   private titleService = inject(TitleService);
   authenticationService = inject(AuthenticationService);
   private translationService = inject(TranslationService);
@@ -30,24 +29,9 @@ export class AppConfigService {
   private isRunning: boolean = false;
 
   public sidebar: string = "";
-  private firstLoad = true;
 
   constructor() {
     this.init();
-  }
-
-  private monitorChangeDetection(): void {
-    this.ngZone.onStable.subscribe(() => {
-      if (this.isRunning) {
-        return;
-      }
-      this.isRunning = true;
-      try {
-        mockEngine.run();
-      } finally {
-        this.isRunning = false;
-      }
-    });
   }
 
   init() {
@@ -61,7 +45,7 @@ export class AppConfigService {
   initRoutes(currentURL: string) {
     if (this.authenticationService && this.authenticationService.session && currentURL !== "login") {
       const queryParams = this.activatedRoute.snapshot.queryParams;
-      const param = sessionStorage.getItem("default_language");
+      const param = sessionStorage.getItem("language");
       if (param) {
         queryParams["lang"] = param;
       }
@@ -73,8 +57,6 @@ export class AppConfigService {
       } else if (this.authenticationService.session.role === "custodian") {
         this.router.navigate(["/custodian"], {queryParams}).then();
       }
-    } else {
-      sessionStorage.removeItem("default_language");
     }
   }
 
@@ -93,7 +75,6 @@ export class AppConfigService {
         if (data.body !== null) {
           this.appDataService.public = data.body;
         }
-        this.monitorChangeDetection();
         this.appDataService.contexts_by_id = this.utilsService.array_to_map(this.appDataService.public.contexts);
         this.appDataService.receivers_by_id = this.utilsService.array_to_map(this.appDataService.public.receivers);
         this.appDataService.questionnaires_by_id = this.utilsService.array_to_map(this.appDataService.public.questionnaires);
@@ -122,11 +103,6 @@ export class AppConfigService {
           "tor": data.headers.get("X-Check-Tor") === "true" || location.host.match(/\.onion$/),
         };
 
-        if(this.firstLoad){
-          this.firstLoad = false;
-          this.customFileLoaderServiceService.loadCustomFiles();
-        }
-
         this.appDataService.privacy_badge_open = !this.appDataService.connection.tor;
         this.appDataService.languages_enabled = new Map<string, LanguagesSupported>();
         this.appDataService.languages_enabled_selector = [];
@@ -141,23 +117,24 @@ export class AppConfigService {
           }
         });
 
-        let storageLanguage = sessionStorage.getItem("default_language");
+        let storageLanguage = sessionStorage.getItem("language");
         const queryParams = this.activatedRoute.snapshot.queryParams;
         if (languageInit) {
           if (!storageLanguage) {
             storageLanguage = this.appDataService.public.node.default_language;
-            sessionStorage.setItem("default_language", storageLanguage);
+            sessionStorage.setItem("language", storageLanguage);
           }
           if(!queryParams["lang"]){
             const setTitle = () => {
               this.titleService.setTitle();
             };
             this.translationService.onChange(storageLanguage, setTitle);
-          }else {
+          } else {
             this.translationService.onChange(storageLanguage);
           }
+        } else {
+          this.translationService.onChange(storageLanguage || 'en');
         }
-
 
         this.titleService.setTitle();
         this.onValidateInitialConfiguration();
@@ -172,11 +149,11 @@ export class AppConfigService {
     if (this.appDataService.public.node) {
       if (!this.appDataService.public.node.wizard_done) {
         location.replace("/#/wizard");
-      } else if ((this.router.url === "/" || this.router.url === "/submission") && !this.appDataService.public.node.enable_signup && this.appDataService.public.node.adminonly && !this.authenticationService.session) {
-        location.replace("/#/admin/home");
-      } else if (this.router.url === "/" && this.appDataService.public.node.enable_signup && !location.href.endsWith("admin/home")) {
+      } else if ((this.location.path() === "" || this.location.path() === "/submission") && !this.appDataService.public.node.enable_signup && this.appDataService.public.node.adminonly && !this.authenticationService.session) {
+        location.replace("/#/login");
+      } else if (this.location.path() === "" && this.appDataService.public.node.enable_signup && !location.href.endsWith("admin/home")) {
         location.replace("/#/signup");
-      } else if (this.router.url === "/signup" && !this.appDataService.public.node.enable_signup) {
+      } else if (this.location.path() === "/signup" && !this.appDataService.public.node.enable_signup) {
         location.replace("/#/");
       } else if (this.appDataService.page === "blank") {
         this.appDataService.page = "homepage"

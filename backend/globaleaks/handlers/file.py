@@ -12,10 +12,10 @@ from globaleaks.utils.fs import directory_traversal_check
 
 
 appfiles = {
-    'favicon': ('favicon.ico', ['image/x-icon']),
-    'logo': ('logo.png', ['image/gif', 'image/jpeg', 'image/png']),
-    'css': ('custom.css', ['text/css']),
-    'script': ('script.js', ['text/javascript'])
+    'favicon': ('favicon.ico', ['image/x-icon'], 'data/favicon.ico'),
+    'logo': ('logo.png', ['image/gif', 'image/jpeg', 'image/png'], 'data/logo.png'),
+    'css': ('custom.css', ['text/css'], 'data/empty.txt'),
+    'script': ('script.js', ['text/javascript'], 'data/empty.txt')
 }
 
 class FileHandler(BaseHandler):
@@ -44,14 +44,20 @@ class FileHandler(BaseHandler):
 
     @inlineCallbacks
     def get(self, name):
+        path = os.path.abspath(os.path.join(self.state.settings.files_path, 'not-existent-file'))
+
         name = urllib.parse.unquote(name)
 
         id = yield get_file_id_by_name(self.request.tid, name)
         if not id and self.request.tid != 1:
             id = yield get_file_id_by_name(1, name)
 
-        path = os.path.abspath(os.path.join(self.state.settings.files_path, id))
-        directory_traversal_check(self.state.settings.files_path, path)
+        if id:
+            path = os.path.abspath(os.path.join(self.state.settings.files_path, id))
+            directory_traversal_check(self.state.settings.files_path, path)
+        elif name in appfiles:
+            path = os.path.abspath(os.path.join(self.state.settings.client_path, appfiles[name][2]))
+            directory_traversal_check(self.state.settings.client_path, path)
 
         if name in appfiles:
             filename = appfiles[name][0]

@@ -11,7 +11,7 @@
       </ng-select>
     </div>
   }
-  @if (utils.showUserStatusBox(authentication, appDataService)) {
+  @if (utilsService.showUserStatusBox(authentication, appDataService)) {
     <div id="LoginStatusBox">
       <span id="HomeLinkBox">
         @if (authentication.session.role !== 'whistleblower') {
@@ -33,7 +33,7 @@
       }
       @if (authentication.session && authentication.session.role !== 'whistleblower') {
         <span id="SupportLinkBox">
-          <a id="SupportLink" (click)="utils.openSupportModal(appDataService)" ngbTooltip="{{'Request support' | translate}}">
+          <a id="SupportLink" href="#" (click)="utilsService.openSupportModal(appDataService)" ngbTooltip="{{'Request support' | translate}}">
             <i class="fa-solid fa-fw fa-life-ring"></i>
           </a>
           <span class="text-separator">|</span>
@@ -43,7 +43,7 @@
         <i class="glyphicon glyphicon-user"></i>
       </span>
       <span id="LogoutLinkBox">
-        <a href="#" id="LogoutLink" (click)="onLogout($event)" ngbTooltip="{{'Logout' | translate}}">
+        <a id="LogoutLink" href="" (click)="onLogout($event)" ngbTooltip="{{'Logout' | translate}}">
           <i class="pointer fa-solid fa-fw fa-sign-out-alt"></i>
           @if (authentication.session.role === 'whistleblower') {
             <span>
@@ -56,7 +56,7 @@
     </div>
   }
 </div>
-@if (utils.showWBLoginBox()) {
+@if (utilsService.showWBLoginBox()) {
   <div id="WhistleblowerLoginBox" class="ms-1 mb-1">
     <src-receipt ></src-receipt>
   </div>

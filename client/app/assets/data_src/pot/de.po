@@ -145,9 +145,6 @@ msgstr "Dem Hinweisgeber das Hinzufügen von Anhängen zum Bericht erlauben"
 msgid "Allow the whistleblower to write comments"
 msgstr "Dem Hinweisgeber das Schreiben von Kommentaren erlauben"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Diesem Benutzer erlauben, die Verwaltung eines Berichts erneut zu öffnen"
-
 msgid "Allow users to sign up"
 msgstr "Benutzerregistrierung erlauben"
 

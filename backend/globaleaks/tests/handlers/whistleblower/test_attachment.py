@@ -5,7 +5,6 @@ from twisted.internet.defer import inlineCallbacks
 
 from globaleaks.handlers.whistleblower import attachment
 from globaleaks.rest import errors
-from globaleaks.sessions import Sessions
 from globaleaks.tests import helpers
 
 
@@ -20,13 +19,13 @@ class TestSubmissionAttachment(helpers.TestHandlerWithPopulatedDB):
 
         self.state.tokens.reactor.pump([1] * (self.state.tokens.timeout - 1))
 
-        for f in Sessions.get(handler.session.id).files:
+        for f in handler.session.files:
             path = os.path.abspath(os.path.join(self.state.settings.tmp_path, f['filename']))
             self.assertTrue(os.path.exists(path))
 
         self.state.tokens.reactor.advance(1)
 
-        for f in Sessions.get(handler.session.id).files:
+        for f in handler.session.files:
             path = os.path.abspath(os.path.join(self.state.settings.attachments_path, f['filename']))
             yield self.assertFalse(os.path.exists(path))
 

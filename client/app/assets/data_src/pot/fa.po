@@ -123,9 +123,6 @@ msgstr "به افشاگر اجازهٔ افزودن پیوست‌ها به گز�
 msgid "Allow the whistleblower to write comments"
 msgstr "به افشاگر اجازهٔ نوشتن نظرات داده شود"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "اجازهٔ نام‌نویسی به کاربران"
 

@@ -29,8 +29,8 @@ Algorithms
 .. csv-table::
    :header: "Type", "Implementation"
 
-   "Asymmetric encryption", "`Libsodium SealedBoxes <https://pynacl.readthedocs.io/en/stable/public/#nacl.public.SealedBox>`_, which combines Curve25519, XSalsa20, and Poly1305 algorithms."
-   "Symmetric encryption", "`Libsodium SecretBoxes <https://pynacl.readthedocs.io/en/stable/secret/#nacl.secret.SecretBox>`_, which combines XSalsa20 and Poly1305."
+   "Asymmetric encryption", "`Libsodium SealedBoxes <https://pynacl.readthedocs.io/en/latest/public/#nacl.public.SealedBox>`_, which combines Curve25519, XSalsa20, and Poly1305 algorithms."
+   "Symmetric encryption", "`Libsodium SecretBoxes <https://pynacl.readthedocs.io/en/latest/secret/#nacl.secret.SecretBox>`_, which combines XSalsa20 and Poly1305."
 
 Users’ credentials
 ------------------

@@ -117,9 +117,6 @@ msgstr "Дозволити інформаторам додавати файли 
 msgid "Allow the whistleblower to write comments"
 msgstr "Дозволити інформатору коментувати"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Дозволити користувачам зареєструватися"
 

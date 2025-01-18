@@ -9,6 +9,7 @@ import {BehaviorSubject, Observable} from "rxjs";
 export class AppDataService {
   private showLoadingPanelSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   showLoadingPanel$: Observable<boolean> = this.showLoadingPanelSubject.asObservable();
+  language:string = "en"
 
   updateShowLoadingPanel(newValue: boolean) {
     this.showLoadingPanelSubject.next(newValue);

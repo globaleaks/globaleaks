@@ -106,9 +106,6 @@ msgstr "Anna ilmoittajan lisätä liitteitä"
 msgid "Allow the whistleblower to write comments"
 msgstr "Anna ilmoittajan kirjoittaa kommentteja"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Salli tämän käyttäjän avata ilmoituksen hallinta uudelleen."
-
 msgid "Allow users to sign up"
 msgstr "Salli käyttäjien rekisteröityä"
 

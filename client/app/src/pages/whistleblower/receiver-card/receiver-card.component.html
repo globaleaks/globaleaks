@@ -10,13 +10,13 @@
   <div class="row">
     @if (receiverModel.picture) {
       <div class="col-md-4">
-        <img class="receiver-image" alt="receiver picture" width="500" height="500" ngSrc="/s/{{receiverModel.id}}" />
+        <img class="receiver-image" alt="receiver picture" src="/s/{{receiverModel.id}}" />
       </div>
     }
   </div>
   <div class="row">
     @if (receiverModel.description) {
-      <div class="col-md-12 description">{{receiverModel.description}}</div>
+      <markdown class="col-md-12" [data]="receiverModel.description | stripHtml"></markdown>
     }
   </div>
 </div>

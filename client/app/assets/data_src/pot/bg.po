@@ -106,9 +106,6 @@ msgstr "Разрешаване на подателя на сигнал да до
 msgid "Allow the whistleblower to write comments"
 msgstr "Разрешаване на подателя на сигнал да пише коментари"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Позволяване на потребителите да се регистрират"
 

@@ -50,17 +50,17 @@ export class AuthenticationService {
   };
 
   deleteSession() {
+    const role = this.session ? this.session.role : 'recipient';
+
     this.session = null;
-    window.sessionStorage.removeItem("session");
+    window.sessionStorage.clear();
+
+    if (role === "whistleblower") {
+      window.location.replace("about:blank");
+    } else {
+      this.loginRedirect();
+    }
   };
-
-  isSessionActive() {
-    return this.session;
-  }
-
-  routeLogin() {
-    this.loginRedirect();
-  }
 
   setSession(response: Session) {
     this.session = response;
@@ -112,6 +112,8 @@ export class AuthenticationService {
     requestObservable.subscribe(
       {
         next: (response: Session) => {
+          this.appDataService.updateShowLoadingPanel(false);
+
           if (response.redirect) {
             response.redirect = this.sanitizer.sanitize(SecurityContext.URL, response.redirect) || '';
 	    if (response.redirect) {
@@ -163,7 +165,6 @@ export class AuthenticationService {
                   this.router.navigate([redirect]);
 		}
               } else {
-                this.appDataService.updateShowLoadingPanel(true);
                 this.router.navigate([this.session.homepage], {
                   queryParams: this.activatedRoute.snapshot.queryParams,
                   queryParamsHandling: "merge"
@@ -177,8 +178,8 @@ export class AuthenticationService {
           }
         },
         error: (error: HttpErrorResponse) => {
-          this.loginInProgress = false;
           this.appDataService.updateShowLoadingPanel(false);
+          this.loginInProgress = false;
           if (error.error && error.error["error_code"]) {
             if (error.error["error_code"] === 4) {
               this.requireAuthCode = true;
@@ -222,6 +223,7 @@ export class AuthenticationService {
     if (confirmation) {
       headers = headers.set('X-Confirmation', confirmation);
     }
+
     return headers;
   }
 
@@ -231,13 +233,8 @@ export class AuthenticationService {
       {
         next: () => {
           this.reset();
-          if (this.session.role === "whistleblower") {
-            this.deleteSession();
-            this.titleService.setPage("homepage");
-          } else {
-            this.deleteSession();
-            this.loginRedirect();
-          }
+	  this.deleteSession();
+
           if (callback) {
             callback();
           }

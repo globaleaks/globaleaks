@@ -23,7 +23,7 @@
 # Dragana Kaurin <dragana.kaurin@localizationlab.org>, 2014
 # ِAbu <elsahookie@gmail.com>, 2013
 # a96921fef9a72b1bcbac1fc92cca715a, 2015
-# Giovanni Pellerano <giovanni.pellerano@evilaliv3.org>, 2014-2018,2020-2022,2024
+# Giovanni Pellerano <giovanni.pellerano@globaleaks.org>, 2014-2018,2020-2022,2024
 # b665ec457f7dbc468840c2b55b7422d3_ad81431 <382f1c68613d5cfe601c75d66e8ff0dd_51600>, 2013
 # harmony, 2013
 # harmony, 2013
@@ -55,7 +55,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GlobaLeaks\n"
 "PO-Revision-Date: 2013-05-29 17:59+0000\n"
-"Last-Translator: Giovanni Pellerano <giovanni.pellerano@evilaliv3.org>, 2014-2018,2020-2022,2024\n"
+"Last-Translator: Giovanni Pellerano <giovanni.pellerano@globaleaks.org>, 2014-2018,2020-2022,2024\n"
 "Language-Team: Arabic (http://app.transifex.com/otf/globaleaks/language/ar/)\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -144,9 +144,6 @@ msgstr "السّماح للمبلغين باضافة مرفقات إلى الب�
 
 msgid "Allow the whistleblower to write comments"
 msgstr "تمكين المبلغ من كتابة تعليقات"
-
-msgid "Allow this user to reopen management of a report"
-msgstr "اسمح لهذا المستخدم بإعادة فتح إدارة هذا التقرير."
 
 msgid "Allow users to sign up"
 msgstr "السماح للمستخدمين بالاشتراك"

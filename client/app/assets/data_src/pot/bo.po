@@ -97,9 +97,6 @@ msgstr "གསང་སྒྲོག་པ་ལ་སྙན་ཐོའི་ས
 msgid "Allow the whistleblower to write comments"
 msgstr "གསང་སྒྲོག་པ་ལ་མཆན་འབྲི་རུ་འཇུག"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "སྤྱོད་པ་པོར་ཐོ་འགོད་བྱེད་དུ་འཇུག"
 

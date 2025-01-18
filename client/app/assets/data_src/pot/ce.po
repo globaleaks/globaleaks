@@ -98,9 +98,6 @@ msgstr "Iорадаккхархочунна магийта орзана тIе ю
 msgid "Allow the whistleblower to write comments"
 msgstr "Iорадаккхархочунна бакъо ло комменташ язъян"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Пайдаэцархошна чуязбала магаде"
 

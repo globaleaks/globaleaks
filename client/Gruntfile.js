@@ -114,6 +114,21 @@ module.exports = function(grunt) {
       },
 
       pass3: {
+        src: "./tmp/js/vendor.js",
+        dest: "./tmp/js/",
+        options: {
+          replacements: [
+            {
+              pattern: /ngb-dp-navigation-chevron/ig,
+              replacement: function () {
+                return "fa-solid fa-chevron-right";
+              }
+            },
+          ]
+        }
+      },
+
+      pass4: {
         files: {
           "tmp/index.html": "tmp/index.html"
         },
@@ -122,11 +137,19 @@ module.exports = function(grunt) {
           replacements: [
             {
               pattern: /<script src="(\w+)\.js" type="module"><\/script>/g,
-              replacement: '<script src="js/$1.js" type="module"></script>'
+              replacement: "<script src=\"js/$1.js\" type=\"module\"></script>"
             },
             {
               pattern: /<link rel="stylesheet" href="/g,
               replacement: "<link rel=\"stylesheet\" href=\"css/"
+            },
+            {
+              pattern: /<\/head>/g,
+              replacement: "<link rel=\"stylesheet\" href=\"s/css\"></head>"
+            },
+            {
+              pattern: /<\/body>/g,
+              replacement: "<script src=\"s/script\" type=\"module\"></script>"
             }
           ]
         }
@@ -155,6 +178,22 @@ module.exports = function(grunt) {
         src: 'tmp/css/styles.css',
         dest: 'tmp/css/styles.css'
       },
+    },
+
+    webpack: {
+      build: {
+        entry: {
+          'pdf.min': './node_modules/pdfjs-dist/legacy/build/pdf.min.mjs',
+          'pdf.worker.min': './node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs',
+        },
+        output: {
+          filename: '[name].js',
+          path: path.resolve('app/viewer/'),
+          libraryTarget: 'umd',
+          globalObject: 'this', // This makes the bundle work in both browser and Node.js
+        },
+        mode: 'production',
+      }
     },
 
     shell: {
@@ -222,7 +261,7 @@ module.exports = function(grunt) {
         "relationships": {
           "resource": {
             "data": {
-              "id": "o:otf:p:globaleaks:r:main",
+              "id": "o:otf:p:globaleaks:r:stable",
               "type": "resources"
             }
           }
@@ -288,7 +327,7 @@ module.exports = function(grunt) {
               },
               "resource": {
                 "data": {
-                  "id": "o:otf:p:globaleaks:r:main",
+                  "id": "o:otf:p:globaleaks:r:stable",
                   "type": "resources"
                 }
               }
@@ -336,7 +375,7 @@ module.exports = function(grunt) {
 
   async function fetchTxTranslationsForLanguage(langCode, cb) {
     const gettextParser = await loadGettextParser();
-    let url = baseurl + "/resource_language_stats/o:otf:p:globaleaks:r:main:l:" + langCode;
+    let url = baseurl + "/resource_language_stats/o:otf:p:globaleaks:r:stable:l:" + langCode;
 
     agent.get(url)
         .set({"Authorization": "Bearer " + transifexApiKey})
@@ -780,8 +819,8 @@ module.exports = function(grunt) {
   // Run this task to fetch translations from transifex and create application files
   grunt.registerTask("updateTranslations", ["fetchTranslations", "makeAppData", "verifyAppData"]);
 
-  grunt.registerTask("build", ["clean", "shell:npx_build", "copy:build", "string-replace", "postcss", "copy:package", "clean:tmp"]);
+  grunt.registerTask("build", ["clean", "shell:npx_build", "copy:build", "webpack", "string-replace", "postcss", "copy:package", "clean:tmp"]);
  
-  grunt.registerTask("build_and_instrument", ["clean", "shell:npx_build_and_instrument", "copy:build", "string-replace", "postcss", "copy:package", "clean:tmp"]);
+  grunt.registerTask("build_and_instrument", ["clean", "shell:npx_build_and_instrument", "copy:build", "webpack", "string-replace", "postcss", "copy:package", "clean:tmp"]);
 };
 

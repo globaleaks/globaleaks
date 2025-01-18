@@ -21,13 +21,10 @@ export class ReopenSubmissionComponent {
   private modalService = inject(NgbModal);
   private activeModal = inject(NgbActiveModal);
 
-  arg:{ motivation: string}={motivation: ""};
- 
-  confirmFunction: (motivation: string) => void;
-  
-    confirm(arg: string) {
-      this.confirmFunction(arg);
-      return this.activeModal.close(arg);
+  confirmFunction: () => void;
+    confirm() {
+      this.confirmFunction();
+      return this.activeModal.close();
     }
   
     cancel() {

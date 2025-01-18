@@ -97,9 +97,6 @@ msgstr "Luba vihjeandjal teatele manuseid lisada"
 msgid "Allow the whistleblower to write comments"
 msgstr "Luba vihjeandjal kommentaare kirjutada"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "Luba kasutajate registreerumine"
 

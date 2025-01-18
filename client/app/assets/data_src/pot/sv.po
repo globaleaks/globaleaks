@@ -66,7 +66,7 @@ msgid "Account recovery key"
 msgstr "Kod för kontoåterställning"
 
 msgid "Act on behalf of a whistleblower"
-msgstr ""
+msgstr "Agera å visselblåsarens vägnar"
 
 msgid "Activities"
 msgstr "Aktiviteter"
@@ -108,7 +108,7 @@ msgid "Advanced"
 msgstr "Avancerat"
 
 msgid "Allow the recipient to edit the reports' expiration date"
-msgstr ""
+msgstr "Tillåt mottagaren att ändra rapportens utgångsdatum"
 
 msgid "Allow the recipient to delete reports"
 msgstr "Tillåt mottagaren att ta bort tips"
@@ -118,9 +118,6 @@ msgstr "Tillåt att visselblåsaren lägger till bilagor till rapporten"
 
 msgid "Allow the whistleblower to write comments"
 msgstr "Tillåt att visselblåsaren skriver kommentarer"
-
-msgid "Allow this user to reopen management of a report"
-msgstr ""
 
 msgid "Allow users to sign up"
 msgstr "Tillåt användarna att registrera sig"
@@ -135,7 +132,7 @@ msgid "An update is available:"
 msgstr "En uppdatering är tillgänglig:"
 
 msgid "Analyst"
-msgstr ""
+msgstr "Analytiker"
 
 msgid "Anomalies"
 msgstr "Avvikelser"
@@ -168,7 +165,7 @@ msgid "Attachments"
 msgstr "Bilagor"
 
 msgid "Attention"
-msgstr ""
+msgstr "Uppmärksamhet"
 
 msgid "Audio"
 msgstr "Ljud"
@@ -213,7 +210,7 @@ msgid "Block the submission"
 msgstr "Blockera tipset"
 
 msgid "By confirming, you will edit the expiration date to:"
-msgstr ""
+msgstr "Genom att bekräfta ändrar du utgångsdatumet till:"
 
 msgid "By confirming, you will set a reminder on date:"
 msgstr "Genom att bekräfta ställs påminnelsedatum till:"
@@ -236,7 +233,7 @@ msgid "Certificate Signing Request"
 msgstr "Begäran om att signera certifikat"
 
 msgid "Change status"
-msgstr ""
+msgstr "Ändra status"
 
 msgid "Change your password"
 msgstr "Ändra ditt lösenord"
@@ -367,7 +364,7 @@ msgid "Details of the PGP key:"
 msgstr "Detaljerade uppgifter om PGP-nyckeln:"
 
 msgid "Devices"
-msgstr ""
+msgstr "Enheter"
 
 msgid "Disable"
 msgstr "Inaktivera"
@@ -538,7 +535,7 @@ msgid "Footer"
 msgstr "Sidfot"
 
 msgid "For security reasons the code needs to be changed."
-msgstr ""
+msgstr "Av säkerhetsskäl behöver koden ändras."
 
 msgid ""
 "For security reasons, password changes are required at regular intervals."
@@ -654,7 +651,7 @@ msgid ""
 msgstr "I denna fas finns det frågor där svaren inte fyllts i eller är ogiltiga. Detta gäller följande fall:"
 
 msgid "Initially anonymous"
-msgstr ""
+msgstr "Till en början anonym"
 
 msgid "Input validation"
 msgstr "Inmatningsvalidering"
@@ -1027,7 +1024,7 @@ msgid "Remove"
 msgstr "Ta bort"
 
 msgid "Reopen"
-msgstr ""
+msgstr "Öppna igen"
 
 msgid "Reply motivation"
 msgstr "Svara på motivering"
@@ -1093,7 +1090,7 @@ msgid "Restrict access to specific IP addresses"
 msgstr "Begränsa åtkomst till specifika IP-adresser"
 
 msgid "Returning whistleblowers"
-msgstr ""
+msgstr "Återkommande visselblåsare"
 
 msgid "Revoke access"
 msgstr "Återkalla åtkomst"
@@ -1267,7 +1264,7 @@ msgid "Submit"
 msgstr "Skicka"
 
 msgid "Subscribed"
-msgstr ""
+msgstr "Prenumererat"
 
 msgid "Subscription date"
 msgstr "Prenumerationsdatum"
@@ -1346,7 +1343,7 @@ msgid ""
 msgstr "Följande förfarande med en steg-för-steg-beskrivning kommer att vara ditt rättesnöre då du skapar din visselblåsarplattform."
 
 msgid "The link will expire in 7 days."
-msgstr ""
+msgstr "Länken kommer vara ogiltig om 7 dagar."
 
 msgid ""
 "The manual configuration wizard will guide you through the setup of HTTPS "
@@ -1475,7 +1472,7 @@ msgid "Unhide"
 msgstr "Göm ej längre"
 
 msgid "Unselect"
-msgstr ""
+msgstr "Avmarkera"
 
 msgid "Upload"
 msgstr "Ladda upp"
@@ -1589,7 +1586,7 @@ msgid ""
 msgstr "Du ansluter dig till servern utan att vara anonym, och den här servern stödjer bara tips som lämnas anonymt"
 
 msgid "You are operating on behalf of a whistleblower."
-msgstr ""
+msgstr "Du agerar å visselblåsarens vägnar."
 
 msgid ""
 "You are strongly advised to visit this site using the app called Tor "

@@ -109,9 +109,6 @@ msgstr "Να επιτρέπεται στο πρόσωπο που υποβάλλ�
 msgid "Allow the whistleblower to write comments"
 msgstr "Να επιτρέπεται στο πρόσωπο που υποβάλλει αναφορά να γράφει σχόλια"
 
-msgid "Allow this user to reopen management of a report"
-msgstr "Να επιτρέπεται στον χρήστη να ξανανοίγει τη διαχείριση μιας αναφοράς"
-
 msgid "Allow users to sign up"
 msgstr "Να επιτρέπεται σε χρήστες να εγγράφονται"
 

@@ -101,9 +101,6 @@ msgstr "ރިޕޯޓުގައި އާ ފައިލްތައް ހިމެނުމުގެ ހު
 msgid "Allow the whistleblower to write comments"
 msgstr "ކޮމެންޓްސް ލިޔުމުގެ ހުއްދަ ވިސިލްބްލޯވާރ އަށް ދިނުމަށް"
 
-msgid "Allow this user to reopen management of a report"
-msgstr ""
-
 msgid "Allow users to sign up"
 msgstr "އިތުރު މީހުން ސައިން އަޕް ކުރުމުގެ ހުއްދަ ދިނުމަށް"
 

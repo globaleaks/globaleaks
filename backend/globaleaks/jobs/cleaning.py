@@ -16,6 +16,7 @@ from globaleaks.handlers.user import user_serialize_user
 from globaleaks.jobs.job import DailyJob
 from globaleaks.orm import db_del, db_log, transact, tw
 from globaleaks.utils.fs import srm
+from globaleaks.utils.log import log
 from globaleaks.utils.templating import Templating
 from globaleaks.utils.utility import datetime_never, datetime_now, is_expired
 
@@ -75,7 +76,6 @@ class Cleaning(DailyJob):
             if not data['user']['notification']:
                  log.debug("Discarding emails for %s due to receiver's preference.", user.id)
                  return
-
 
             if data['node']['mode'] == 'default':
                 data['notification'] = db_get_notification(session, tid, language)

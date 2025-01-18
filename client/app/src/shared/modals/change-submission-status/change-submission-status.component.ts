@@ -20,13 +20,13 @@ export class ChangeSubmissionStatusComponent {
   private modalService = inject(NgbModal);
   private activeModal = inject(NgbActiveModal);
 
-  @Input() arg: {tip:RecieverTipData, motivation:string,submission_statuses:SubmissionStatus[],status:any};
+  @Input() arg: {tip:RecieverTipData, submission_statuses:SubmissionStatus[],status:any};
   
-  confirmFunction: (status:SubmissionStatus,motivation: string) => void;
+  confirmFunction: (status:SubmissionStatus) => void;
   
-    confirm(status: SubmissionStatus,motivation:string) {
+    confirm(status: SubmissionStatus) {
       if(status){
-        this.confirmFunction(status,motivation);
+        this.confirmFunction(status);
         return this.activeModal.close(status);
       }else{
         this.cancel()

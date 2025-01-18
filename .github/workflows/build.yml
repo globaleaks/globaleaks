@@ -22,4 +22,4 @@ jobs:
       - name: Run tests
         run: |
           cd $GITHUB_WORKSPACE
-          ./.github/workflows/scripts/run-build.sh
+          ./.github/workflows/scripts/run_build.sh

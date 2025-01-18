@@ -70,10 +70,13 @@ class TestAPI(TestGL):
         server_headers = [
             ('Cache-control', 'no-store'),
             ('Content-Security-Policy', 'base-uri \'none\';' \
-                                        'default-src \'none\';' \
+                                        'default-src \'none\' \'report-sample\';' \
                                         'form-action \'none\';' \
                                         'frame-ancestors \'none\';' \
-                                        'sandbox;'),
+                                        'sandbox;' \
+                                        'trusted-types;' \
+                                        'require-trusted-types-for \'script\';'
+                                        'report-uri /api/report;'),
             ('Cross-Origin-Embedder-Policy', 'require-corp'),
             ('Cross-Origin-Opener-Policy', 'same-origin'),
             ('Cross-Origin-Resource-Policy', 'same-origin'),
