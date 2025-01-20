@@ -285,7 +285,9 @@ class TestRTipInstance(helpers.TestHandlerWithPopulatedDB):
         self.assertEqual(len(rtip_descs), self.population_of_submissions * self.population_of_recipients)
 
         # we delete the first and then we verify that the second does not exist anymore
-        handler = self.request(role='receiver', user_id=rtip_descs[0]['receiver_id'])
+        receiver_name = 'receiver1@receiver1.xxx'
+        receiver = next((r for r in rtip_descs[0]['receivers'] if r['name'] == receiver_name), None)
+        handler = self.request(role='receiver', user_id=receiver['id'])
         yield handler.delete(rtip_descs[0]['id'])
 
         rtip_descs = yield self.get_rtips()
