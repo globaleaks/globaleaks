@@ -39,3 +39,8 @@
     <i class="fa fa-clipboard-list"></i>
     <span>{{'Audit log'|translate}}</span>
 </a>
+    <a routerLink="/admin/backup" routerLinkActive="active" id="admin_backup" [attr.aria-current]="isActive('/admin/backup') ? 'page' : 'false'">
+        <i class="fa fa-save"></i>
+        <span>{{'Backup'|translate}}</span>
+    </a>
+</div>

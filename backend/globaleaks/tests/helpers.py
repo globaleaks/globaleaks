@@ -369,6 +369,9 @@ class MockDict:
             'pgp': False,
             'user_privacy_policy_text': '',
             'user_privacy_policy_url': ''
+            'backup_enabled': True,
+            'backup_time': '',
+            'backup_path': '',
         }
 
         self.dummyNetwork = {

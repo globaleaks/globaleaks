@@ -595,4 +595,9 @@
   "Reminder about unread or updated reports": "Reminder about unread or updated reports",
   "Role: {Role}": "Role: {Role}",
   "Password: {Password}": "Password: {Password}"
+	"Backup interval (hours)": "Backup interval (hours)",
+	"Changes from last backup": "Changes from last backup",
+	"Enable Backup": "Enable Backup",
+	"Backup Time (hh:mm)": "Backup Time (hh:mm)",
+	"Backup Destination Path": "Backup Destination Path",
 }

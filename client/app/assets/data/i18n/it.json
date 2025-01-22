@@ -619,4 +619,9 @@
   "Reminder about unread or updated reports": "Promemoria circa segnalazioni non lette o aggiornate",
   "Role: {Role}": "Ruolo: {Role}",
   "Password: {Password}": "Password: {Password}"
+	"Backup interval (hours)": "Intervallo esecuzione backup (ore)",
+	"Changes from last Backup": "Modifiche da ultimo backup",
+	"Enable Backup": "Abilita backup",
+	"Backup Time (hh:mm)": "Ora del backup (hh:mm)",
+	"Backup Destination Path": "Percorso di destinazione del backup",
 }

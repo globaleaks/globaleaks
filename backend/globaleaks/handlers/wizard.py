@@ -31,6 +31,9 @@ def db_wizard(session, tid, hostname, request):
         node = root_tenant_node
         encryption = True
         escrow = request['admin_escrow']
+        node.set_val('backup_enabled', False)
+        node.set_val('backup_time', '2:00')
+        node.set_val('backup_path', '/var/backup/')
     else:
         node = config.ConfigFactory(session, tid)
         encryption = root_tenant_node.get_val('encryption')
