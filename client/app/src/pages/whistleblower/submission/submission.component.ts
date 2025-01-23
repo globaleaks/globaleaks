@@ -1,5 +1,5 @@
-import {Component, OnInit, SimpleChanges, QueryList, ViewChild, ViewChildren} from "@angular/core";
-import { ActivatedRoute } from '@angular/router';
+import {Component, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import { ActivatedRoute, Router } from '@angular/router';
 import {AppDataService} from "@app/app-data.service";
 import {WhistleblowerLoginResolver} from "@app/shared/resolvers/whistleblower-login.resolver";
 import {FieldUtilitiesService} from "@app/shared/services/field-utilities.service";
@@ -13,7 +13,6 @@ import {Answers} from "@app/models/reciever/reciever-tip-data";
 import {Field} from "@app/models/resolvers/field-template-model";
 import * as Flow from "@flowjs/flow.js";
 import {TitleService} from "@app/shared/services/title.service";
-import {Router} from "@angular/router";
 import {WhistleblowerSubmissionService} from "@app/pages/whistleblower/whistleblower-submission.service";
 
 @Component({
@@ -45,7 +44,7 @@ export class SubmissionComponent implements OnInit {
   hasPreviousStepValue: boolean;
   areReceiversSelectedValue: boolean;
 
-  constructor(private route:ActivatedRoute, protected whistleblowerSubmissionService:WhistleblowerSubmissionService,private titleService: TitleService, private router: Router, private appConfigService: AppConfigService, private whistleblowerLoginResolver: WhistleblowerLoginResolver, protected authenticationService: AuthenticationService, private appDataService: AppDataService, private utilsService: UtilsService, private fieldUtilitiesService: FieldUtilitiesService, public submissionService: SubmissionService) {
+  constructor(private readonly route:ActivatedRoute, protected whistleblowerSubmissionService:WhistleblowerSubmissionService ,private readonly titleService: TitleService, private readonly router: Router, private readonly appConfigService: AppConfigService, private readonly whistleblowerLoginResolver: WhistleblowerLoginResolver, protected authenticationService: AuthenticationService, private appDataService: AppDataService, private utilsService: UtilsService, private readonly fieldUtilitiesService: FieldUtilitiesService, public submissionService: SubmissionService) {
     this.selectable_contexts = [];
     this.receivedData = this.submissionService.getSharedData();
 
@@ -56,7 +55,7 @@ export class SubmissionComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
-      this.context_id = params.get('context') || "";
+      this.context_id = params.get('context') ?? "";
       this.initializeSubmission();
     });
   }
@@ -77,7 +76,7 @@ export class SubmissionComponent implements OnInit {
     this.utilsService.scrollToTop();
 
     this.field_id_map = this.fieldUtilitiesService.build_field_id_map(this.questionnaire);
-    this.show_steps_navigation_bar = this.context?.allow_recipients_selection || this.questionnaire.steps.length > 1;
+    this.show_steps_navigation_bar = this.context?.allow_recipients_selection ?? this.questionnaire.steps.length > 1;
     this.receiversOrderPredicate = this.submissionService.context.show_receivers_in_alphabetical_order ? "name" : "";
 
     if (this.context?.allow_recipients_selection) {

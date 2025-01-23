@@ -1,4 +1,5 @@
 # -*- coding: utf-8
+import logging
 import os
 import re
 import sys
@@ -264,7 +265,8 @@ class StateClass(ObjectDict, metaclass=Singleton):
             if pgp_key_public:
                 try:
                     body = PGPContext(pgp_key_public).encrypt_message(mail_body)
-                except:
+                except Exception as e:
+                    logging.debug(e)
                     continue
 
             # avoid waiting for the notification to send and instead rely on threads to handle it
@@ -341,7 +343,8 @@ class StateClass(ObjectDict, metaclass=Singleton):
 
         try:
             totpVerify(secret, token)
-        except:
+        except Exception as e:
+            logging.debug(e)
             raise errors.InvalidTwoFactorAuthCode
 
         # Register last used valid token

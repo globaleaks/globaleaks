@@ -124,8 +124,8 @@ def process_receiverfiles(state, files_maps):
                         PGPContext(rf['pgp_key_public']).encrypt_file(encrypted_file, rf['dst'])
                 else:
                     write_plaintext_file(sf, rf['dst'])
-            except:
-                pass
+            except Exception as e:
+                logging.debug(e)
 
 
 def process_whistleblowerfiles(state, files_maps):
@@ -143,8 +143,8 @@ def process_whistleblowerfiles(state, files_maps):
                 write_encrypted_file(m['key'], sf, m['dst'])
             else:
                 write_plaintext_file(sf, m['dst'])
-        except:
-            pass
+        except Exception as e:
+            logging.debug(e)
 
 
 class Delivery(LoopingJob):

@@ -1,4 +1,5 @@
 # -*- coding: utf-8
+import logging
 import os
 from twisted.internet.defer import inlineCallbacks, returnValue
 
@@ -237,8 +238,8 @@ def set_tmp_key(user_session, user, token):
         with open(os.path.abspath(os.path.join(State.settings.ramdisk_path, token)), "ab") as f:
             f.write(b":")
             f.write(key)
-    except:
-        pass
+    except Exception as e:
+        logging.debug(e)
 
 
 @transact
