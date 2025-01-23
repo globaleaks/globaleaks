@@ -24,6 +24,7 @@ export interface Children {
   multi_entry: boolean;
   required: boolean;
   preview: boolean;
+  statistical: boolean;
   attrs: Attrs;
   x: number;
   y: number;
@@ -136,6 +137,8 @@ export interface Comment {
   visibility: string;
   type: string;
   data: any;
+  tids: number[];
+  eo_name: string;
 }
 
 export interface WbFile {
@@ -147,6 +150,9 @@ export interface WbFile {
   type: string;
   reference_id: string;
   error: boolean;
+  status: string;
+  verification_date: string;
+  is_scan_expired: boolean;
 }
 
 export interface RFile {
@@ -160,6 +166,9 @@ export interface RFile {
   error: boolean;
   author: string;
   downloads: number;
+  status: string;
+  isLoading: boolean;
+  verification_date: string | null;
 }
 
 export interface QuestionWhistleblowerIdentityName {
@@ -198,4 +207,13 @@ export interface SubmissionStatus {
   label: string;
   status?: string;
   substatus?: string;
+}
+
+
+export interface ForwardedFile {
+  id: string;
+  creation_date: string;
+  name: string;
+  size: number;
+  type: string;
 }

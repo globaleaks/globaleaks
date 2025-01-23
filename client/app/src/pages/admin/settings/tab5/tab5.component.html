@@ -172,6 +172,34 @@
               translate }}</div>
         </div>
         <div class="form-group">
+            <input [(ngModel)]="nodeResolver.dataModel.proxy_idp_enabled" type="checkbox">
+            <label>{{ 'Enable Proxy IDP' | translate }}</label>
+        </div>
+        <div class="form-group">
+            <input [(ngModel)]="nodeResolver.dataModel.forwarding_enabled" type="checkbox">
+            <label>{{ 'Enable Forwardings' | translate }}</label>
+        </div>
+        <div class="form-group" *ngIf="nodeResolver.dataModel.forwarding_enabled">
+            <label>{{ 'Maximum Comments from EO to whistleblower' | translate }}</label>
+            <input class="form-control" [(ngModel)]="nodeResolver.dataModel.max_msg_external_to_whistle" type="number" min="0" />
+        </div>
+        <div class="form-group" *ngIf="nodeResolver.dataModel.forwarding_enabled">
+            <label>{{ 'Maximum Comments from Not Affiliated EO to whistleblower' | translate }}</label>
+            <input class="form-control" [(ngModel)]="nodeResolver.dataModel.max_msg_external_to_whistle_not_aff" type="number" min="0" />
+        </div>
+        <div class="form-group">
+            <input [(ngModel)]="nodeResolver.dataModel.antivirus_enabled" type="checkbox">
+            <label>{{ 'Enable virus scanning of files' | translate }}</label>
+        </div>
+        <div class="form-group" *ngIf="nodeResolver.dataModel.antivirus_enabled">
+            <label for="antivirus-host">{{ 'Antivirus Host' | translate }}</label>
+            <input type="text" [(ngModel)]="nodeResolver.dataModel.antivirus_clamd_ip" id="antivirus-host" class="form-control" />
+        </div>
+        <div class="form-group" *ngIf="nodeResolver.dataModel.antivirus_enabled">
+            <label for="antivirus-port">{{ 'Antivirus port' | translate }}</label>
+            <input type="number" [(ngModel)]="nodeResolver.dataModel.antivirus_clamd_port" id="antivirus-port" class="form-control" />
+        </div>
+        <div class="form-group">
             <button class="btn btn-primary" id="save" [disabled]="contentForm.invalid" (click)="updateNode()" type="submit">
                 <i class="fa-solid fa-check"></i>
                 <span>{{ 'Save' | translate }}</span>

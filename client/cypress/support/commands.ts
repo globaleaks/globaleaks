@@ -18,9 +18,70 @@ declare global {
       simple_login_admin: (username?: string, password?: string, url?: string, firstlogin?: boolean) => void;
       login_custodian: (username?: string, password?: string, url?: string, firstlogin?: boolean) => void;
       login_analyst: (username?: string, password?: string, url?: string, firstlogin?: boolean) => void;
+      login_accreditor: (username?: string, password?: string, url?: string, firstlogin?: boolean) => void;
+      request_external_organization: (denomination?: string, pec?: string, url?: string, adminTaxCode?: string) => void;
+      confirm_accreditation_request: (reqId: string) => void;
     }
   }
 }
+
+Cypress.Commands.add("confirm_accreditation_request", (reqId) => {
+
+  cy.visit("#/accreditation-request/"+reqId);
+
+  cy.get('input[name="privacyAccept"]').click();
+
+  cy.get("#proceed").should("be.enabled");
+  cy.get("#proceed").click();
+
+  cy.wait(1000);
+  
+  cy.get(".modal").should("be.visible");
+  cy.get(".modal #closeConfirmModal").click();
+
+});
+
+Cypress.Commands.add("request_external_organization", (denomination, pec, url, adminTaxCode) => {
+
+  denomination = denomination === undefined ? "Organizzazione 1" : denomination;
+  pec = pec === undefined ? "example@examplepec.com" : pec;
+  url = url === undefined ? "http://exampleurl.com" : url;
+  adminTaxCode = adminTaxCode === undefined ? "LLNBRY89A18D969M" : adminTaxCode;
+
+
+  cy.setCookie("x-idp-userid", adminTaxCode);
+  cy.visit('/#/accreditation-request');
+
+  cy.get('input[name="denomination"]').type(denomination);
+  cy.get('input[name="pec"]').type(pec);
+  cy.get('input[name="confirmPec"]').type(pec);
+  cy.get('input[name="institutionalWebsite"]').type(url);
+
+  cy.get('input[name="adminName"]').type("Barry");
+  cy.get('input[name="adminSurname"]').type("Allen");
+
+  cy.get('input[name="adminTaxCode"]').invoke('val').should('not.be.empty');
+
+  cy.get('input[name="adminEmail"]').type("example@example.com");
+  cy.get('input[name="adminTaxCode"]').should("be.disabled");
+
+  cy.get('input[name="recipientName"]').type("Clark");
+  cy.get('input[name="recipientSurname"]').type("Kent");
+  cy.get('input[name="recipientTaxCode"]').type("KNTCRK91S11I480G");
+  cy.get('input[name="recipientEmail"]').type("example1@example1.com");
+
+  cy.get('input[name="privacyAccept"]').click();
+
+  cy.get("#proceed").should("be.enabled");
+  cy.get("#proceed").click();
+
+  cy.wait(1000);
+  
+  cy.get(".modal").should("be.visible");
+  cy.get(".modal #closeConfirmModal").click();
+
+});
+
 
 Cypress.Commands.add("waitForPageIdle", () => {
   const pageIdleDetector = new PageIdleDetector();
@@ -163,6 +224,33 @@ Cypress.Commands.add("login_custodian", (username, password, url, firstlogin) =>
     });
   }
 
+});
+
+Cypress.Commands.add("login_accreditor", (username, password, url, firstlogin) => {
+  username = username === undefined ? "Resp_Accreditation" : username;
+  password = password === undefined ? Cypress.env("user_password") : password;
+  url = url === undefined ? "#/login" : url;
+
+  let finalURL = "/actions/forcedpasswordchange";
+
+  cy.visit(url);
+  cy.get("[name=\"username\"]").type(username);
+
+  // @ts-ignore
+  cy.get("[name=\"password\"]").type(password);
+  cy.get("#login-button").click();
+
+  if (!firstlogin) {
+    cy.url().should("include", "#/login").then(() => {
+      cy.url().should("not.include", "#/login").then((currentURL) => {
+        const hashPart = currentURL.split("#")[1];
+        finalURL = hashPart === "login" ? "/accreditor/home" : hashPart;
+        cy.waitForUrl(finalURL);
+      });
+    });
+  }
+
+  cy.waitForPageIdle();
 });
 
 Cypress.Commands.add("takeScreenshot", (filename: string, locator?: string) => {

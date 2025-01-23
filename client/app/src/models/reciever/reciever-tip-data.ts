@@ -48,6 +48,8 @@ export class RecieverTipData {
   tip_id: string;
   motivation: string;
   redactions: RedactionData[];
+  forwardings: Forwarding[];
+  max_eo_to_whistleblower_comments: number;
 }
 
 export interface Questionnaire {
@@ -306,4 +308,25 @@ export interface ReceiversById {
   [key: string]: {
     name: string;
   };
+}
+
+export class Forwarding {
+  id: string;
+  tid: number;
+  name: string;
+  creation_date?: string;
+  files: FileReference[];
+  comments?: CommentReference[];
+  state: string;
+  questionnaire: Questionnaire;
+}
+
+export interface CommentReference {
+  id: string;
+  author_type: string;
+}
+
+export interface FileReference {
+  id: string;
+  author_type: string;
 }

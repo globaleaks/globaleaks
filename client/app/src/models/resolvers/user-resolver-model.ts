@@ -6,6 +6,7 @@ export class userResolverModel {
   role: string;
   enabled: boolean;
   last_login: string;
+  idp_id: string;
   name: string;
   description: string;
   public_name: string;
@@ -36,4 +37,5 @@ export class userResolverModel {
   can_reopen_reports: boolean;
   can_mask_information: boolean;
   can_redact_information: boolean;
+  can_download_infected: boolean;
 }

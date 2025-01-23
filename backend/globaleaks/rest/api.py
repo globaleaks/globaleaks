@@ -34,7 +34,8 @@ from globaleaks.handlers import admin, \
                                 user, \
                                 viewer, \
                                 wizard, \
-                                whistleblower
+                                whistleblower, \
+                                accreditator
 
 from globaleaks.rest import decorators, errors
 from globaleaks.state import State, extract_exception_traceback_and_schedule_email
@@ -44,6 +45,11 @@ from globaleaks.utils.sock import isIPAddress
 tid_regexp = r'([0-9]+)'
 uuid_regexp = r'([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})'
 key_regexp = r'([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|[a-z_]{0,100})'
+
+accreditation_api = r'/api/accreditation/request/' + uuid_regexp
+admin_statuses_api = r'/api/admin/statuses/(closed)'
+admin_statuses_api_item = r'/api/admin/statuses/' + uuid_regexp
+recipient_rtips_item_api = r'/api/recipient/rtips/' + uuid_regexp
 
 api_spec = [
     (r'/api/health', health.HealthStatusHandler),
@@ -70,15 +76,19 @@ api_spec = [
     # Receiver Handlers
     (r'/api/recipient/operations', recipient.Operations),
     (r'/api/recipient/rtips', recipient.TipsCollection),
-    (r'/api/recipient/rtips/' + uuid_regexp, recipient.rtip.RTipInstance),
-    (r'/api/recipient/rtips/' + uuid_regexp + r'/comments', recipient.rtip.RTipCommentCollection),
-    (r'/api/recipient/rtips/' + uuid_regexp + r'/iars', recipient.rtip.IdentityAccessRequestsCollection),
-    (r'/api/recipient/rtips/' + uuid_regexp + r'/export', recipient.export.ExportHandler),
-    (r'/api/recipient/rtips/' + uuid_regexp + r'/rfiles', recipient.rtip.ReceiverFileUpload),
+    (recipient_rtips_item_api, recipient.rtip.RTipInstance),
+    (recipient_rtips_item_api + r'/comments', recipient.rtip.RTipCommentCollection),
+    (recipient_rtips_item_api + r'/iars', recipient.rtip.IdentityAccessRequestsCollection),
+    (recipient_rtips_item_api + r'/export', recipient.export.ExportHandler),
+    (recipient_rtips_item_api + r'/rfiles', recipient.rtip.ReceiverFileUpload),
     (r'/api/recipient/redactions', recipient.rtip.RTipRedactionCollection),
     (r'/api/recipient/redactions/' + uuid_regexp, recipient.rtip.RTipRedactionCollection),
     (r'/api/recipient/rfiles/' + uuid_regexp, recipient.rtip.ReceiverFileDownload),
     (r'/api/recipient/wbfiles/' + uuid_regexp, recipient.rtip.WhistleblowerFileDownload),
+    (r'/api/recipient/wbtip/' + uuid_regexp + r'/send', recipient.sendtip.ForwardSubmission),
+    (r'/api/recipient/tenants/forwarding', recipient.sendtip.ForwardingsTenantCollection),
+    (r'/api/recipient/questionnaires/forwarding', recipient.sendtip.ForwardingsQuestionnaireCollection),
+    (r'/api/recipient/wbtip/' + uuid_regexp + r'/close', recipient.sendtip.CloseForwardedSubmission),
 
     # Whistleblower Handlers
     (r'/api/whistleblower/operations', whistleblower.wbtip.Operations),
@@ -98,6 +108,7 @@ api_spec = [
 
     # Analyst Handlers
     (r'/api/analyst/stats', analyst.Statistics),
+    (r'/api/analyst/statistical', analyst.StatisticalInterest),
 
     # Admin Handlers
     (r'/api/admin/node', admin.node.NodeInstance),
@@ -134,12 +145,24 @@ api_spec = [
     (r'/api/admin/tenants', admin.tenant.TenantCollection),
     (r'/api/admin/tenants/' + '([0-9]{1,20})', admin.tenant.TenantInstance),
     (r'/api/admin/statuses', admin.submission_statuses.SubmissionStatusCollection),
-    (r'/api/admin/statuses/' + r'(closed)' + r'/substatuses', admin.submission_statuses.SubmissionSubStatusCollection),
-    (r'/api/admin/statuses/' + uuid_regexp, admin.submission_statuses.SubmissionStatusInstance),
-    (r'/api/admin/statuses/' + r'(closed)', admin.submission_statuses.SubmissionStatusInstance),
-    (r'/api/admin/statuses/' + uuid_regexp + r'/substatuses', admin.submission_statuses.SubmissionSubStatusCollection),
-    (r'/api/admin/statuses/' + r'(closed)' + r'/substatuses/' + uuid_regexp, admin.submission_statuses.SubmissionSubStatusInstance),
-    (r'/api/admin/statuses/' + uuid_regexp + r'/substatuses/' + uuid_regexp, admin.submission_statuses.SubmissionSubStatusInstance),
+    (admin_statuses_api + r'/substatuses', admin.submission_statuses.SubmissionSubStatusCollection),
+    (admin_statuses_api_item, admin.submission_statuses.SubmissionStatusInstance),
+    (admin_statuses_api, admin.submission_statuses.SubmissionStatusInstance),
+    (admin_statuses_api_item + r'/substatuses', admin.submission_statuses.SubmissionSubStatusCollection),
+    (admin_statuses_api + r'/substatuses/' + uuid_regexp, admin.submission_statuses.SubmissionSubStatusInstance),
+    (admin_statuses_api_item + r'/substatuses/' + uuid_regexp, admin.submission_statuses.SubmissionSubStatusInstance),
+
+    # Accreditation
+    (r'/api/accreditation/request', accreditator.SubmitAccreditationHandler),
+    (r'/api/accreditation/all', accreditator.GetAllAccreditationHandler),
+    (accreditation_api, accreditator.AccreditationHandler),
+    (r'/api/accreditation/request/instructor_request', accreditator.SubmitInstructorRequestHandler),
+    (accreditation_api + r'/approved', accreditator.AccreditationApprovedHandler),
+    (accreditation_api + r'/deleted', accreditator.AccreditationDeleteHandler),
+    (accreditation_api + r'/invited', accreditator.AccreditationApprovedHandler),
+    (accreditation_api + r'/confirm_invited', accreditator.ConfirmRequestHandler),
+    (accreditation_api + r'/accredited', accreditator.AccreditationConfirmHandler),
+    (accreditation_api + r'/toggle-status-active', accreditator.ToggleStatusActiveHandler),
 
     # Services
     (r'/api/support', support.SupportHandler),

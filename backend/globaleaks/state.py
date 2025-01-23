@@ -33,7 +33,7 @@ from globaleaks.utils.tempdict import TempDict
 from globaleaks.utils.templating import Templating
 from globaleaks.utils.token import TokenList
 from globaleaks.utils.tor_exit_set import TorExitSet
-from globaleaks.utils.utility import datetime_now, datetime_null
+from globaleaks.utils.utility import datetime_now
 
 
 silenced_exceptions = (
@@ -229,22 +229,31 @@ class StateClass(ObjectDict, metaclass=Singleton):
 
         self.stats_collection_start_time = datetime_now()
 
-    def sendmail(self, tid, to_address, subject, body):
+    def sendmail(self, tid, to_address, subject, body, secondary_smtp:bool = False):
         if self.settings.disable_notifications:
             return succeed(True)
 
         if self.tenants[tid].cache.mode != 'default':
             tid = 1
 
+        send_secondary_smtp = True if secondary_smtp and self.tenants[tid].cache.notification.smtp2_enabled else False
+        smtp_server = self.tenants[tid].cache.notification.smtp_server if not send_secondary_smtp else self.tenants[tid].cache.notification.smtp2_server
+        smtp_port = self.tenants[tid].cache.notification.smtp_port if not send_secondary_smtp else self.tenants[tid].cache.notification.smtp2_port
+        smtp_security = self.tenants[tid].cache.notification.smtp_security if not send_secondary_smtp else self.tenants[tid].cache.notification.smtp2_security
+        smtp_authentication = self.tenants[tid].cache.notification.smtp_authentication if not send_secondary_smtp else self.tenants[tid].cache.notification.smtp2_authentication
+        smtp_username = self.tenants[tid].cache.notification.smtp_username if not send_secondary_smtp else self.tenants[tid].cache.notification.smtp2_username
+        smtp_password = self.tenants[tid].cache.notification.smtp_password if not send_secondary_smtp else self.tenants[tid].cache.notification.smtp2_password
+        smtp_source_email = self.tenants[tid].cache.notification.smtp_source_email if not send_secondary_smtp else self.tenants[tid].cache.notification.smtp2_source_email
+
         return sendmail(tid,
-                        self.tenants[tid].cache.notification.smtp_server,
-                        self.tenants[tid].cache.notification.smtp_port,
-                        self.tenants[tid].cache.notification.smtp_security,
-                        self.tenants[tid].cache.notification.smtp_authentication,
-                        self.tenants[tid].cache.notification.smtp_username,
-                        self.tenants[tid].cache.notification.smtp_password,
+                        smtp_server,
+                        smtp_port,
+                        smtp_security,
+                        smtp_authentication,
+                        smtp_username,
+                        smtp_password,
                         self.tenants[tid].cache.name,
-                        self.tenants[tid].cache.notification.smtp_source_email,
+                        smtp_source_email,
                         to_address,
                         self.tenants[tid].cache.name + ' - ' + subject,
                         body,
@@ -314,10 +323,10 @@ class StateClass(ObjectDict, metaclass=Singleton):
             # avoid waiting for the notification to send and instead rely on threads to handle it
             tw(db_schedule_email, 1, mail_address, mail_subject, mail_body)
 
-    def format_and_send_mail(self, session, tid, mail_address, template_vars):
+    def format_and_send_mail(self, session, tid, mail_address, template_vars, secondary_smtp:bool=False):
         mail_subject, mail_body = Templating().get_mail_subject_and_body(template_vars)
 
-        db_schedule_email(session, tid, mail_address, mail_subject, mail_body)
+        db_schedule_email(session, tid, mail_address, mail_subject, mail_body, secondary_smtp)
 
     def get_tmp_file_by_name(self, filename):
         for k, v in self.TempUploadFiles.items():

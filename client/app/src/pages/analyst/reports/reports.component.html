@@ -1,0 +1,235 @@
+<div class="row">
+    <form #reports="ngForm" class="col-lg-6 col-md-12" (ngSubmit)="searchReports(reports)">
+        <div class="form-inline d-inline-flex align-items-center">
+            <span class="form-group">
+                <label for="reportsFrom">{{ 'From' | translate }}</label>
+                <div class="input-group mx-1">
+                    <input id="reportsFrom" class="form-control inputelem" type="text" [readonly]="true"
+                        [(ngModel)]="input_start_date" name="startDate" ngbDatepicker #datepickerstart="ngbDatepicker"
+                        (click)="datepickerstart.toggle()" [maxDate]="maxDate" (ngModelChange)="onDateChange()" required />                    
+                    <span class="input-group-append btn btn-light border border-1" (click)="datepickerstart.toggle()" (keydown)="datepickerstart.toggle()">
+                        <i class="fa-solid fa-calendar"></i>
+                    </span>
+                </div>
+            </span>
+
+            <span class="form-group mx-1">
+                <label for="reportsTo">{{ 'To' | translate }}</label>
+                <div class="input-group mx-1">
+                    <input id="reportsTo" class="form-control inputelem" type="text" [readonly]="true"
+                        [(ngModel)]="input_end_date" name="endDate" ngbDatepicker #datepickerend="ngbDatepicker"
+                        (click)="datepickerend.toggle()" [maxDate]="maxDate" (ngModelChange)="onDateChange()" required />
+                    <span class="input-group-append btn btn-light border border-1" (click)="datepickerend.toggle()" (keydown)="datepickerend.toggle()">
+                        <i class="fa-solid fa-calendar"></i>
+                    </span>
+                </div>
+            </span>
+
+            <span class="ms-1 mt-2 d-inline-flex align-items-center">
+                <button type="button" class="btn btn-outline-secondary" (click)="clearDateRange()">
+                    <i class="fa-solid fa-times-circle"></i>
+                </button>
+            </span>
+        </div>
+
+        <div class="form-group mt-3">
+            <button id="add-btn" class="btn btn-primary" type="submit" [disabled]="!reports.valid">
+                <span>{{ 'Search' | translate }}</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="row mt-2">
+    <div class="col-md-12 table-responsive" *ngIf="isSearchInitiated">
+        <div class="col-12 mb-3">
+            <button class="btn btn-primary" (click)="addChart()"><span>{{ 'Add Chart' | translate }}</span></button>
+        </div>
+
+        <div class="row justify-content-start">
+            <div class="col-lg-4 col-md-12 mb-4 d-inline-flex align-items-stretch" *ngFor="let chart of charts; let i = index">
+                <div class="card w-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <input
+                            class="form-control inputelem mx-1"
+                            type="text"
+                            [(ngModel)]="chart.name"
+                            [placeholder]="('Chart' | translate) + ' ' + (i + 1)"
+                        />
+                        <button type="button" class="btn btn-outline-secondary" aria-label="Close" (click)="removeChart(i)">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="chartType">{{ 'Chart Type' | translate }}</label>
+                            <select id="chartType" class="form-control" [(ngModel)]="chart.type" (change)="updateCharts()">
+                                <option value="bar">{{ 'Bar' | translate }}</option>
+                                <option value="pie">{{ 'Pie' | translate }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="chartColumn">{{ 'Statistical field' | translate }}</label>
+                            <select id="chartColumn" class="form-control" [(ngModel)]="chart.columnId" (change)="updateCharts()">
+                                <option *ngFor="let key of summaryKeys" [value]="key.id">{{ key.label | translate}}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <canvas baseChart [datasets]="chart.datasets" [data]="chart.data"
+                                [type]="chart.type"[options]="chart.options">
+                            </canvas>
+                        </div>
+                    </div>
+                </div>  
+            </div>
+        </div>
+
+        <table class="table table-striped" *ngIf="tableHeaders.length > 0">
+            <thead>
+                <tr>
+                    <ng-container *ngFor="let header of tableHeaders">
+                        <ng-container [ngSwitch]="header">
+                            <th class="TipInfoID" *ngSwitchCase="INTERNAL_TIP_ID">
+                                <i class="fa-solid fa-hashtag"></i>
+                            </th>
+                            <th class="TipFwCount" *ngSwitchCase="FW_TIP_COUNT">
+                                <i class="fa-solid fa-file-arrow-up"></i>
+                            </th>
+                            <th class="TipFwCount" *ngSwitchCase="IS_FW_TIP">
+                                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                            </th>
+                            <th class="TipInfoStatus" *ngSwitchCase="INTERNAL_TIP_STATUS">
+                                <span class="d-inline-flex align-items-center">
+                                    <i class="fa-solid fa-dot-circle"></i>
+                                    <span>{{'Status' | translate}}</span>
+                                    <span class="dropdown-multi-select-container" *ngIf="dropdownStatusData.length > 0">
+                                        <i class="fa-solid fa-filter" [ngClass]="{ filterSelected: checkFilter() }" 
+                                        (click)="toggleStatusDropdown()" (keydown)="toggleStatusDropdown()"></i>
+                                        <span [ngClass]="{'hidden': !statusDropdownVisible}">
+                                            <ng-multiselect-dropdown 
+                                                [ngClass]="{'dropdown-visible': statusDropdownVisible}"
+                                                [settings]="dropdownSettings" 
+                                                [data]="dropdownStatusData" 
+                                                [(ngModel)]="dropdownStatusModel" 
+                                                (ngModelChange)="onChangedStaus(dropdownStatusModel, 'Status')">
+                                            </ng-multiselect-dropdown>
+                                        </span>
+                                    </span>
+                                </span>
+                            </th>
+                            <th class="TipInfoSubmissionDate" *ngSwitchCase="INTERNAL_TIP_CREATION_DATE">
+                                <span class="d-inline-flex align-items-center">
+                                    <i class="fa-solid fa-clock"></i>
+                                    <span>{{'Report date' | translate}}</span>
+                                    <span class="ngb-dtepicker-container ms-1" *ngIf="minCreationDate !== maxCreationDate">
+                                        <i class="fas fa-calendar" [ngClass]="{'calendar-active': dateFilters['creation']}" 
+                                           (click)="toggleDatePicker('creation')" (keydown)="toggleDatePicker('creation')"></i>
+                                        <div [hidden]="!creationDatePicker">
+                                            <ngbd-datepicker-range class="position-absolute d-block"
+                                                [currentDates]="{
+                                                    fromDate: fromDatetoNgbDate(dateModels['creation']?.fromDate || null), 
+                                                    toDate: fromDatetoNgbDate(dateModels['creation']?.toDate || null)
+                                                }"
+                                                (emitDateSelection)="onDateFilterChange($event, 'creation')">
+                                            </ngbd-datepicker-range>
+                                        </div>
+                                    </span>
+                                </span>
+                            </th>
+                            <th class="TipInfoUpdateDate" *ngSwitchCase="INTERNAL_TIP_UPDATE_DATE">
+                                <span class="d-inline-flex align-items-center">
+                                    <i class="fa-solid fa-clock"></i>
+                                    <span>{{'Last update' | translate}}</span>
+                                    <span class="ngb-dtepicker-container ms-1" *ngIf="minUpdateDate !== maxUpdateDate">
+                                        <i class="fas fa-calendar" [ngClass]="{'calendar-active': dateFilters['update']}" 
+                                           (click)="toggleDatePicker('update')" (keydown)="toggleDatePicker('update')"></i>
+                                        <div [hidden]="!updateDatePicker">
+                                            <ngbd-datepicker-range class="position-absolute d-block"
+                                                [currentDates]="{
+                                                    fromDate: fromDatetoNgbDate(dateModels['update']?.fromDate || null), 
+                                                    toDate: fromDatetoNgbDate(dateModels['update']?.toDate || null)
+                                                }"
+                                                (emitDateSelection)="onDateFilterChange($event, 'update')">
+                                            </ngbd-datepicker-range>
+                                        </div>
+                                    </span>
+                                </span>
+                            </th>
+                            <th class="TipInfoExpirationDate" *ngSwitchCase="INTERNAL_TIP_EXPIRATION_DATE">
+                                <span class="d-inline-flex align-items-center">
+                                    <i class="fa-solid fa-hourglass"></i>
+                                    <span>{{'Expiration date' | translate}}</span>
+                                    <span class="ngb-dtepicker-container ms-1" *ngIf="minExpirationDate !== maxExpirationDate">
+                                        <i class="fas fa-calendar" [ngClass]="{'calendar-active': dateFilters['expiration']}" 
+                                           (click)="toggleDatePicker('expiration')" (keydown)="toggleDatePicker('expiration')"></i>
+                                        <div [hidden]="!expirationDatePicker">
+                                            <ngbd-datepicker-range class="position-absolute d-block"
+                                                [currentDates]="{
+                                                    fromDate: fromDatetoNgbDate(dateModels['expiration']?.fromDate || null), 
+                                                    toDate: fromDatetoNgbDate(dateModels['expiration']?.toDate || null)
+                                                }"
+                                                (emitDateSelection)="onDateFilterChange($event, 'expiration')">
+                                            </ngbd-datepicker-range>
+                                        </div>
+                                    </span>
+                                </span>
+                            </th>
+                            <th class="TipInfoReadReceipt" *ngSwitchCase="INTERNAL_TIP_READ_RECEIPT">
+                                <i class="fa-solid fa-envelope-circle-check"></i>
+                            </th>
+                            <th class="TipInfoComments" *ngSwitchCase="INTERNAL_TIP_COMMENT_COUNT">
+                                <i class="fa-solid fa-comment"></i>
+                            </th>
+                            <th class="TipInfoFiles" *ngSwitchCase="INTERNAL_TIP_FILE_COUNT">
+                                <i class="fa-solid fa-file"></i>
+                            </th>
+                            <th class="TipInfoRecipientCount" *ngSwitchCase="INTERNAL_TIP_RECEIVER_COUNT">
+                                <i class="fa-solid fa-users"></i>
+                            </th>
+                            <th *ngSwitchDefault>
+                                <span>{{ header | translate}}</span>
+                            </th>
+                        </ng-container>
+                    </ng-container>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let row of filteredRows | slice:((currentPage - 1) * itemsPerPage):((currentPage - 1) * itemsPerPage + itemsPerPage)">
+                    <td *ngFor="let key of tableHeaders">
+                        <ng-container [ngSwitch]="key">
+                            <td *ngSwitchCase="INTERNAL_TIP_CREATION_DATE">{{ row[key] | date:'dd-MM-yyyy HH:mm' }}</td>
+                            <td *ngSwitchCase="INTERNAL_TIP_UPDATE_DATE">{{ row[key] | date:'dd-MM-yyyy HH:mm' }}</td>
+                            <td *ngSwitchCase="INTERNAL_TIP_EXPIRATION_DATE">{{ row[key] | date:'dd-MM-yyyy HH:mm' }}</td>
+                            <td *ngSwitchDefault>{{ (row[key] || '').toString() | translate}}</td>
+                        </ng-container>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="d-flex justify-content-center" *ngIf="filteredRows.length > itemsPerPage">
+            <ngb-pagination class="pagination-sm" [collectionSize]="filteredRows.length" [(page)]="currentPage" [pageSize]="itemsPerPage" [maxSize]="10" [rotate]="true" [ellipses]="true" [boundaryLinks]="true">
+                <ng-template ngbPaginationPrevious>
+                     &lt; {{ 'Previous' | translate }}
+                </ng-template>
+                <ng-template ngbPaginationNext>
+                    {{ 'Next' | translate }} &gt;
+                </ng-template>
+                <ng-template ngbPaginationFirst>
+                     &lt;&lt; {{ 'First' | translate }}
+                </ng-template>
+                <ng-template ngbPaginationLast>
+                    {{ 'Last' | translate }} &gt;&gt;
+                </ng-template>
+            </ngb-pagination>
+        </div>
+        <div class="float-end">
+            <a class="btn btn-sm btn-link" type="button" *ngIf="filteredRows.length > 0" (click)="exportToCsv()">
+                <i class="fa-solid fa-download"></i>
+                <span>{{ 'Export' | translate }}</span>
+            </a>
+        </div>
+        <div *ngIf="tableHeaders.length === 0" class="alert alert-info mt-3">
+            <span>{{ 'No results found.' | translate}}</span>
+        </div>
+    </div>
+</div>

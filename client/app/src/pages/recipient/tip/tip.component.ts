@@ -23,13 +23,15 @@ import {CryptoService} from "@app/shared/services/crypto.service";
 import {TransferAccessComponent} from "@app/shared/modals/transfer-access/transfer-access.component";
 import {AuthenticationService} from "@app/services/helper/authentication.service";
 import {Tab} from "@app/models/component-model/tab";
-import {RecieverTipData} from "@app/models/reciever/reciever-tip-data";
+import {Forwarding, RecieverTipData} from "@app/models/reciever/reciever-tip-data";
 import {Receiver} from "@app/models/app/public-model";
 import {TipUploadWbFileComponent} from "@app/shared/partials/tip-upload-wbfile/tip-upload-wb-file.component";
 import {TipCommentsComponent} from "@app/shared/partials/tip-comments/tip-comments.component";
 import {ReopenSubmissionComponent} from "@app/shared/modals/reopen-submission/reopen-submission.component";
 import {ChangeSubmissionStatusComponent} from "@app/shared/modals/change-submission-status/change-submission-status.component";
 import {TranslateService} from "@ngx-translate/core";
+import { SelectEODropdownComponent } from "@app/shared/partials/selecteo-dropdown/selecteo-dropdown.component";
+import { preferenceResolverModel } from "@app/models/resolvers/preference-resolver-model";
 
 
 @Component({
@@ -40,6 +42,7 @@ export class TipComponent implements OnInit {
   @ViewChild("tab1") tab1!: TemplateRef<TipUploadWbFileComponent | TipCommentsComponent>;
   @ViewChild("tab2") tab2!: TemplateRef<TipUploadWbFileComponent | TipCommentsComponent>;
   @ViewChild("tab3") tab3!: TemplateRef<TipUploadWbFileComponent | TipCommentsComponent>;
+  @ViewChild("tab4") tab4!: TemplateRef<SelectEODropdownComponent | TipUploadWbFileComponent | TipCommentsComponent>;
 
   tip_id: string | null;
   tip: RecieverTipData;
@@ -51,6 +54,13 @@ export class TipComponent implements OnInit {
   redactMode:boolean = false;
   redactOperationTitle: string;
   tabs: Tab[];
+  organizationList: Forwarding[] = [];
+  selectedEo: Forwarding[] = [];  
+  selectedMap: number[] = []
+
+  protected readonly JSON = JSON;
+  
+  preferenceData: preferenceResolverModel;
 
   constructor(private translateService: TranslateService,private tipService: TipService, private appConfigServices: AppConfigService, private router: Router, private cdr: ChangeDetectorRef, private cryptoService: CryptoService, protected utils: UtilsService, protected preferencesService: PreferenceResolver, protected modalService: NgbModal, private activatedRoute: ActivatedRoute, protected httpService: HttpService, protected http: HttpClient, protected appDataService: AppDataService, protected RTipService: ReceiverTipService, protected authenticationService: AuthenticationService) {
   }
@@ -58,6 +68,11 @@ export class TipComponent implements OnInit {
   ngOnInit() {
     this.loadTipDate();
     this.cdr.detectChanges();
+    this.preferenceData = this.preferencesService.dataModel;
+
+    this.tipService.reload$.subscribe(() => {
+      this.loadTipDate();
+  });
   }
 
   loadTipDate() {
@@ -82,20 +97,37 @@ export class TipComponent implements OnInit {
           this.showEditLabelInput = this.tip.label === "";
           this.preprocessTipAnswers(this.tip);
           this.tip.submissionStatusStr = this.utils.getSubmissionStatusText(this.tip.status, this.tip.substatus, this.appDataService.submissionStatuses);
-          setTimeout(() => {
-              this.initNavBar();
-          });
+          
+          if(this.tip.forwardings && this.tip.forwardings.length > 0 && this.organizationList.length == 0)
+            this.getForwardedEOList(this.tip.forwardings);
+          
+          this.initNavBar()
         }
       }
     );
   }
 
+
+  getForwardedEOList(forwardings: Forwarding[]){
+
+    let allForw = new Forwarding();
+    allForw.tid=0;
+    allForw.name="All"
+    
+    this.organizationList.push(allForw);
+
+    this.organizationList = this.organizationList.concat(forwardings)
+
+  }
+
+
+
   initNavBar() {
     setTimeout(() => {
-      this.active = "Everyone";
+      this.active = "Recipients and Whistleblower";
       this.tabs = [
         {
-          title: "Everyone",
+          title: "Recipients and Whistleblower",
           component: this.tab1
         },
         {
@@ -106,17 +138,23 @@ export class TipComponent implements OnInit {
           title: "Only me",
           component: this.tab3
         },
+        ...(this.appDataService.public.node.forwarding_enabled ? [{
+          title: "External Organization and Receivers",
+          component: this.tab4
+        }] : [])
       ];
     });
   }
 
-  openGrantTipAccessModal(): void {
+  openGrantTipAccessModal() {
     this.utils.runUserOperation("get_users_names", {}, false).subscribe({
       next: response => {
         const selectableRecipients: Receiver[] = [];
-        this.appDataService.public.receivers.forEach(async (receiver: Receiver) => {
+        this.appDataService.public.receivers.forEach((receiver: Receiver) => {
           if (receiver.id !== this.authenticationService.session.user_id && !this.tip.receivers_by_id[receiver.id]) {
-            selectableRecipients.push(receiver);
+            (async () => {
+              await selectableRecipients.push(receiver);
+            })();
           }
         });
         const modalRef = this.modalService.open(GrantAccessComponent, {backdrop: 'static', keyboard: false});
@@ -144,9 +182,11 @@ export class TipComponent implements OnInit {
       {
         next: response => {
           const selectableRecipients: Receiver[] = [];
-          this.appDataService.public.receivers.forEach(async (receiver: Receiver) => {
+          this.appDataService.public.receivers.forEach((receiver: Receiver) => {
             if (receiver.id !== this.authenticationService.session.user_id && this.tip.receivers_by_id[receiver.id]) {
-              selectableRecipients.push(receiver);
+              (async () => { 
+                await selectableRecipients.push(receiver);
+              })();
             }
           });
           const modalRef = this.modalService.open(RevokeAccessComponent, {backdrop: 'static', keyboard: false});
@@ -175,9 +215,11 @@ export class TipComponent implements OnInit {
       {
         next: response => {
           const selectableRecipients: Receiver[] = [];
-          this.appDataService.public.receivers.forEach(async (receiver: Receiver) => {
+          this.appDataService.public.receivers.forEach((receiver: Receiver) => {
             if (receiver.id !== this.authenticationService.session.user_id && !this.tip.receivers_by_id[receiver.id]) {
-              selectableRecipients.push(receiver);
+              (async () => {
+                await selectableRecipients.push(receiver);
+              })();
             }
           });
           const modalRef = this.modalService.open(TransferAccessComponent, {backdrop: 'static', keyboard: false});
@@ -363,5 +405,25 @@ export class TipComponent implements OnInit {
     this.loadTipDate();
   }
 
-  protected readonly JSON = JSON;
+  selectOrganization(org: Forwarding){
+    this.selectedEo = [];
+    
+    if(org.tid != 0)
+      this.selectedEo.push(org);
+    else
+      this.selectedEo = this.organizationList.slice(1);
+
+    this.selectedMap = this.selectedEo.map(_=> _.tid)
+  }
+  
+
+  goToSendtipDetail(forw: Forwarding){
+    this.RTipService.forwarding = forw;
+    this.router.navigateByUrl("sendtip-detail").then();
+  }
+
+  navChanged(){
+    this.selectedEo = [];
+  }
+
 }

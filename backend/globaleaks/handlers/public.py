@@ -262,11 +262,15 @@ def db_serialize_node(session, tid, language):
     languages = db_get_languages(session, tid)
     ret = ConfigFactory(session, tid).serialize('public_node')
     ret.update(ConfigL10NFactory(session, tid,).serialize('public_node', language))
+    tenant = session.query(models.Tenant).filter(models.Tenant.id == tid).one_or_none()
 
     ret['start_time'] = State.start_time
     ret['root_tenant'] = tid == 1
     ret['languages_enabled'] = languages if ret['wizard_done'] else list(LANGUAGES_SUPPORTED_CODES)
     ret['languages_supported'] = LANGUAGES_SUPPORTED
+
+    ret['external'] = None if not tenant else tenant.external
+    ret['affiliated'] = None if not tenant else tenant.affiliated
 
     for x in special_files:
         ret[x] = session.query(models.File.id).filter(models.File.tid == tid, models.File.name == x).one_or_none()
@@ -431,6 +435,7 @@ def serialize_field(session, tid, field, language, data=None, serialize_template
         'triggered_by_score': field.triggered_by_score,
         'triggered_by_options': db_get_triggers_by_type(session, 'field', field.id),
         'options': [serialize_field_option(o, language) for o in data['options'].get(f_to_serialize.id, [])],
+        'statistical': field.statistical,
         'children': children
     }
 
@@ -582,22 +587,31 @@ def get_public_resources(session, tid, language):
     :param language: The language to be used for serialization
     :return: The public API descriptor
     """
+    is_root_tenant = tid == 1
 
-    return {
-        'node': db_serialize_node(session, tid, language),
-        'questionnaires': db_get_questionnaires(session, tid, language, True),
+    root_node = db_serialize_node(session, 1, language)
+    tenant_node = root_node if is_root_tenant else db_serialize_node(session, tid, language)
+
+    api_descriptor = {
+        'node': tenant_node,
+        'questionnaires': db_get_questionnaires(session, tid, language),
         'submission_statuses': db_get_submission_statuses(session, tid, language),
         'receivers': db_get_receivers(session, tid, language),
-        'contexts': db_get_contexts(session, tid, language)
+        'contexts': db_get_contexts(session, tid, language),
+        'proxy_idp_enabled': root_node.get('proxy_idp_enabled', False)
     }
 
+    if not is_root_tenant and root_node.get('mode') == 'accreditation':
+        api_descriptor['node']['max_msg_external_to_whistle'] = root_node.get('max_msg_external_to_whistle', 0)
+        api_descriptor['node']['max_msg_external_to_whistle_not_aff']: root_node.get('max_msg_external_to_whistle_not_aff', 0)
+
+    return api_descriptor
 
 class PublicResource(BaseHandler):
     """
     Handler responsible of serving the public API
     """
     check_roles = 'any'
-    cache_resource = True
 
     def get(self):
         """

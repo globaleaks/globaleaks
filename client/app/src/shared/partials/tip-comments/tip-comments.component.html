@@ -1,15 +1,20 @@
 <div id="TipCommunicationComments" class="card card-default" [attr.aria-expanded]="collapsed">
-    <div class="card-header d-flex justify-content-between" (click)="toggleCollapse(); utilsService.stopPropagation($event);">
-        <span>{{'Comments'|translate}}</span>
+    <div class="card-header d-flex justify-content-between"
+        (click)="toggleCollapse(); utilsService.stopPropagation($event);">
+        <span>{{ (title? title : 'Comments') |translate}}</span>
         <span class="">
             <i *ngIf="!collapsed" class="fa-solid fa-chevron-up" data-toggle="tooltip" title="{{'Collapse' | translate}}"></i>
             <i *ngIf="collapsed" class="fa-solid fa-chevron-down" data-toggle="tooltip" title="{{'Expand' | translate}}"></i>
         </span>
     </div>
     <div class="card-body" *ngIf="!collapsed">
-       <div *ngIf="tipService.tip.status !== 'closed'" class="row">
-           <div class="col-md-12 clearfix">
-                <textarea id="TipCommunicationCommentsInput" [(ngModel)]="newCommentContent" name="newCommentContent" maxlength="4096" class="form-control" autocomplete="off"></textarea>
+        <div *ngIf="banner">
+            {{banner | translate}}
+        </div>
+        <div *ngIf="!readonly && tipService.tip.status !== 'closed' && (maximum_number ?  getSortedComments((comments | filter : 'visibility' : key)).length < maximum_number : true) " class="row">
+            <div class="col-md-12 clearfix">
+                <textarea id="TipCommunicationCommentsInput" [(ngModel)]="newCommentContent" name="newCommentContent"
+                    maxlength="4096" class="form-control" autocomplete="off" [placeholder]="placeholder ? (placeholder | translate) : ''"></textarea>
                 <span class="float-end">{{newCommentContent.length ? newCommentContent.length : '0'}}/4096</span>
             </div>
             <div class="col-md-12 clearfix">
@@ -33,11 +38,21 @@
                         </span>
                         <br/>
                     </div>
-                    <div class="message" *ngIf="tipService.tip.receivers_by_id[comment.author_id]">
-                        <div class="row">
-                            <div class="col-md-6">{{tipService.tip.receivers_by_id[comment.author_id].name}}</div>
+                    <div class="message" *ngIf="comment.author_id">
+                        <div *ngIf="tipService.tip.receivers_by_id[comment.author_id]" class="row">
+                            <div  class="col-md-6">{{tipService.tip.receivers_by_id[comment.author_id].name}}</div>
                             <div class="col-md-6 text-end">{{comment.creation_date | date:'dd-MM-yyyy HH:mm'}}</div>
                         </div>
+
+                        <div  *ngIf="!tipService.tip.receivers_by_id[comment.author_id] && comment.eo_name" class="row">
+                            <div class="col-md-6">{{comment.eo_name}}</div>
+                            <div class="col-md-6 text-end">{{comment.creation_date | date:'dd-MM-yyyy HH:mm'}}</div>
+                        </div>
+
+                        <div *ngIf="!tipService.tip.receivers_by_id[comment.author_id] && !comment.eo_name" class="col-md-12 text-end">
+                            {{comment.creation_date | date:'dd-MM-yyyy HH:mm'}}
+                        </div>
+
                         <div *ngIf="!comment.type" class="preformatted">{{comment.content}}</div>
                         <div *ngIf="comment.type === 'auditlog_update_report_status'">
                             <div>{{'Status'|translate}}: {{utilsService.getSubmissionStatusText(comment.data.status,comment.data.substatus,appDataService.submissionStatuses) | translate}}</div>

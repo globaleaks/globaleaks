@@ -21,6 +21,11 @@ export class AuthenticationService {
   requireAuthCode: boolean = false;
   loginData: LoginDataRef = new LoginDataRef();
 
+  private regexProtectedUrl = [
+    "api\/accreditation\/request\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/accredited",
+    "api\/accreditation\/request\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\/confirm_invited"
+  ]
+
   constructor(private http: HttpClient, private modalService: NgbModal,private titleService: TitleService, private activatedRoute: ActivatedRoute, private httpService: HttpService, private appDataService: AppDataService, private router: Router) {
     this.init();
   }
@@ -66,13 +71,25 @@ export class AuthenticationService {
 
   resetPassword(username: string) {
     const param = JSON.stringify({"username": username});
-    this.httpService.requestResetLogin(param).subscribe(
-      {
-        next: () => {
-          this.router.navigate(["/login/passwordreset/requested"]).then();
+
+    if (!this.appDataService.public.node.root_tenant && this.appDataService.public.node.mode == 'accreditation' && this.appDataService.public.proxy_idp_enabled){
+      this.httpService.requestResetEOLogin(param).subscribe(
+        {
+          next: () => {
+            this.router.navigate(["/login/passwordreset/requested"]).then();
+          }
         }
-      }
-    );
+      );
+    }
+    else {
+      this.httpService.requestResetLogin(param).subscribe(
+        {
+          next: () => {
+            this.router.navigate(["/login/passwordreset/requested"]).then();
+          }
+        }
+      );
+    }
   }
 
   login(tid?: number, username?: string, password?: string | undefined, authcode?: string | null, authtoken?: string | null, callback?: () => void) {
@@ -89,7 +106,16 @@ export class AuthenticationService {
         password = password?.replace(/\D/g, "");
         const authHeader = this.getHeader();
         requestObservable = this.httpService.requestWhistleBlowerLogin(JSON.stringify({"receipt": password}), authHeader);
-      } else {
+      }
+      else if (!this.appDataService.public.node.root_tenant && this.appDataService.public.node.mode == 'accreditation' && this.appDataService.public.proxy_idp_enabled ) {
+        requestObservable = this.httpService.requestEOLogin(JSON.stringify({
+          "tid": tid,
+          "username": username,
+          "password": password,
+          "authcode": authcode
+        }));
+      }
+      else {
         requestObservable = this.httpService.requestGeneralLogin(JSON.stringify({
           "tid": tid,
           "username": username,
@@ -107,7 +133,7 @@ export class AuthenticationService {
             this.router.navigate([response.redirect]).then();
           }
           this.setSession(response);
-          if (response && response && response.properties && response.properties.new_receipt) {
+          if (response && response.properties && response.properties.new_receipt) {
             const receipt = response.properties.new_receipt;
             const formattedReceipt = this.formatReceipt(receipt);
       
@@ -233,8 +259,17 @@ export class AuthenticationService {
   loginRedirect() {
     const source_path = location.pathname;
 
+    this.appDataService.page = "blank"
+
     if (source_path !== "/login") {
       this.router.navigateByUrl("/login").then();
     }
   };
+
+  checkRegexProtectedUrl(url: string){
+
+    let arrayContainsString = this.regexProtectedUrl.some(item => url.match(item));
+    return arrayContainsString;
+
+  }
 }

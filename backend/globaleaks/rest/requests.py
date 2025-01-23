@@ -18,7 +18,7 @@ key_regexp = r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$|^[
 key_regexp_or_empty = r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$|^[a-z_]{0,100}$|^$'
 uuid_regexp = r'^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$'
 uuid_regexp_or_empty = r'^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$|^$'
-user_role_regexp = r'^(admin|analyst|custodian|receiver)$'
+user_role_regexp = r'^(admin|analyst|custodian|receiver|accreditor)$'
 email_regexp = r'^(([\w+-\.]){0,100}[\w]{1,100}@([\w+-\.]){0,100}[\w]{1,100})$'
 email_regexp_or_empty = r'^(([\w+-\.]){0,100}[\w]{1,100}@([\w+-\.]){0,100}[\w]{1,100})$|^$'
 hostname_regexp = r'^[0-9a-z\-\.]+$'
@@ -124,6 +124,12 @@ SubmissionDesc = {
     'score': int
 }
 
+StatisticalInterestTable = {
+    'date_from': DateType,
+    'date_to': DateType,
+    'is_eo': bool
+}
+
 AdminUserDesc = {
     'username': str,
     'name': str,
@@ -139,6 +145,7 @@ AdminUserDesc = {
     'pgp_key_public': str,
     'language': str,
     'notification': bool,
+    'can_download_infected': bool,
     'can_edit_general_settings': bool,
     'can_delete_submission': bool,
     'can_postpone_expiration': bool,
@@ -166,9 +173,15 @@ UserUserDesc = {
     'notification': bool
 }
 
-CommentDesc = {
+WbTipCommentDesc = {
     'content': str,
     'visibility': str
+}
+
+RTipCommentDesc = {
+    'content': str,
+    'visibility': str,
+    'tids': [int]
 }
 
 OpsDesc = {
@@ -244,7 +257,14 @@ AdminNodeDesc = {
     'custom_support_url': url_regexp_or_empty,
     'pgp': bool,
     'user_privacy_policy_text': str,
-    'user_privacy_policy_url': str
+    'user_privacy_policy_url': str,
+    'antivirus_enabled': bool,
+    'antivirus_clamd_ip': str,
+    'antivirus_clamd_port': int,
+    'forwarding_enabled': bool,
+    'proxy_idp_enabled': bool,
+    'max_msg_external_to_whistle': int,
+    'max_msg_external_to_whistle_not_aff': int
 }
 
 AdminNetworkDesc = {
@@ -277,7 +297,15 @@ AdminNotificationDesc = {
     'enable_analyst_notification_emails': bool,
     'enable_custodian_notification_emails': bool,
     'enable_receiver_notification_emails': bool,
-    'tip_expiration_threshold': int
+    'tip_expiration_threshold': int,
+    'smtp2_password': str,
+    'smtp2_port': int,
+    'smtp2_security': str,
+    'smtp2_server': str,
+    'smtp2_enabled': bool,
+    'smtp2_source_email': str,
+    'smtp2_username': str,
+    'smtp2_authentication': bool
 }
 
 AdminNotificationDesc.update({k: str for k in ConfigL10NFilters['notification']})
@@ -326,7 +354,8 @@ AdminFieldDesc = {
     'options': [AdminFieldOptionDesc],
     'children': list,
     'triggered_by_score': int,
-    'triggered_by_options': list
+    'triggered_by_options': list,
+    'statistical': bool
 }
 
 AdminFieldDescRaw = get_multilang_request_format(AdminFieldDesc, models.Field.localized_keys)
@@ -525,6 +554,34 @@ SignupDesc = {
     'tos2': bool
 }
 
+SubmitAccreditation = {
+    'organization_name': str,
+    'organization_email': email_regexp,
+    'admin_name': alphanumeric_str_regexp,
+    'admin_surname': alphanumeric_str_regexp,
+    'admin_email': email_regexp,
+    'recipient_name': alphanumeric_str_regexp,
+    'recipient_surname': alphanumeric_str_regexp,
+    'recipient_tax_code': alphanumeric_str_regexp,
+    'recipient_email': email_regexp,
+    'tos1': bool
+}
+
+AccreditationInstructorRequest = {
+    'organization_name': str,
+    'organization_email': email_regexp,
+    'organization_accreditation_reason': str,
+    'requestor_id': str
+}
+
+deleteAccreditation = {
+    'motivation_text': str
+}
+
+confirmAccreditation = {
+    'tos2': bool
+}
+
 SupportDesc = {
     'mail_address': email_regexp,
     'url': url_regexp_or_empty,
@@ -569,4 +626,21 @@ SubmissionSubStatusDesc = {
 
 SessionUpdateDesc = {
     'token': str
+}
+
+
+ForwardSubmissionFilesDesc = {
+    'id': uuid_regexp,
+    'origin': str
+}
+
+ForwardSubmissionDesc = {
+    'tids': [int],
+    'text': str,
+    'files': [ForwardSubmissionFilesDesc],
+    'questionnaire_id': uuid_regexp
+}
+
+CloseForwardedSubmissionDesc = {
+    'answers': str
 }

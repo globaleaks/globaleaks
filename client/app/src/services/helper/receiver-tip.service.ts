@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {HttpService} from "@app/shared/services/http.service";
 import {AppDataService} from "@app/app-data.service";
-import {RecieverTipData} from "@app/models/reciever/reciever-tip-data";
+import {Forwarding, RecieverTipData} from "@app/models/reciever/reciever-tip-data";
 import {UtilsService} from "@app/shared/services/utils.service";
 import { RedactionData } from "@app/models/component-model/redaction";
 
@@ -10,6 +10,8 @@ import { RedactionData } from "@app/models/component-model/redaction";
 })
 export class ReceiverTipService {
   tip: RecieverTipData = new RecieverTipData();
+
+  forwarding: Forwarding;
 
   constructor(private httpService: HttpService, private appDataService: AppDataService,protected utils: UtilsService) {
   }
@@ -31,8 +33,8 @@ export class ReceiverTipService {
     return this.httpService.runOperation(url, operation, args, false).subscribe({});
   }
 
-  newComment(content: string, visibility: string) {
-    const param = JSON.stringify({"id": this.tip.msg_receiver_selected, "content": content, "visibility": visibility});
+  newComment(content: string, visibility: string, organizations?: number[]) {
+    const param = JSON.stringify({"id": this.tip.msg_receiver_selected, "content": content, "visibility": visibility, "tids": organizations});
     return this.httpService.rTipsRequestNewComment(param, this.tip.id);
   }
 

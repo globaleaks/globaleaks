@@ -143,6 +143,10 @@ table tr td {
   vertical-align: middle;
 }
 
+.centered-text {
+  text-align: center; 
+}
+
 .uib-datepicker-popup {
   padding: 5px;
   margin: 0;
@@ -310,7 +314,8 @@ h6 {
 #FooterBox,
 #DemoBadge,
 #PrivacyBadge,
-#operator-badge{
+#operator-badge,
+#organization-button{
   padding: 1em;
 }
 
@@ -1147,4 +1152,12 @@ i.fa-solid.fa-chevron-right {
 @keyframes gly-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(359deg); }
+}
+
+#AccreditationRequestPrivacy div {
+  margin-bottom: 0.5em;
+}
+
+.dropdown-visible {
+  display: block;
 }

@@ -210,7 +210,8 @@ def get_dummy_field():
         'x': 1,
         'width': 0,
         'triggered_by_score': 0,
-        'triggered_by_options': []
+        'triggered_by_options': [],
+        'statistical': False
     }
 
 
@@ -368,7 +369,12 @@ class MockDict:
             'custom_support_url': '',
             'pgp': False,
             'user_privacy_policy_text': '',
-            'user_privacy_policy_url': ''
+            'user_privacy_policy_url': '',
+            'antivirus_enabled': True,
+            'antivirus_clamd_ip': 'localhost',
+            'antivirus_clamd_port': 3310,
+            'forwarding_enabled': True,
+            'proxy_idp_enabled': True
         }
 
         self.dummyNetwork = {
@@ -806,17 +812,17 @@ class TestGLWithPopulatedDB(TestGL):
     @inlineCallbacks
     def fill_data(self):
         # fill_data/create_admin
-        self.dummyAdmin = yield create_user(1, None, self.dummyAdmin, 'en')
+        self.dummyAdmin = yield create_user(1, None, self.dummyAdmin, 'en', wizard = True)
 
         # fill_data/create_custodian
-        self.dummyAnalyst = yield create_user(1, None, self.dummyAnalyst, 'en')
+        self.dummyAnalyst = yield create_user(1, None, self.dummyAnalyst, 'en', wizard=True)
 
         # fill_data/create_custodian
-        self.dummyCustodian = yield create_user(1, None, self.dummyCustodian, 'en')
+        self.dummyCustodian = yield create_user(1, None, self.dummyCustodian, 'en', wizard=True)
 
         # fill_data/create_receiver
-        self.dummyReceiver_1 = yield create_user(1, None, self.dummyReceiver_1, 'en')
-        self.dummyReceiver_2 = yield create_user(1, None, self.dummyReceiver_2, 'en')
+        self.dummyReceiver_1 = yield create_user(1, None, self.dummyReceiver_1, 'en', wizard=True)
+        self.dummyReceiver_2 = yield create_user(1, None, self.dummyReceiver_2, 'en', wizard=True)
 
         yield mock_users_keys()
 
@@ -1031,7 +1037,7 @@ class TestCollectionHandler(TestHandler):
     @inlineCallbacks
     def fill_data(self):
         # fill_data/create_admin
-        self.dummyAdmin = yield create_user(1, None, self.dummyAdmin, 'en')
+        self.dummyAdmin = yield create_user(1, None, self.dummyAdmin, 'en', wizard=True)
 
     @inlineCallbacks
     def test_get(self):
@@ -1040,7 +1046,10 @@ class TestCollectionHandler(TestHandler):
 
         data = self.get_dummy_request()
 
-        yield self._test_desc['create'](1, self.session, data, 'en')
+        if 'test_user' in str(type(self)):
+            yield self._test_desc['create'](1, self.session, data, 'en', wizard=True)
+        else:
+            yield self._test_desc['create'](1, self.session, data, 'en')
 
         handler = self.request(role='admin')
 
@@ -1063,7 +1072,8 @@ class TestCollectionHandler(TestHandler):
             data = yield handler.post()
 
             for k, v in self._test_desc['data'].items():
-                self.assertEqual(data[k], v)
+                if k != 'wizard':
+                    self.assertEqual(data[k], v)
 
 
 class TestInstanceHandler(TestHandler):
@@ -1075,7 +1085,7 @@ class TestInstanceHandler(TestHandler):
     @inlineCallbacks
     def fill_data(self):
         # fill_data/create_admin
-        self.dummyAdmin = yield create_user(1, None, self.dummyAdmin, 'en')
+        self.dummyAdmin = yield create_user(1, None, self.dummyAdmin, 'en', wizard=True)
 
     @inlineCallbacks
     def test_get(self):

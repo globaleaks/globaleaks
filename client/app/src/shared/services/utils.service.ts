@@ -29,9 +29,12 @@ import {AppDataService} from "@app/app-data.service";
 import {AuthenticationService} from "@app/services/helper/authentication.service";
 import {FlowFile} from "@flowjs/flow.js";
 import {AcceptAgreementComponent} from "@app/shared/modals/accept-agreement/accept-agreement.component";
-import {WbFile} from "@app/models/app/shared-public-model";
+import {RFile, WbFile} from "@app/models/app/shared-public-model";
 import {FileViewComponent} from "@app/shared/modals/file-view/file-view.component";
 import {CryptoService} from "@app/shared/services/crypto.service";
+import { DownloadConfirmationComponent } from "../modals/download-confirmation/download-confirmation.component";
+import { AccreditationSubscriberModel } from "@app/models/resolvers/accreditation-model";
+import { FileItem } from "@app/models/reciever/sendtip-data";
 @Injectable({
   providedIn: "root"
 })
@@ -172,11 +175,12 @@ export class UtilsService {
         this.router.navigate([this.router.url]).then();
       });
   }
+
   onFlowUpload(flowJsInstance:Flow, file:File){
     const fileNameParts = file.name.split(".");
     const fileExtension = fileNameParts.pop();
     const fileNameWithoutExtension = fileNameParts.join(".");
-    const timestamp = new Date().getTime();
+    
     const fileNameWithTimestamp = `${fileNameWithoutExtension}.${fileExtension}`;
     const modifiedFile = new File([file], fileNameWithTimestamp, {type: file.type});
 
@@ -235,10 +239,10 @@ export class UtilsService {
   }
 
   showUserStatusBox(authenticationService: AuthenticationService, appDataService: AppDataService) {
-    return appDataService.public.node.wizard_done &&
+    return appDataService.page === "accreditation-request" || (appDataService.public.node.wizard_done &&
         appDataService.page !== "homepage" &&
         appDataService.page !== "submissionpage" &&
-        authenticationService.session;
+        authenticationService.session);
   }
 
   isWhistleblowerPage(authenticationService: AuthenticationService, appDataService: AppDataService) {
@@ -351,6 +355,14 @@ export class UtilsService {
     this.httpService.requestSupport(param).subscribe();
   }
 
+  submitAccreditationRequest(request: AccreditationSubscriberModel){
+    return this.httpService.requestAccreditationEO(request);
+  }
+
+  submitAccreditationRequestFromInvitation(uuid: string, request: AccreditationSubscriberModel){
+    return this.httpService.requestAccreditationFromInviteEO(uuid, request);
+  }
+
   runUserOperation(operation: string, args: any, refresh: boolean) {
     return this.httpService.runOperation("api/user/operations", operation, args, refresh);
   }
@@ -387,10 +399,6 @@ export class UtilsService {
             if (scoreLabel === selected_option.label) {
               rows.push(data_row);
             }
-          } else if (key === "status") {
-            if (data_row[key] === selected_option.label) {
-              rows.push(data_row);
-            }
           } else {
             if (data_row[key] === selected_option.label) {
               rows.push(data_row);
@@ -425,6 +433,20 @@ export class UtilsService {
     window.print();
   }
 
+  saveAs(authenticationService: AuthenticationService, filename: any, url: string): void {
+
+    const headers = new HttpHeaders({
+      "X-Session": authenticationService.session.id
+    });
+
+    this.http.get(url, {responseType: "blob", headers: headers}).subscribe(
+      response => {
+        this.saveBlobAs(filename, response);
+      }
+    );
+  }
+
+
   saveBlobAs(filename:string,response:Blob){
     const blob = new Blob([response], {type: "text/plain;charset=utf-8"});
     const blobUrl = URL.createObjectURL(blob);
@@ -439,18 +461,7 @@ export class UtilsService {
     }, 1000);
   }
 
-  saveAs(authenticationService: AuthenticationService, filename: any, url: string): void {
-    const headers = new HttpHeaders({
-      "X-Session": authenticationService.session.id
-    });
-
-    this.http.get(url, {responseType: "blob", headers: headers}).subscribe(
-      response => {
-        this.saveBlobAs(filename, response);
-      }
-    );
-  }
-
+  
   getPostponeDate(ttl: number): Date {
     const date = new Date();
     date.setDate(date.getDate() + ttl + 1);
@@ -733,23 +744,43 @@ export class UtilsService {
     };
   }
 
-  public downloadRFile(file: WbFile) {
+  public viewWBFile(file: RFile) {
+    const modalWBRef = this.modalService.open(FileViewComponent, {backdrop: 'static', keyboard: false});
+    modalWBRef.componentInstance.args = {
+      file: file,
+      loaded: false,
+      iframeHeight: window.innerHeight * 0.75
+    };
+  }
+
+  public downloadRFile(wbFile: WbFile) {
+
+    if(wbFile.status === "VERIFIED"){
     const param = JSON.stringify({});
-    this.httpService.requestToken(param).subscribe
-    (
+      this.httpService.requestToken(param).subscribe(
       {
         next: async token => {
           this.cryptoService.proofOfWork(token.id).subscribe(
               (ans) => {
                const url = this.authenticationService.session.role === "whistleblower"?"api/whistleblower/wbtip/wbfiles/":"api/recipient/wbfiles/";
-                window.open(url + file.id + "?token=" + token.id + ":" + ans);
+                  window.open(url + wbFile.id + "?token=" + token.id + ":" + ans);
                 this.appDataService.updateShowLoadingPanel(false);
               }
           );
         }
       }
     );
+
+      return null ;
+    }
+    else{
+      const url = this.authenticationService.session.role === "whistleblower"?"api/whistleblower/wbtip/wbfiles/":"api/recipient/wbfiles/";
+      return this.showAlertFileModal(wbFile, url+ wbFile.id )
+    }
+
   }
+
+
 
   flowDefault = new Flow({
     testChunks: false,
@@ -764,4 +795,102 @@ export class UtilsService {
       return this.authenticationService.getHeader();
     }
   });
+
+
+  sumDaysToDate(date: string, daysNum: number): Date{
+
+    let first_date = new Date(date);
+
+    let final_date = new Date();
+    final_date.setDate(first_date.getDate() + daysNum);
+
+    return final_date;
+
+  }
+
+
+  public downloadWBFile(wbFile: RFile) {
+
+    const param = JSON.stringify({});
+    this.httpService.requestToken(param).subscribe(
+      {
+        next: async token => {
+          this.cryptoService.proofOfWork(token.id).subscribe(
+            (ans) => {
+              if (this.authenticationService.session.role === "receiver") {
+                window.open("api/recipient/rfiles/" + wbFile.id + "?token=" + token.id + ":" + ans);
+              } else {
+                window.open("api/whistleblower/wbtip/rfiles/" + wbFile.id + "?token=" + token.id + ":" + ans);
+              }
+              this.appDataService.updateShowLoadingPanel(false);
+            }
+          );
+        }
+      }
+    );
+  }
+
+  private showAlertFileModal(wbFile: any, url: string){
+    const modalRef = this.modalService.open(DownloadConfirmationComponent, {backdrop: 'static', keyboard: false});
+      modalRef.componentInstance.arg = JSON.stringify({});
+      modalRef.componentInstance.text = wbFile.status==="PENDING" ? "The selected file is not verified. Proceed anyway with the download?" : "The selected file is infected. Proceed anyway with the download?" ;
+      modalRef.componentInstance.confirmFunction = (arg: string) => {
+        this.httpService.requestToken(arg).subscribe(
+        {
+          next: async token => {
+            this.cryptoService.proofOfWork(token.id).subscribe(
+              (ans) => {
+                  window.open(url + "?token=" + token.id + ":" + ans);
+                  this.appDataService.updateShowLoadingPanel(false);
+              }
+            );
+          }
+        }
+      )
+      };
+      return modalRef.result;
+  }
+
+
+  public downloadGenericFile(file: FileItem) {
+
+    if(file.status === "VERIFIED"){
+
+      const param = JSON.stringify({});
+      this.httpService.requestToken(param).subscribe(
+        {
+          next: async token => {
+            this.cryptoService.proofOfWork(token.id).subscribe(
+              (ans) => {
+                window.open(file.download_url + "?token=" + token.id + ":" + ans);
+                this.appDataService.updateShowLoadingPanel(false);
+              }
+            );
+          }
+        }
+      );
+      return null;
+    }
+    else{
+      return this.showAlertFileModal(file, file.download_url ? file.download_url : '');
+    }
+  }
+
+
+
+  getCookie(name: string) {
+    let ca: Array<string> = document.cookie.split(';');
+    let caLen: number = ca.length;
+    let cookieName = `${name}=`;
+    let c: string;
+
+    for (let i: number = 0; i < caLen; i += 1) {
+        c = ca[i].replace(/^\s+/g, '');
+        if (c.startsWith(cookieName)) {
+            return c.substring(cookieName.length, c.length);
+        }
+    }
+    return null;
+  }
+
 }

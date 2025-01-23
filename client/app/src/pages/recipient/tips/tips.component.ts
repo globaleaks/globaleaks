@@ -12,13 +12,14 @@ import {IDropdownSettings} from "ng-multiselect-dropdown";
 import {filter, orderBy} from "lodash-es";
 import {TokenResource} from "@app/shared/services/token-resource.service";
 import {Router} from "@angular/router";
-import {rtipResolverModel} from "@app/models/resolvers/rtips-resolver-model";
-import {Receiver} from "@app/models/reciever/reciever-tip-data";
+import {rtipResolverModel, Forwarding} from "@app/models/resolvers/rtips-resolver-model";
+import { Receiver} from "@app/models/reciever/reciever-tip-data";
 import {AuthenticationService} from "@app/services/helper/authentication.service";
 import {HttpService} from "@app/shared/services/http.service";
 import {Observable, from, switchMap} from "rxjs";
 import {HttpClient, HttpResponse} from "@angular/common/http";
 import {formatDate} from "@angular/common";
+import { preferenceResolverModel } from "@app/models/resolvers/preference-resolver-model";
 
 @Component({
   selector: "src-tips",
@@ -61,6 +62,7 @@ export class TipsComponent implements OnInit {
     unSelectAllText: this.translateService.instant("Deselect all"),
     searchPlaceholderText: this.translateService.instant("Search")
   };
+  preferenceData: preferenceResolverModel;
 
   constructor(private http: HttpClient,protected authenticationService: AuthenticationService, protected httpService: HttpService, private appConfigServices: AppConfigService, private router: Router, protected RTips: RTipsResolver, protected preference: PreferenceResolver, private modalService: NgbModal, protected utils: UtilsService, protected appDataService: AppDataService, private translateService: TranslateService, private tokenResourceService: TokenResource) {
 
@@ -73,6 +75,7 @@ export class TipsComponent implements OnInit {
       this.filteredTips = this.RTips.dataModel;
       this.processTips();
     }
+    this.preferenceData = this.preference.dataModel;
   }
 
   selectAll() {
@@ -189,6 +192,10 @@ export class TipsComponent implements OnInit {
     this.appConfigServices.localInitialization(true, reloadCallback);
   }
 
+  showTipDetails(id: string): void{
+    this.utils.go('/recipient/reports/' + id);
+  }
+
   tipSwitch(id: string): void {
     this.index = this.selectedTips.indexOf(id);
     if (this.index > -1) {
@@ -200,6 +207,11 @@ export class TipsComponent implements OnInit {
 
   isSelected(id: string): boolean {
     return this.selectedTips.indexOf(id) !== -1;
+  }
+
+  exportTip(tipId: string) {
+    this.utils.download("api/recipient/rtips/" + tipId + "/export").subscribe();
+    this.appDataService.updateShowLoadingPanel(false);
   }
 
   actAsWhistleblower() {
@@ -429,5 +441,10 @@ export class TipsComponent implements OnInit {
       'Subscription',
       'Number of Recipients'
     ].map(header => this.translateService.instant(header));
+  }
+
+  forwardingNames(forwardings: Forwarding[]){
+
+    return forwardings.map(_ => _.name).join(', ');
   }
 }

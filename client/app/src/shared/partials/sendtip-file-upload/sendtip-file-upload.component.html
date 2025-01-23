@@ -1,0 +1,68 @@
+<div id="TipPagefileUpload" class="card card-default" [attr.aria-expanded]="collapsed">
+    <div class="card-header clearfix"  (click)="collapsed = !collapsed; utilsService.stopPropagation($event);">
+      <span>{{'Files to attach to the send tip' | translate}}</span>
+      <span class="float-end">
+        <i *ngIf="!collapsed" class="fa-solid fa-chevron-up" data-toggle="tooltip" [title]="'Collapse' | translate"></i>
+        <i *ngIf="collapsed" class="fa-solid fa-chevron-down" data-toggle="tooltip" [title]="'Expand' | translate"></i>
+      </span>
+    </div>
+    <div class="card-body" *ngIf="!collapsed">
+
+      <div *ngFor="let file of files | orderBy: 'creation_date' as index; let i = index">
+        <div id="file-{{index}}" class="whistle-blower-file card card-default" >
+            <div class="card-body">
+                <div class="top-row clearfix">
+                    <span class="float-start">
+                        <span class="text-muted" >
+                            <span>{{'Filename'|translate}}</span>: </span>
+                        <span class="filename px-1">{{file.name}}</span>
+                    </span>
+                    <span class="float-end">
+                        <span>
+                            <button *ngIf="authenticationService.session?.role === 'receiver'" class="btn btn-sm btn-danger" (click)="removeFile(i)">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </span>
+                    </span>
+                </div>
+                <div class="file-info-row">
+                    <span>
+                        <span>{{'Origin'|translate}}</span>: <span>{{file.origin | translate}}</span>
+                    </span>
+                    <span class="px-1">
+                        <span>{{'Date'|translate}}</span>: <span>{{file.uploadDate | date:'dd-MM-yyyy HH:mm'}}</span>
+                    </span>
+                    <span class="px-1">
+                        <span>{{'Size:'|translate}}</span>
+                        <span>{{file.file.size | byteFmt:2}}</span>
+                    </span>
+                </div>
+                <div *ngIf="file.description">
+                    <span>
+                        <span>{{ 'Upload' | translate }}</span>: 
+                    </span>
+                    <span> {{file.description}} </span>
+                </div>
+            </div>
+        </div>
+
+
+      </div>
+
+      <div>
+        <div>{{'Upload a file:' | translate}}</div>
+        <div class="form">
+          <div class="input-group">
+            <span class="input-group-append">
+              <label for="customFile" class="btn btn-primary"  [ngClass]="{'disabled': tip && tip.status === 'closed'}">
+                <i class="fa-solid fa-upload"></i>
+                <span>{{'Upload'|translate}}</span>
+              </label>
+              <input #uploader id="customFile" type="file" (change)="addFile(uploader.files)" [style.display]="'none'"/>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  

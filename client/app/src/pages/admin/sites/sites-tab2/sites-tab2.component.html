@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-6">
-        <div class="form-group">
+        <div class="form-group" *ngIf="nodeResolver.dataModel.mode !== 'accreditation'">
             <label>
                 <input [(ngModel)]="nodeResolver.dataModel.adminonly" name="nodeResolver.dataModel.adminonly" type="checkbox" />
                 <span>{{'Use the first site for administrative purposes only'|translate}}</span>
@@ -8,35 +8,36 @@
         </div>
         <div class="form-group">
             <label>{{'Mode:'|translate}}</label>
-            <select name="type" class="form-select-custom" [(ngModel)]="nodeResolver.dataModel.mode" required>
+            <select name="type" class="form-select-custom" [(ngModel)]="nodeResolver.dataModel.mode" (change)="onModeChange()" required>
                 <option value="default" [selected]="nodeResolver.dataModel.mode === 'default'">DEFAULT</option>
                 <option value="demo">DEMO</option>
                 <option value="wbpa">WHISTLEBLOWINGPA</option>
+                <option value="accreditation">{{'ACCREDITATION' | translate}}</option>
             </select>
         </div>
-        <div class="form-group">
+        <div class="form-group" *ngIf="nodeResolver.dataModel.mode !== 'accreditation'">
             <label>{{'Root domain used for secondary sites'|translate}}</label>
             <div>
                 <input class="form-control" name="nodeResolver.dataModel.rootdomain" [(ngModel)]="nodeResolver.dataModel.rootdomain" type="text" />
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" *ngIf="nodeResolver.dataModel.mode !== 'accreditation'">
             <label>{{'Questionnaire'|translate}}</label>
             <select class="form-select-custom" [(ngModel)]="nodeResolver.dataModel.default_questionnaire">
                 <option *ngFor="let item of questionnairesResolver.dataModel" [ngValue]="item.id">{{item.name}}</option>
             </select>
         </div>
         <div *ngIf="!nodeResolver.dataModel.adminonly">
-            <div class="form-group">
+            <div class="form-group" *ngIf="nodeResolver.dataModel.mode !== 'accreditation'">
                 <label>
-                    <input name="nodeResolver.dataModel.enable_signup" [(ngModel)]="nodeResolver.dataModel.enable_signup" type="checkbox" />
+                    <input name="nodeResolver.dataModel.enable_signup" [(ngModel)]="nodeResolver.dataModel.enable_signup" type="checkbox" [disabled]="nodeResolver.dataModel.mode === 'accreditation'"/>
                     <span>{{'Allow users to sign up'|translate}}</span>
                 </label>
             </div>
-            <div *ngIf="nodeResolver.dataModel.enable_signup">
+            <div *ngIf="nodeResolver.dataModel.enable_signup || nodeResolver.dataModel.mode === 'accreditation'">
                 <div class="form-group">
                     <label>
-                        <input [(ngModel)]="nodeResolver.dataModel.signup_tos1_enable" type="checkbox" />
+                        <input [(ngModel)]="nodeResolver.dataModel.signup_tos1_enable" type="checkbox" [disabled]="nodeResolver.dataModel.mode === 'accreditation'"/>
                         <span>{{'Enable terms of service'|translate}}</span>
                         <span>#1</span>
                     </label>
@@ -59,7 +60,7 @@
                 </div>
                 <div class="form-group">
                     <label>
-                        <input [(ngModel)]="nodeResolver.dataModel.signup_tos2_enable" type="checkbox" />
+                        <input [(ngModel)]="nodeResolver.dataModel.signup_tos2_enable" type="checkbox" [disabled]="nodeResolver.dataModel.mode === 'accreditation'"/>
                         <span>{{'Enable terms of service'|translate}}</span>
                         <span>#2</span>
                     </label>

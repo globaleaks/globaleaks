@@ -3,6 +3,7 @@
 # Handlers dealing with tip interface for whistleblowers (wbtip)
 import base64
 import json
+import logging
 import os
 from twisted.internet.threads import deferToThread
 from twisted.internet.defer import inlineCallbacks, returnValue
@@ -15,11 +16,12 @@ from globaleaks.handlers.whistleblower.submission import decrypt_tip, \
     db_set_internaltip_answers, db_get_questionnaire, \
     db_archive_questionnaire_schema, db_set_internaltip_data
 from globaleaks.handlers.user import user_serialize_user
-from globaleaks.models import serializers
-from globaleaks.orm import db_get, transact
+from globaleaks.models import serializers, EnumStateFile
+from globaleaks.orm import db_get, db_log, transact
 from globaleaks.rest import errors, requests
 from globaleaks.state import State
 from globaleaks.utils.crypto import Base64Encoder, GCE
+from globaleaks.utils.file_analysis.utils import is_download
 from globaleaks.utils.fs import directory_traversal_check
 from globaleaks.utils.log import log
 from globaleaks.utils.templating import Templating
@@ -138,7 +140,7 @@ def store_additional_questionnaire_answers(session, tid, user_id, answers, langu
     if itip.crypto_tip_pub_key:
         answers = base64.b64encode(GCE.asymmetric_encrypt(itip.crypto_tip_pub_key, json.dumps(answers).encode())).decode()
 
-    db_set_internaltip_answers(session, itip.id, questionnaire_hash, answers)
+    db_set_internaltip_answers(session, itip.id, questionnaire_hash, answers, '')
 
     db_notify_recipients_of_tip_update(session, itip.id)
 
@@ -210,7 +212,8 @@ class WBTipCommentCollection(BaseHandler):
     check_roles = 'whistleblower'
 
     def post(self):
-        request = self.validate_request(self.request.content.read(), requests.CommentDesc)
+        request = self.validate_request(
+            self.request.content.read(), requests.WbTipCommentDesc)
         return create_comment(self.request.tid, self.session.user_id, request['content'])
 
 
@@ -229,18 +232,27 @@ class WhistleblowerFileDownload(BaseHandler):
                              (models.InternalFile.id == file_id,
                               models.InternalFile.internaltip_id == models.InternalTip.id,
                               models.InternalTip.id == user_id))
-        log.debug("Download of file %s by whistleblower %s" % (ifile.id, user_id))
 
-        return ifile.name, ifile.id, itip.crypto_tip_prv_key
+        log.debug("Download of file %s by whistleblower %s" %
+                  (ifile.id, user_id))
+        db_log(session, tid=tid, type='whistleblower_download_wbfile',
+               user_id=user_id, object_id=file_id)
+
+        return ifile.name, ifile.id, itip.crypto_tip_prv_key, ifile.state, False
 
     @inlineCallbacks
     def get(self, wbfile_id):
-        name, ifile_id, tip_prv_key = yield self.download_wbfile(self.request.tid, self.session.user_id, wbfile_id)
+        name, ifile_id, tip_prv_key, state, dl_infected = yield self.download_wbfile(
+            self.request.tid,
+            self.session.user_id, wbfile_id
+        )
 
-        filelocation = os.path.join(self.state.settings.attachments_path, ifile_id)
-
-        directory_traversal_check(self.state.settings.attachments_path, filelocation)
-        self.check_file_presence(filelocation)
+        file_location = os.path.join(
+            self.state.settings.attachments_path, ifile_id)
+        aux_file = os.path.join(self.state.settings.attachments_path, ifile_id)
+        directory_traversal_check(
+            self.state.settings.attachments_path, file_location)
+        self.check_file_presence(file_location)
 
         if tip_prv_key:
             tip_prv_key = GCE.asymmetric_decrypt(self.session.cc, base64.b64decode(tip_prv_key))
@@ -248,11 +260,19 @@ class WhistleblowerFileDownload(BaseHandler):
 
             try:
                 # First attempt
-                filelocation = GCE.streaming_encryption_open('DECRYPT', tip_prv_key, filelocation)
-            except:
-                pass
-
-        yield self.write_file_as_download(name, filelocation)
+                aux_path = file_location
+                file_location = GCE.streaming_encryption_open(
+                    'DECRYPT', tip_prv_key, file_location)
+                aux_file = GCE.streaming_encryption_open(
+                    'DECRYPT', tip_prv_key, aux_path)
+            except Exception as e:
+                logging.debug(e)
+        status, run_download = yield is_download(aux_file, name, state, dl_infected, ifile_id)
+        if not run_download:
+            if status == EnumStateFile.infected:
+                raise errors.FileInfectedDownloadPermissionDenied
+            raise errors.FilePendingDownloadPermissionDenied
+        yield self.write_file_as_download(name, file_location)
 
 
 class ReceiverFileDownload(BaseHandler):
@@ -275,21 +295,39 @@ class ReceiverFileDownload(BaseHandler):
 
         log.debug("Download of file %s by whistleblower %s",
                   rfile.id, self.session.user_id)
+        db_log(session, tid=tid, type='whistleblower_download_rfile',
+               user_id=self.session.user_id, object_id=file_id)
 
-        return rfile.name, rfile.id, base64.b64decode(wbtip.crypto_tip_prv_key), ''
+        return rfile.name, rfile.id, base64.b64decode(wbtip.crypto_tip_prv_key), '', rfile.state, True
 
     @inlineCallbacks
     def get(self, rfile_id):
-        name, filelocation, tip_prv_key, pgp_key = yield self.download_rfile(self.request.tid, rfile_id)
+        name, filelocation, tip_prv_key, pgp_key, state, dl_infected = yield self.download_rfile(
+            self.request.tid,
+            rfile_id
+        )
 
-        filelocation = os.path.join(self.state.settings.attachments_path, filelocation)
-        directory_traversal_check(self.state.settings.attachments_path, filelocation)
+        filelocation = os.path.join(
+            self.state.settings.attachments_path, filelocation)
+        aux_file = os.path.join(
+            self.state.settings.attachments_path, filelocation)
+        directory_traversal_check(
+            self.state.settings.attachments_path, filelocation)
 
         if tip_prv_key:
             tip_prv_key = GCE.asymmetric_decrypt(self.session.cc, tip_prv_key)
-            name = GCE.asymmetric_decrypt(tip_prv_key, base64.b64decode(name.encode())).decode()
-            filelocation = GCE.streaming_encryption_open('DECRYPT', tip_prv_key, filelocation)
-
+            name = GCE.asymmetric_decrypt(
+                tip_prv_key, base64.b64decode(name.encode())).decode()
+            aux_path = filelocation
+            filelocation = GCE.streaming_encryption_open(
+                'DECRYPT', tip_prv_key, filelocation)
+            aux_file = GCE.streaming_encryption_open(
+                'DECRYPT', tip_prv_key, aux_path)
+        status, run_download = yield is_download(aux_file, name, state, dl_infected)
+        if not run_download:
+            if status == EnumStateFile.infected:
+                raise errors.FileInfectedDownloadPermissionDenied
+            raise errors.FilePendingDownloadPermissionDenied
         yield self.write_file_as_download(name, filelocation, pgp_key)
 
 

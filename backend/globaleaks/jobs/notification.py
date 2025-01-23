@@ -80,8 +80,9 @@ class MailGenerator(object):
         reminder_time = self.state.tenants[1].cache.unread_reminder_time if 1 in self.state.tenants else 7
 
         for tid in self.state.tenants:
+            tenant = session.query(models.Tenant).filter(models.Tenant.id == tid).one_or_none()
             cache = self.state.tenants[tid].cache
-            if cache.notification and cache.enable_notification_emails_recipient:
+            if (cache.notification and cache.enable_notification_emails_recipient) or tenant.external:
                 silent_tids.append(tid)
 
         results1 = session.query(models.User, models.ReceiverTip, models.InternalTip, models.ReceiverTip) \
@@ -183,7 +184,8 @@ def get_mails_from_the_pool(session):
             'address': mail.address,
             'subject': mail.subject,
             'body': mail.body,
-            'tid': mail.tid
+            'tid': mail.tid,
+            'secondary_smtp': mail.secondary_smtp
         })
 
     return ret
@@ -200,7 +202,7 @@ class Notification(LoopingJob):
     def spool_emails(self):
         mails = yield get_mails_from_the_pool()
         for mail in mails:
-            sent = yield self.state.sendmail(mail['tid'], mail['address'], mail['subject'], mail['body'])
+            sent = yield self.state.sendmail(mail['tid'], mail['address'], mail['subject'], mail['body'], mail.get('secondary_smtp', False))
             if sent:
                 yield tw(db_del, models.Mail, models.Mail.id == mail['id'])
 

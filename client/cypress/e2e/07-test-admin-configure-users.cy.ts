@@ -4,31 +4,43 @@ describe("admin add, configure, and delete users", () => {
       name: "Recipient",
       value:"receiver",
       address: "globaleaks-receiver1@mailinator.com",
+      idp_id: "PRKPTR88H01L219U",
     },
     {
       name: "Recipient2",
       value:"receiver",
       address: "globaleaks-receiver2@mailinator.com",
+      idp_id: "PRKPTR88H01L219U",
     },
     {
       name: "Recipient3",
       value:"receiver",
       address: "globaleaks-receiver3@mailinator.com",
+      idp_id: "PRKPTR88H01L219U",
     },
     {
       name: "Custodian",
       value:"custodian",
       address: "globaleaks-custodian1@mailinator.com",
+      idp_id: "PRKPTR88H01L219U",
     },
     {
       name: "Admin2",
       value:"admin",
       address: "globaleaks-admin2@mailinator.com",
+      idp_id: "PRKPTR88H01L219U",
     },
     {
       name: "Analyst",
       value:"analyst",
       address: "globaleaks-analyst1@mailinator.com",
+      idp_id: "PRKPTR88H01L219U",
+    },
+    {
+      name: "Resp_Accreditation",
+      value:"accreditor",
+      address: "globaleaks-analyst1@mailinator.com",
+      idp_id: "PRKPTR88H01L219U",
     },
   ];
 
@@ -41,6 +53,7 @@ describe("admin add, configure, and delete users", () => {
       cy.get('select[name="role"]').select(user.value);
       cy.get('input[name="username"]').clear().type(user.name);
       cy.get('input[name="name"]').clear().type(user.name);
+      cy.get('input[name="idp_id"]').clear().type(user.idp_id);
       cy.get('input[name="email"]').clear().type(user.address);
       cy.get("#add-btn").click();
     };
@@ -64,6 +77,7 @@ describe("admin add, configure, and delete users", () => {
       cy.get('input[name="can_reopen_reports"]').click();
       cy.get('input[name="can_delete_submission"]').click();
       cy.get('input[name="can_edit_general_settings"]').click();
+      cy.get('input[name="can_download_infected"]').click();
       cy.get("#save_user").click();
     });
   });
@@ -73,7 +87,7 @@ describe("admin add, configure, and delete users", () => {
     cy.visit("/#/admin/users");
 
     cy.get(".userList").its("length").then(userListLength => {
-      const numberOfUsers = Math.min(userListLength, 7);
+      const numberOfUsers = Math.min(userListLength, 8);
       for (let i = 1; i < numberOfUsers; i++) {
         cy.get(".userList").eq(i).within(() => {
           if (Cypress.$("#edit_user").length > 0) {

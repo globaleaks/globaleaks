@@ -126,6 +126,63 @@ account_activation_keywords = [
     '{AccountRecoveryKeyInstructions}'
 ]
 
+sign_up_external_organization = [
+    '{RecipientName}',
+    '{AccreditationStatus}',
+    '{ActivationUrl}',
+    '{NodeName}'
+]
+
+sign_up_external_organization_info = [
+    '{RecipientName}',
+    '{AccreditationStatus}',
+    '{AccreditationMotivationText}',
+    '{NodeName}'
+]
+
+accreditor_signup_external_organization_alert = [
+    '{AccreditationId}',
+    '{AccreditationName}',
+    '{AccreditationStatus}',
+    '{NodeName}'
+]
+
+new_user_recipient_signup_external_organization_alert = [
+    '{RecipientName}',
+    '{ExternalOrganizationName}',
+    '{Url}',
+    '{LoginUrl}',
+    '{RecipientCredentials}',
+    '{DocumentationUrl}',
+    '{NodeName}'
+]
+
+new_user_admin_signup_external_organization_alert = [
+    '{Name}',
+    '{ExternalOrganizationName}',
+    '{Url}',
+    '{LoginUrl}',
+    '{AdminCredentials}',
+    '{DocumentationUrl}',
+    '{NodeName}'
+]
+
+close_forwarding_external_organization = [
+    '{TipID}',
+    '{TipNum}',
+    '{TipUrl}',
+    '{RecipientName}',
+    '{ExternalOrganizationName}',
+    '{DocumentationUrl}',
+    '{NodeName}'
+]
+
+delete_user_external_organization = [
+    '{Username}',
+    '{ExternalOrganizationName}',
+    '{DocumentationUrl}',
+    '{NodeName}'
+]
 
 def indent(n=1):
     return '  ' * n
@@ -164,6 +221,12 @@ class NodeKeyword(Keyword):
         return '[UNDEFINED]'
 
     def HTTPSSite(self):
+        if self.data['node'].get('is_eo'):
+            parent_hostname = self.data['node']['parent']['hostname']
+            if isIPAddress(parent_hostname):
+                return 'http://' + parent_hostname
+            else:
+                return 'https://' + parent_hostname
         if self.data['node']['hostname']:
             if isIPAddress(self.data['node']['hostname']):
                 return 'http://' + self.data['node']['hostname']
@@ -173,7 +236,7 @@ class NodeKeyword(Keyword):
         return '[UNDEFINED]'
 
     def Site(self):
-        if self.data['node']['hostname']:
+        if self.data['node']['hostname'] or self.data['node'].get('is_eo'):
             return self.HTTPSSite()
 
         elif self.data['node']['onionservice']:
@@ -197,6 +260,8 @@ class NodeKeyword(Keyword):
         return 'https://docs.globaleaks.org'
 
     def LoginUrl(self):
+        if self.data['node'].get('is_eo'):
+            return self.Site() + f"/login-external-organization/{self.data['node'].get('eo_uuid')}"
         return self.Site() + '/#/login'
 
 
@@ -503,6 +568,8 @@ class PlatformSignupKeyword(NodeKeyword):
         return 'http://' + self.data['signup']['subdomain'] + '.' + self.data['node']['onionservice']
 
     def HTTPSSite(self):
+        if self.data['node'].get('is_eo'):
+            return f"https://{self.data['node']['hostname']}"
         return 'https://' + self.data['signup']['subdomain'] + '.' + self.data['node']['rootdomain']
 
     def Site(self):
@@ -515,20 +582,19 @@ class PlatformSignupKeyword(NodeKeyword):
         return ''
 
     def RecipientName(self):
-        return self.data['signup']['name'] + ' ' + self.data['signup']['surname']
+        return self.data['signup']['recipient_name'] + ' ' + self.data['signup']['recipient_surname']
 
     def ActivationUrl(self):
         if self.data['node']['hostname']:
             site = 'https://' + self.data['node']['hostname']
+            if self.data['node'].get('is_eo'):
+                site = f"{site}/login-external-organization/{self.data['node'].get('eo_uuid')}"
         elif self.data['node']['onionservice']:
             site = 'http://' + self.data['node']['onionservice']
         else:
             site = ''
 
         return site + '/#/activation?token=' + self.data['signup']['activation_token']
-
-    def LoginUrl(self):
-        return self.Site() + '/#/login'
 
     def ExpirationDate(self):
         date = self.data['signup']['registration_date'] + timedelta(30)
@@ -591,6 +657,8 @@ class AccountActivationKeyword(UserNodeKeyword):
     keyword_list = UserNodeKeyword.keyword_list + account_activation_keywords
 
     def UrlPath(self):
+        if self.data['node'].get('is_eo'):
+            return f"/reset-password-external-organization/{self.data['node'].get('uuid')}/{self.data['reset_token']}"
         return '/#/password/reset' + '?token=' + self.data['reset_token']
 
     def AccountRecoveryKeyInstructions(self):
@@ -601,6 +669,121 @@ class AccountActivationKeyword(UserNodeKeyword):
 
         return Templating().format_template(self.data['notification']['account_recovery_key_instructions'], data) + "\n"
 
+class SignUpExternalOrganization(NodeKeyword):
+    keyword_list = NodeKeyword.data_keys + sign_up_external_organization
+
+    def UrlPath(self):
+        return f"/#/accreditation-request/{self.data['signup']['subdomain']}"
+
+    def AccreditationStatus(self):
+        return self.data['signup']['status']
+
+    def RecipientName(self):
+        return self.data['signup']['organization_name']
+
+    def ActivationUrl(self):
+        return f"{self.Site()}{self.UrlPath()}"
+
+class SignUpExternalOrganizationInfo(NodeKeyword):
+    keyword_list = NodeKeyword.data_keys + sign_up_external_organization_info
+
+    def RecipientName(self):
+        return self.data['signup']['organization_name']
+
+    def AccreditationMotivationText(self):
+        return '' if not self.data['signup']['motivation_text'] else f"motivation text: {self.data['signup']['motivation_text']}"
+
+    def AccreditationStatus(self):
+        return self.data['signup']['status']
+
+class AccreditorSignupExternalOrganizationAlert(NodeKeyword):
+    keyword_list = NodeKeyword.data_keys + accreditor_signup_external_organization_alert
+
+    def AccreditationId(self):
+        return f"{self.data['signup']['subdomain']}"
+
+    def AccreditationStatus(self):
+        return self.data['signup']['status']
+
+    def AccreditationName(self):
+        return f"{self.data['signup']['organization_name']}"
+
+class NewUserRecipientSignupExternalOrganizationAlert(PlatformSignupKeyword):
+    keyword_list = NodeKeyword.data_keys + new_user_recipient_signup_external_organization_alert
+    data_keys = NodeKeyword.data_keys + ['signup']
+
+    def RecipientName(self):
+        return self.data['signup']['recipient_name'] + ' ' + self.data['signup']['recipient_surname']
+
+    def ExternalOrganizationName(self):
+        return self.data['signup']['organization_name']
+
+    def RecipientCredentials(self):
+        if not self.data['password_recipient']:
+            return ''
+
+        data = {
+            'type': 'user_credentials',
+            'role': 'recipient',
+            'username': 'recipient',
+            'password': self.data['password_recipient']
+        }
+
+        return Templating().format_template(self.data['notification']['user_credentials'], data) + "\n"
+
+
+class NewUserAdminSignupExternalOrganizationAlert(PlatformSignupKeyword):
+    keyword_list = NodeKeyword.data_keys + new_user_admin_signup_external_organization_alert
+    data_keys = NodeKeyword.data_keys + ['signup']
+
+    def Name(self):
+        return self.data['signup']['name'] + ' ' + self.data['signup']['surname']
+
+    def ExternalOrganizationName(self):
+        return self.data['signup']['organization_name']
+
+    def AdminCredentials(self):
+        if not self.data['password_admin']:
+            return ''
+
+        data = {
+            'type': 'user_credentials',
+            'role': 'admin',
+            'username': 'admin',
+            'password': self.data['password_admin']
+        }
+
+        return Templating().format_template(self.data['notification']['user_credentials'], data) + "\n"
+
+class CloseForwardingExternalOrganization(NodeKeyword):
+    keyword_list = NodeKeyword.data_keys + close_forwarding_external_organization
+    data_keys = NodeKeyword.data_keys
+
+    def RecipientName(self):
+        return self.data['recipient_name']
+
+    def ExternalOrganizationName(self):
+        return self.data['eo_name']
+
+    def TipID(self):
+        return self.data['original_tip_id']
+
+    def TipNum(self):
+        return str(self.data['original_tip_progressive'])
+
+    def TipUrl(self):
+        return f"{self.Site()}/#/reports/{self.TipID()}"
+
+class DeleteUserExternalOrganization(NodeKeyword):
+    keyword_list = NodeKeyword.data_keys + delete_user_external_organization
+    data_keys = NodeKeyword.data_keys
+
+    def Username(self):
+        return self.data['username']
+
+    def ExternalOrganizationName(self):
+        return self.data['eo_name']
+
 
 class PasswordResetValidationKeyword(UserNodeKeyword):
     keyword_list = UserNodeKeyword.keyword_list
@@ -608,6 +791,8 @@ class PasswordResetValidationKeyword(UserNodeKeyword):
     data_keys = UserNodeKeyword.data_keys + ['reset_token']
 
     def UrlPath(self):
+        if self.data['node'].get('is_eo'):
+            return f"/reset-password-external-organization/{self.data['node'].get('uuid')}/{self.data['reset_token']}"
         return '/#/password/reset?token=' + self.data['reset_token']
 
 
@@ -648,7 +833,14 @@ supported_template_types = {
     'user_credentials': UserCredentials,
     'identity_access_request': IdentityAccessRequestKeyword,
     'identity_access_authorized': TipKeyword,
-    'identity_access_denied': TipKeyword
+    'identity_access_denied': TipKeyword,
+    'sign_up_external_organization': SignUpExternalOrganization,
+    'sign_up_external_organization_info': SignUpExternalOrganizationInfo,
+    'accreditor_signup_external_organization_alert': AccreditorSignupExternalOrganizationAlert,
+    'new_user_recipient_signup_external_organization_alert': NewUserRecipientSignupExternalOrganizationAlert,
+    'new_user_admin_signup_external_organization_alert': NewUserAdminSignupExternalOrganizationAlert,
+    'close_forwarding_external_organization': CloseForwardingExternalOrganization,
+    'delete_user_external_organization': DeleteUserExternalOrganization
 }
 
 

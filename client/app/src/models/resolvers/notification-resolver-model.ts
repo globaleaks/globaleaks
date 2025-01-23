@@ -62,6 +62,15 @@ export class notificationResolverModel {
   unread_tips_mail_title: string;
   user_credentials: string;
   templates: string[];
+  smtp2_enabled: boolean;
+  smtp2_password: string;
+  smtp2_port: string;
+  smtp2_security:string;
+  smtp2_server: string;
+  smtp2_source_email: string;
+  smtp2_username: string;
+  smtp2_authentication: boolean;
+
 
   [key: string]: string | boolean | number | string[];
 }

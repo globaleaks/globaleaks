@@ -38,6 +38,7 @@ export class WbTipData {
   answers: Answers;
   motivation: string;
   redactions: RedactionData[];
+  max_eo_to_whistleblower_comments: number;
 }
 
 export class Step {

@@ -16,6 +16,9 @@ describe("admin add, configure and delete questionnaires", () => {
       cy.waitForLoader();
       cy.get('.fieldBox').should('be.visible', { timeout: 10000 }).contains('span', question_type).click();
 
+      cy.get("input[name='statistical']").should('be.visible');
+      cy.get("input[name='statistical']").click();
+
       for (let i = 0; i < 3; i++) {
         cy.get('button[name="addOption"]').click();
         cy.get("input[name='option.label']").eq(i).type("option");
@@ -135,6 +138,29 @@ describe("admin add, configure and delete questionnaires", () => {
     cy.get(".fa-clone").first().click();
     cy.get('input[name="name"]').type("duplicate questionnaire");
     cy.get("#modal-action-ok").click();
+    cy.logout();
+  });
+
+
+  it("should import forwarding questionnaire file", () => {
+    cy.login_admin();
+
+    cy.visit("/#/admin/questionnaires");
+    cy.get("#keyUpload").click();
+    cy.fixture("questionnaires/forwarding_questionnaire.txt").then(fileContent => {
+      cy.get('input[type="file"]').then(input => {
+        const blob = new Blob([fileContent], { type: "text/plain" });
+        const testFile = new File([blob], "questionnaires/forwarding_questionnaire.txt");
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(testFile);
+        const inputElement = input[0] as HTMLInputElement;
+        inputElement.files = dataTransfer.files;
+
+        const changeEvent = new Event("change", { bubbles: true });
+        input[0].dispatchEvent(changeEvent);
+      });
+
+    });
     cy.logout();
   });
 });

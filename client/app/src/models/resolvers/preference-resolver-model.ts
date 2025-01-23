@@ -22,6 +22,7 @@ export class preferenceResolverModel {
   pgp_key_remove: boolean;
   picture: boolean;
   tid: number;
+  t_affiliated: boolean = true;
   notification: boolean;
   encryption: boolean;
   escrow: boolean;
@@ -39,4 +40,5 @@ export class preferenceResolverModel {
   can_reopen_reports: boolean;
   can_redact_information: boolean;
   can_mask_information: boolean;
+  can_download_infected: boolean;
 }

@@ -4,6 +4,7 @@ export class NewUser {
   role = "receiver";
   enabled = true;
   password_change_needed = true;
+  idp_id = "";
   name = "";
   description = "";
   public_name = "";
@@ -23,4 +24,5 @@ export class NewUser {
   can_reopen_reports = false;
   can_redact_information = false;
   can_mask_information = false;
+  can_download_infected = false;
 }

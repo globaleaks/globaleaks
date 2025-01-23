@@ -6,6 +6,7 @@ export class Root {
   submission_statuses: Status[];
   receivers: Receiver[];
   contexts: Context[];
+  proxy_idp_enabled: boolean;
 }
 
 export class Node {
@@ -65,6 +66,15 @@ export class Node {
   footer_privacy_policy: string;
   user_privacy_policy_text: string;
   user_privacy_policy_url: string;
+  forwarding_enabled: boolean;
+  max_msg_external_to_whistle: number;
+  max_msg_external_to_whistle_not_aff: number;
+  antivirus_enabled: boolean;
+  antivirus_clamd_ip: string;
+  antivirus_clamd_port: number;
+  proxy_idp_enabled: boolean;
+  uuid: string;
+  external: boolean;
 }
 
 export interface LanguagesSupported {
