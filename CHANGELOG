@@ -1,3 +1,12 @@
+Changes in version 5.0.44
+    Move password hashing on clientside
+    Upgrade proof of work from sha256 to argon2id with 1 step and 1MB of requirement
+    Refactor SecureTemporaryFile replacing AES with ChaCha20
+    Enable Brotli compression of static (offline) and dynamic (on-the-fly) content
+    Fix bug visualization of files uploaded by recipients introduced in 5.0.19
+    Bump client dependencies to latest version
+    Update translations
+
 Changes in version 5.0.43
     Correct regression on logs missing newlines introduced in 5.0.38
 
