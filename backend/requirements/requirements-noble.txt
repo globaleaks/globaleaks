@@ -11,3 +11,4 @@ python_gnupg==0.5.2
 sqlalchemy==1.4.50
 twisted==24.3.0
 txtorcon==23.11.0
+pyclamd==0.4.0
