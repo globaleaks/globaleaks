@@ -22,6 +22,7 @@ body:
         - Safari
         - All
         - Other
+        - N/A
   - type: dropdown
     id: os
     attributes:
@@ -33,6 +34,9 @@ body:
         - Android
         - iOS
         - Linux
+        - All
+        - Other
+        - N/A
     validations:
       required: true
   - type: textarea
