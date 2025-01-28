@@ -1,9 +1,8 @@
-Before you submit a pull request, please make sure:
+Before submitting a pull request, please ensure the following:
 
-- [ ] The pull request should include a description of the problem you're trying to solve
-- [ ] The pull request should include overview of the suggested solution
-- [ ] If the pull requests changes current behavior, reasons why your solution is better.
-- [ ] The proposed code should be fully functional
-- [ ] The proposed code should contain tests relevant to prove is functionality
-- [ ] The proposed tests should ensure significative code coverage
-- [ ] All new and existing tests should pass
+- [ ] The pull request includes a description of the problem you're trying to solve.
+- [ ] The pull request provides an overview of the suggested solution.
+- [ ] The proposed code is fully functional.
+- [ ] The proposed code includes relevant tests to verify its functionality.
+- [ ] All new and existing tests pass successfully.
+- [ ] Overall code quality and test coverage metrics are not reduced by more than 0.5%
