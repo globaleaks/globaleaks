@@ -438,7 +438,8 @@ NodeDesc = {
     'whistleblowing_button': str,
     'whistleblowing_question': str,
     'user_privacy_policy_text': str,
-    'user_privacy_policy_url': str
+    'user_privacy_policy_url': str,
+    'version': str
 }
 
 ReceiverIdentityAccessRequestDesc = {

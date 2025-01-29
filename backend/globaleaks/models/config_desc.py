@@ -319,6 +319,7 @@ ConfigFilters = {
         'simplified_login',
         'subdomain',
         'wizard_done',
+        'version',
     ],
     'tenant': [
         'hostname',
