@@ -118,7 +118,10 @@ ConfigDescriptor = {
     'version': Unicode(default=str(__version__)),
     'version_db': Int(default=DATABASE_VERSION),
     'wizard_done': Bool(default=False),
-    'uuid': Unicode(default=uuid4)
+    'uuid': Unicode(default=uuid4),
+    'backup_enabled': Bool(default=False),
+    'backup_time': Unicode(default='2:00'),
+    'backup_path': Unicode(default='/var/backup/')
 }
 
 
@@ -192,7 +195,10 @@ ConfigFilters = {
         'version',
         'version_db',
         'wizard_done',
-        'uuid'
+        'uuid',
+        'backup_path',
+        'backup_time',
+        'backup_enabled'
     ],
     'admin_node': [
         'acme',
@@ -318,6 +324,7 @@ ConfigFilters = {
         'simplified_login',
         'subdomain',
         'wizard_done',
+        'backup_enabled'
     ],
     'tenant': [
         'hostname',
