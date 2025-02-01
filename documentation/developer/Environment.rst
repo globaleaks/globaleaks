@@ -15,6 +15,7 @@ The guide assumes you run a Debian based system and that the following software 
 * grunt-cli
 * node
 * npm
+* pybuild-plugin-pyproject
 * python3
 * python3-dev
 * python3-pip

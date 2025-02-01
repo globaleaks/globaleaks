@@ -24,7 +24,7 @@ setupClient
 
 # Running backend tests
 echo "Running backend tests"
-cd $GITHUB_WORKSPACE/backend && coverage run setup.py test
+cd $GITHUB_WORKSPACE/backend && coverage run -m twisted.trial globaleaks.tests
 if [ $? -ne 0 ]; then
   backend_test_failed=1
 fi

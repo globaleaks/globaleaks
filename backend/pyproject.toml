@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "globaleaks"
+dynamic = ["version"]
+description = "Free and open-source whistleblowing software"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "GlobaLeaks", email = "info@globaleaks.org" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Operating System :: OS Independent",
+]
+
+[tool.pybuild]
+interpreter = "python3"
+
+# Metadata dynamically loaded from the globaleaks package
+[tool.setuptools.dynamic]
+version = { attr = "globaleaks.__version__" }
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["globaleaks*"]
+
+# Ensure non-Python files (e.g., templates, config files) are included
+[tool.setuptools.package-data]
+globaleaks = ["**/*"]
+
+[tool.setuptools.data-files]
+"bin" = ["bin/globaleaks", "bin/gl-admin"]
