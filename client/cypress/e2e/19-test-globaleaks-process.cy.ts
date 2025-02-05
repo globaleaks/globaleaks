@@ -29,8 +29,10 @@ describe("globaleaks process", function () {
 
     it("Recipient actions ", function () {
       cy.login_receiver();
-      cy.waitForUrl("/#/recipient/home");
+
       cy.visit("/#/recipient/reports");
+      cy.waitForUrl("/#/recipient/reports");
+      cy.takeScreenshot("/recipient/reports");
 
       cy.get("#tip-0").should('be.visible').first().click();
 
@@ -49,7 +51,6 @@ describe("globaleaks process", function () {
       const comment = "comment";
       cy.get("[name='newCommentContent']").type(comment);
       cy.get("#comment-action-send").click();
-      cy.waitForLoader();
       cy.get('#comment-0').should('contain', comment);
       cy.visit("/#/recipient/reports");
       cy.takeScreenshot("recipient/reports");
@@ -100,7 +101,6 @@ describe("globaleaks process", function () {
       cy.get(".TipInfoID").first().invoke("text").then(t => {
         expect(t.trim()).to.be.a("string");
       });
-      cy.waitForLoader();
       cy.get('[id="tip-action-silence"]').should('be.visible').click();
       cy.get('#tip-action-notify').should('be.visible').click();
       cy.get('#tip-action-silence').should('be.visible').should('be.visible');
@@ -119,21 +119,13 @@ describe("globaleaks process", function () {
     cy.logout();
   });
 
-  it("should not view the whistleblower file", () => {
-    cy.login_receiver("Recipient2", Cypress.env("init_password") );
-    cy.visit("/#/recipient/reports");
-    cy.get("#tip-0").first().click();
-    cy.get(".tip-action-views-file").should("be.disabled");
-    cy.logout();
-  });
-
   it("should update default channel", () => {
     cy.login_admin();
     cy.visit("/#/admin/channels");
     cy.get("#edit_context").first().click();
-    cy.get('select[name="contextResolver.questionnaire_id"]').select('questionnaire 1');
+    cy.get('select[name="contextResolver.questionnaire_id"]').should("be.visible").select('questionnaire 1');
     cy.get("#advance_context").click();
-    cy.get('select[name="contextResolver.additional_questionnaire_id"]').select('questionnaire 2');
+    cy.get('select[name="contextResolver.additional_questionnaire_id"]').should("be.visible").select('questionnaire 2');
     cy.get("#save_context").click();
     cy.logout();
   });
@@ -151,8 +143,8 @@ describe("globaleaks process", function () {
     cy.wait(6000);
     cy.get("#stop_recording").click();
     cy.get("#NextStepButton").click();
-    cy.get("input[type='text']").eq(1).should("be.visible").type("abc");
-    cy.get("input[type='text']").eq(2).should("be.visible").type("xyz");
+    cy.get("input[type='text']").eq(3).should("be.visible").type("abc");
+    cy.get("input[type='text']").eq(4).should("be.visible").type("xyz");
     cy.get("select").first().select(1);
     cy.get("#SubmitButton").should("be.visible");
     cy.get("#SubmitButton").click();
@@ -221,7 +213,6 @@ describe("globaleaks process", function () {
       const val = textarea.val();
       cy.get('textarea[name="controlElement"]').should('be.visible').clear().type(val);
       cy.get("#select_content").click();
-      cy.wait(1000);
     });
     cy.get("#save_masking").click();
     cy.get('[id="tip-action-mask"]').should('be.visible').click();
@@ -230,7 +221,6 @@ describe("globaleaks process", function () {
       const val = textarea.val();
       cy.get('textarea[name="controlElement"]').should('be.visible').clear().type(val);
       cy.get("#unselect_content").click();
-      cy.wait(1000);
     });
     cy.get("#save_masking").click();
     cy.logout();

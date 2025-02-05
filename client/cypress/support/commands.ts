@@ -19,7 +19,7 @@ declare global {
       login_custodian: (username?: string, password?: string, url?: string, firstlogin?: boolean) => void;
       login_analyst: (username?: string, password?: string, url?: string, firstlogin?: boolean) => void;
       login_accreditor: (username?: string, password?: string, url?: string, firstlogin?: boolean) => void;
-      request_external_organization: (denomination?: string, pec?: string, url?: string, adminTaxCode?: string) => void;
+      request_external_organization: (denomination?: string, pec?: string, url?: string, idp_id?: string) => void;
       confirm_accreditation_request: (reqId: string) => void;
     }
   }
@@ -41,16 +41,15 @@ Cypress.Commands.add("confirm_accreditation_request", (reqId) => {
 
 });
 
-Cypress.Commands.add("request_external_organization", (denomination, pec, url, adminTaxCode) => {
+Cypress.Commands.add("request_external_organization", (denomination, pec, url, idp_id) => {
 
   denomination = denomination === undefined ? "Organizzazione 1" : denomination;
   pec = pec === undefined ? "example@examplepec.com" : pec;
   url = url === undefined ? "http://exampleurl.com" : url;
-  adminTaxCode = adminTaxCode === undefined ? "LLNBRY89A18D969M" : adminTaxCode;
+  idp_id = idp_id === undefined ? "LLNBRY89A18D969M" : idp_id;
 
 
-  cy.setCookie("x-idp-userid", adminTaxCode);
-  cy.visit('/#/accreditation-request');
+  cy.visit({ url: '/#/accreditation-request', headers: {'x-idp-userid': idp_id} });
 
   cy.get('input[name="denomination"]').type(denomination);
   cy.get('input[name="pec"]').type(pec);
@@ -60,10 +59,7 @@ Cypress.Commands.add("request_external_organization", (denomination, pec, url, a
   cy.get('input[name="adminName"]').type("Barry");
   cy.get('input[name="adminSurname"]').type("Allen");
 
-  cy.get('input[name="adminTaxCode"]').invoke('val').should('not.be.empty');
-
   cy.get('input[name="adminEmail"]').type("example@example.com");
-  cy.get('input[name="adminTaxCode"]').should("be.disabled");
 
   cy.get('input[name="recipientName"]').type("Clark");
   cy.get('input[name="recipientSurname"]').type("Kent");

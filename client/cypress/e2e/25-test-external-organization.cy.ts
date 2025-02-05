@@ -110,6 +110,21 @@ describe('add, configure, delete external organization', () => {
     });     
   });
 
+  it("should enable forwardings", () => {
+    cy.login_admin();
+    cy.visit("/#/admin/settings");
+    cy.get('[data-cy="advanced"]').click().should("be.visible", { timeout: 10000 }).click();
+
+    cy.get('input[id="enable_forwardings"]').click();
+    cy.get("#save").click();
+
+    cy.get('[data-cy="advanced"]').click().should('be.visible', { timeout: 10000 }).click();
+
+    cy.get('input[id="enable_forwardings"]').should("be.visible").should("be.checked");
+    cy.logout();
+
+  });
+
 
 it("Instructor request for accreditation", function () {
   cy.login_receiver();
