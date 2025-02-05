@@ -214,7 +214,7 @@ class MigrationScript(MigrationBase):
         self.entries_count['Config'] += 1
         antivirus_enabled_config = self.model_to['Config']()
         antivirus_enabled_config.var_name = 'antivirus_enabled'
-        antivirus_enabled_config.value = True
+        antivirus_enabled_config.value = False
         antivirus_enabled_config.tid = 1
         self.session_new.add(antivirus_enabled_config)
         self.entries_count['Config'] += 1
