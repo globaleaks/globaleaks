@@ -373,6 +373,8 @@ class MockDict:
             'antivirus_enabled': True,
             'antivirus_clamd_ip': 'localhost',
             'antivirus_clamd_port': 3310,
+            'max_msg_external_to_whistle': 1,
+            'max_msg_external_to_whistle_not_aff': 1,
             'forwarding_enabled': True,
             'proxy_idp_enabled': True
         }
