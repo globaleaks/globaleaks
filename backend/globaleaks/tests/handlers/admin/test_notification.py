@@ -25,6 +25,7 @@ class TestNotificationInstance(helpers.TestHandlerWithPopulatedDB):
 
         notif_desc['smtp_server'] = stuff
         notif_desc['smtp_password'] = 'widdlyscuds'
+        notif_desc['smtp2_authentication'] = False
 
         handler = self.request(notif_desc, role='admin')
         response = yield handler.put()

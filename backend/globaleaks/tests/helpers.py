@@ -277,6 +277,7 @@ class MockDict:
             'can_postpone_expiration': True,
             'can_mask_information': True,
             'can_redact_information': True,
+            'can_download_infected': True,
             'contexts': []
         }
 
@@ -370,7 +371,7 @@ class MockDict:
             'pgp': False,
             'user_privacy_policy_text': '',
             'user_privacy_policy_url': '',
-            'antivirus_enabled': True,
+            'antivirus_enabled': False,
             'antivirus_clamd_ip': 'localhost',
             'antivirus_clamd_port': 3310,
             'max_msg_external_to_whistle': 1,
