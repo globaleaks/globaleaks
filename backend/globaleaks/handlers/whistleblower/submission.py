@@ -7,7 +7,7 @@ import re
 from nacl.encoding import Base64Encoder
 from nacl.public import PrivateKey
 
-from sqlalchemy import exists, func
+from sqlalchemy import exists, func, and_
 
 from globaleaks import models
 from globaleaks.handlers.admin.questionnaire import db_get_questionnaire
@@ -231,7 +231,7 @@ def db_create_submission(session, tid, request, user_session, client_using_tor, 
 
     receipt = request['receipt']
 
-    if not session.query(exists().where(models.InternalTip.tid == tid, func.length(models.InternalTip.receipt_hash) < 64)).scalar():
+    if not session.query(exists().where(and_(models.InternalTip.tid == tid, func.length(models.InternalTip.receipt_hash) < 64))).scalar():
         key = Base64Encoder.decode(receipt.encode())
         hash = sha256(key).decode()
     else:

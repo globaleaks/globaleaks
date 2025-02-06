@@ -4,7 +4,7 @@
 import json
 from datetime import timedelta
 from random import SystemRandom
-from sqlalchemy import exists, func, or_
+from sqlalchemy import exists, func, or_, and_
 
 from nacl.encoding import Base64Encoder
 from twisted.internet.defer import inlineCallbacks, returnValue
@@ -70,7 +70,7 @@ def login_whistleblower(session, tid, receipt, client_using_tor, operator_id=Non
     :return: Returns a user session in case of success
     """
     try:
-        if not session.query(exists().where(InternalTip.tid == tid, func.length(InternalTip.receipt_hash) < 64)).scalar():
+        if not session.query(exists().where(and_(InternalTip.tid == tid, func.length(InternalTip.receipt_hash) < 64))).scalar():
             key = Base64Encoder.decode(receipt.encode())
             hash = sha256(key).decode()
         else:
@@ -191,7 +191,7 @@ def get_auth_type(session, tid, username):
     salt = ConfigFactory(session, tid).get_val('receipt_salt')
 
     if not username: # whistleblower
-        if not session.query(exists().where(InternalTip.tid == tid, func.length(InternalTip.receipt_hash) < 64)).scalar():
+        if not session.query(exists().where(and_(InternalTip.tid == tid, func.length(InternalTip.receipt_hash) < 64))).scalar():
             return {'type': 'key', 'salt': salt}
 
     else:
