@@ -737,10 +737,12 @@ def redact_report(session, user_id, report, enforce=False):
                          if x['ifile_id'] not in redactions_by_reference_id]
 
     if antivirus_enabled and any(file.get('status', '').upper() == EnumStateFile.pending.name.upper() for file in report['wbfiles']):
+        print(antivirus_enabled)
+        print(any(file.get('status', '').upper() == EnumStateFile.pending.name.upper() for file in report['wbfiles']))
         raise errors.ForbiddenOperation
 
-    # if not user.can_download_infected and any(file.get('status', '').upper() == EnumStateFile.infected.name.upper() for file in report['wbfiles']):
-    #     raise errors.ForbiddenOperation
+    if not user.can_download_infected and any(file.get('status', '').upper() == EnumStateFile.infected.name.upper() for file in report['wbfiles']):
+        raise errors.ForbiddenOperation
 
     return report
 
