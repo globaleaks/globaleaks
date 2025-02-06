@@ -1,0 +1,15 @@
+GL.mockEngine.addMock("*", "#WhistleblowingButton", function(elem) {
+  if (GL.language === 'it') {
+    return "<div class='row'><div class='col-md-12'>Fai una nuova segnalazione</div></div>";
+  } else {
+    return "<div class='row'><div class='col-md-12'>File a new report</div></div>";
+  }
+});
+
+GL.mockEngine.addMock("*", "#WhistleblowerBox", function(elem) {
+  if (GL.language === 'it') {
+    return "<div class='d-none'>Benvenuto!</div>";
+  } else {
+    return "<div class='d-none'>Welcome!</div>";
+  }
+}, 'add-before');

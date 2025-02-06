@@ -1,4 +1,4 @@
-describe("Admin configure custom CSS", () => {
+describe("Admin configure custom CSS and JS", () => {
   it("should be able to configure the file upload", () => {
     cy.login_admin();
 
@@ -25,7 +25,25 @@ describe("Admin configure custom CSS", () => {
       cy.get('div.uploadfile.file-css input[type="file"]').then(($input) => {
         const inputElement = $input[0] as HTMLInputElement;
         const blob = new Blob([fileContent], { type: 'text/css' });
-        const testFile = new File([blob], 'your-file-name.css', { type: 'text/css' });
+        const testFile = new File([blob], 'file-name.css', { type: 'text/css' });
+        const dataTransfer = new DataTransfer();
+
+        dataTransfer.items.add(testFile);
+        inputElement.files = dataTransfer.files;
+        cy.wrap($input).trigger('change', { force: true });
+      });
+    });
+
+    cy.get("#project_name").should("be.visible");
+
+    cy.get('[data-cy="files"]').click();
+
+    const customJSFile = "files/test.js.txt";
+    cy.fixture(customJSFile).then((fileContent) => {
+      cy.get('div.uploadfile.file-script input[type="file"]').then(($input) => {
+        const inputElement = $input[0] as HTMLInputElement;
+        const blob = new Blob([fileContent], { type: 'application/javascript' });
+        const testFile = new File([blob], 'file-name.js', { type: 'application/javascript' });
         const dataTransfer = new DataTransfer();
 
         dataTransfer.items.add(testFile);
