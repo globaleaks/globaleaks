@@ -12,6 +12,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
+    "inlineSources": true,
+    "inlineSourceMap": false,
     "declaration": false,
     "experimentalDecorators": true,
     "moduleResolution": "node",

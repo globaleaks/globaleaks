@@ -10,7 +10,7 @@ setupBackend() {
 setupClient() {
   cd $GITHUB_WORKSPACE/client  # to install frontend dependencies
   npm install -d
-  ./node_modules/grunt/bin/grunt build_and_instrument
+  ./node_modules/grunt/bin/grunt build_for_testing
 }
 
 echo "Running setup"
@@ -29,6 +29,8 @@ cd $GITHUB_WORKSPACE/client && npm test
 if [ $? -ne 0 ]; then
   client_test_failed=1
 fi
+
+sed -i 's|SF:dist/|SF:client/|g' $GITHUB_WORKSPACE/client/cypress/coverage/lcov.info
 
 bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l TypeScript -r $GITHUB_WORKSPACE/client/cypress/coverage/lcov.info
 

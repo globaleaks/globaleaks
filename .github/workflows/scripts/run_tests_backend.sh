@@ -10,7 +10,7 @@ setupBackend() {
 setupClient() {
   cd $GITHUB_WORKSPACE/client  # to install frontend dependencies
   npm install -d
-  ./node_modules/grunt/bin/grunt build_and_instrument
+  ./node_modules/grunt/bin/grunt build
 }
 
 echo "Running setup"
