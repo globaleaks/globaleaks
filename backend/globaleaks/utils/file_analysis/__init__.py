@@ -24,7 +24,7 @@ class FileAnalysis:
             logging.error(e)
             return EnumStateFile.pending
 
-    def wrap_scanning(self, file_name: str, data_bytes: bytes, antivirus_enabled:bool=True) -> EnumStateFile:
+    def wrap_scanning(self, file_name: str, data_bytes: bytes, antivirus_enabled:bool=False) -> EnumStateFile:
         if not antivirus_enabled:
             return EnumStateFile.pending
         
@@ -33,7 +33,7 @@ class FileAnalysis:
             data_bytes=data_bytes
         )
 
-    def read_file_for_scanning(self, fp, file_name, state, antivirus_enabled: bool = True):
+    def read_file_for_scanning(self, fp, file_name, state, antivirus_enabled: bool = False):
         status_file = EnumStateFile.verified
         if state == EnumStateFile.infected.name:
             raise errors.FileInfectedDownloadPermissionDenied
