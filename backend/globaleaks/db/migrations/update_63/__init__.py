@@ -46,10 +46,9 @@ class MigrationScript(MigrationBase):
         for old_obj in self.session_old.query(self.model_from['Subscriber']):
             new_obj = self.model_to['Subscriber']()
             for key in new_obj.__mapper__.column_attrs.keys():
-                if key == 'activation_token' and old_obj.activation_token == '':
-                    new_obj.activation_token = None
-
-                if key == 'organization_location':
+                if key == 'activation_token':
+                    new_obj.activation_token = old_obj.activation_token if old_obj.activation_token else None
+                elif key == 'organization_location':
                     setattr(new_obj, 'organization_location', getattr(old_obj, 'organization_location4'))
                 else:
                     setattr(new_obj, key, getattr(old_obj, key))

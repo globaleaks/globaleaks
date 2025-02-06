@@ -29,10 +29,7 @@ class MigrationScript(MigrationBase):
 
             for old_rtip in self.session_old.query(self.model_from['ReceiverTip']) \
                                             .filter(self.model_from['ReceiverTip'].internaltip_id == old_obj.id):
-                if old_rtip.important:
-                    new_obj.important = True
-
-                if old_rtip.label:
-                    new_obj.label = old_rtip.label
+                new_obj.important = True if old_rtip.important else False
+                new_obj.label = old_rtip.label if old_rtip.label else ''
 
             self.session_new.add(new_obj)

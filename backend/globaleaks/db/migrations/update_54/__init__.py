@@ -38,7 +38,7 @@ class MigrationScript(MigrationBase):
                 with open(filepath, 'wb') as out_file:
                     out_file.write(data)
 
-            if not new_obj.name:
+            if not old_obj.name:
                 new_obj.name = new_obj.id
 
             self.session_new.add(new_obj)

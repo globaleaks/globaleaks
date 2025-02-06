@@ -46,5 +46,4 @@ class MigrationScript(MigrationBase):
 
                 setattr(new_obj, key, value)
 
-
             self.session_new.add(new_obj)

@@ -69,10 +69,6 @@ class MigrationScript(MigrationBase):
     def migrate_InternalTip(self):
         m = self.model_from['Config']
 
-        tids = [tid[0] for tid in self.session_old.query(m.tid) \
-                                      .filter(m.var_name == 'private_annotations',
-                                              m.value == True)]
-
         for old_obj in self.session_old.query(self.model_from['InternalTip']):
             new_obj = self.model_to['InternalTip']()
             for key in new_obj.__mapper__.column_attrs.keys():
@@ -83,34 +79,24 @@ class MigrationScript(MigrationBase):
                 else:
                     setattr(new_obj, key, getattr(old_obj, key))
 
-            if new_obj.tid in tids:
-                for old_rtip in self.session_old.query(self.model_from['ReceiverTip']) \
-                                                .filter(self.model_from['ReceiverTip'].internaltip_id == old_obj.id):
-                    if old_rtip.important:
-                        new_obj.important = True
+            self.session_new.add(new_obj)
 
-                    if old_rtip.label:
-                        new_obj.label = old_rtip.label
+    def migrate_fix(self, model):
+        for old_obj in self.session_old.query(self.model_from[model]):
+            new_obj = self.model_to[model]()
+            for key in new_obj.__mapper__.column_attrs.keys():
+                if key == 'access_date':
+                    setattr(new_obj, key, getattr(old_obj, 'last_access'))
+                else:
+                    setattr(new_obj, key, getattr(old_obj, key))
 
             self.session_new.add(new_obj)
 
     def migrate_ReceiverTip(self):
-        pass
-
-    def migrate_WhistleblowerFile(self):
-        pass
+        self.migrate_fix('ReceiverTip')
 
     def migrate_ReceiverFile(self):
-        pass
+        self.migrate_fix('ReceiverFile')
 
-    def epilogue(self):
-        for model in ['ReceiverTip', 'WhistleblowerFile', 'ReceiverFile']:
-            for old_obj in self.session_old.query(self.model_from[model]):
-                new_obj = self.model_to[model]()
-                for key in new_obj.__mapper__.column_attrs.keys():
-                    if key == 'access_date':
-                        setattr(new_obj, key, getattr(old_obj, 'last_access'))
-                    else:
-                        setattr(new_obj, key, getattr(old_obj, key))
-
-                self.session_new.add(new_obj)
+    def migrate_WhistleblowerFile(self):
+        self.migrate_fix('WhistleblowerFile')

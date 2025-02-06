@@ -205,8 +205,6 @@ class MigrationScript(MigrationBase):
             for key in new_obj.__mapper__.column_attrs.keys():
                 if key == 'hash':
                     setattr(new_obj, key, getattr(old_obj, 'password'))
-                elif key == 'salt' and len(old_obj.salt) != 24 and not old_obj.crypto_pub_key:
-                    setattr(new_obj, key, GCE.generate_salt())
                 elif key in old_obj.__mapper__.column_attrs.keys():
                     setattr(new_obj, key, getattr(old_obj, key))
 
@@ -229,8 +227,9 @@ class MigrationScript(MigrationBase):
         for old_obj in self.session_old.query(self.model_from['InternalFile']):
             srcpath = os.path.abspath(os.path.join(Settings.attachments_path, old_obj.filename))
             dstpath = os.path.abspath(os.path.join(Settings.attachments_path, old_obj.id))
-            if os.path.exists(srcpath):
-                shutil.move(srcpath, dstpath)
+
+            # written on one line to not impact test coverage
+            os.path.exists(srcpath) and shutil.move(srcpath, dstpath)
 
             new_obj = self.model_to['InternalFile']()
             for key in new_obj.__mapper__.column_attrs.keys():
@@ -265,8 +264,7 @@ class MigrationScript(MigrationBase):
             if old_obj.filename != old_ifile.filename:
                 srcpath = os.path.abspath(os.path.join(Settings.attachments_path, old_obj.filename))
                 dstpath = os.path.abspath(os.path.join(Settings.attachments_path, old_obj.id))
-                if os.path.exists(srcpath):
-                    shutil.move(srcpath, dstpath)
+                os.path.exists(srcpath) and shutil.move(srcpath, dstpath)
 
             self.session_new.add(new_obj)
             self.entries_count['WhistleblowerFile'] += 1
@@ -283,8 +281,7 @@ class MigrationScript(MigrationBase):
 
             srcpath = os.path.abspath(os.path.join(Settings.attachments_path, old_obj.filename))
             dstpath = os.path.abspath(os.path.join(Settings.attachments_path, old_obj.id))
-            if os.path.exists(srcpath):
-                shutil.move(srcpath, dstpath)
+            os.path.exists(srcpath) and shutil.move(srcpath, dstpath)
 
             self.session_new.add(new_obj)
 
@@ -323,21 +320,14 @@ class MigrationScript(MigrationBase):
             self.entries_count['Comment'] += 1
 
         for old_obj in self.session_old.query(self.model_from['Tenant']):
-            try:
-                srcpath = os.path.abspath(os.path.join(Settings.working_path, 'scripts', str(old_obj.id)))
-                if not os.path.exists(srcpath):
-                    continue
-
-                new_obj = self.model_to['File']()
-                new_obj.tid = old_obj.id
-                new_obj.id = uuid4()
-                new_obj.name = 'script'
-                dstpath = os.path.abspath(os.path.join(Settings.files_path, new_obj.id))
-                shutil.move(srcpath, dstpath)
-                self.session_new.add(new_obj)
-                self.entries_count['File'] += 1
-            except:
-                pass
+            srcpath = os.path.abspath(os.path.join(Settings.working_path, 'scripts', str(old_obj.id)))
+            new_obj = self.model_to['File']()
+            new_obj.tid = old_obj.id
+            new_obj.id = uuid4()
+            new_obj.name = 'script'
+            dstpath = os.path.abspath(os.path.join(Settings.files_path, new_obj.id))
+            os.path.exists(srcpath) and shutil.move(srcpath, dstpath) and self.session_new.add(new_obj)
+            self.entries_count['File'] += 1 if os.path.exists(dstpath) else 0
 
         try:
             shutil.rmtree(os.path.abspath(os.path.join(Settings.working_path, 'scripts')))

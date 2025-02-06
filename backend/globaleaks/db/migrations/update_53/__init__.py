@@ -129,9 +129,6 @@ class MigrationScript(MigrationBase):
         for old_obj in self.session_old.query(self.model_from['Context']):
             new_obj = self.model_to['Context']()
             for key in new_obj.__mapper__.column_attrs.keys():
-                if key not in old_obj.__mapper__.column_attrs.keys():
-                    continue
-
                 value = getattr(old_obj, key)
 
                 if key == 'tip_timetolive' and value < 0:
@@ -171,10 +168,6 @@ class MigrationScript(MigrationBase):
 
     def epilogue(self):
         m = self.model_to['Config']
-
-        self.session_new.query(m) \
-                        .filter(m.var_name == 'enable_private_labels') \
-                        .update({'var_name': 'private_annotations'})
 
         self.session_new.query(m) \
                         .filter(m.var_name == 'https_priv_key') \
