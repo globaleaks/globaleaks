@@ -87,7 +87,7 @@ def is_exportable(session, files: list, user_id: str) -> bool:
     if antivirus_enabled and any(file.get('status', '').upper() == EnumStateFile.pending.name.upper() for file in files):
         return False
 
-    if not user.can_download_infected and any(file.get('status', '').upper() != EnumStateFile.infected.name.upper() for file in files):
+    if not user.can_download_infected and any(file.get('status', '').upper() == EnumStateFile.infected.name.upper() for file in files):
         return False
 
     return True
