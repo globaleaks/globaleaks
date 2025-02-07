@@ -23,42 +23,53 @@ def file_delivery(session):
     receivers associated, one entry for each combination. representing the
     WhistleblowerFile that need to be created.
     """
-    receiverfiles_maps = {}
-    whistleblowerfiles_maps = {}
+    files_map = {}
 
-    for ifile, itip in session.query(models.InternalFile, models.InternalTip) \
-                              .filter(models.InternalFile.new.is_(True),
-                                      models.InternalTip.id == models.InternalFile.internaltip_id) \
-                              .order_by(models.InternalFile.creation_date) \
-                              .limit(20):
-        ifile.new = False
-        src = ifile.id
+    # Fetch the InternalFiles and their related InternalTips
+    ifile_tip_pairs = session.query(models.InternalFile, models.InternalTip) \
+                             .filter(models.InternalFile.new.is_(True),
+                                     models.InternalTip.id == models.InternalFile.internaltip_id) \
+                             .order_by(models.InternalFile.creation_date) \
+                             .limit(20) \
+                             .all()
 
-        for rtip, user in session.query(models.ReceiverTip, models.User) \
-                                 .filter(models.ReceiverTip.internaltip_id == ifile.internaltip_id,
-                                         models.User.id == models.ReceiverTip.receiver_id):
-            receiverfile = models.WhistleblowerFile()
-            receiverfile.internalfile_id = ifile.id
-            receiverfile.receivertip_id = rtip.id
+    # Extract InternalFile IDs for batch query
+    ifile_ids = [ifile.id for ifile, _ in ifile_tip_pairs]
+    itip_ids = {ifile.id: ifile.internaltip_id for ifile, _ in ifile_tip_pairs}
+
+    # Fetch all ReceiverTips and Users in one query
+    receiver_map = {}
+    if itip_ids:
+        receivers = session.query(models.ReceiverTip.id, models.ReceiverTip.internaltip_id) \
+                           .filter(models.ReceiverTip.internaltip_id.in_(itip_ids.values())) \
+                           .all()
+
+        for rtip_id, internaltip_id in receivers:
+            receiver_map.setdefault(internaltip_id, []).append(rtip_id)
+
+    # Process the files and create WhistleblowerFile records
+    for ifile, itip in ifile_tip_pairs:
+        ifile.new = False  # Mark as processed
+
+        # Store metadata
+        files_map[ifile.id] = {
+            'key': itip.crypto_tip_pub_key,
+            'src': ifile.id,
+            'dst': os.path.abspath(os.path.join(Settings.attachments_path, ifile.id)),
+        }
+
+        # Retrieve all receivers for this file
+        for rtip_id in receiver_map.get(ifile.internaltip_id, []):
+            whistleblowerfile = models.WhistleblowerFile()
+            whistleblowerfile.internalfile_id = ifile.id
+            whistleblowerfile.receivertip_id = rtip_id
 
             # https://github.com/globaleaks/globaleaks-whistleblowing-software/issues/444
             # avoid to mark the receiverfile as new if it is part of a submission
             # this way we avoid to send unuseful messages
-            receiverfile.new = not ifile.creation_date == itip.creation_date
+            whistleblowerfile.new = not ifile.creation_date == itip.creation_date
 
-            session.add(receiverfile)
-
-            if ifile.id not in receiverfiles_maps:
-                receiverfiles_maps[ifile.id] = {
-                    'key': itip.crypto_tip_pub_key,
-                    'src': src,
-                    'wbfiles': []
-                }
-
-            receiverfiles_maps[ifile.id]['wbfiles'].append({
-                'dst': os.path.abspath(os.path.join(Settings.attachments_path, receiverfile.internalfile_id)),
-                'pgp_key_public': user.pgp_key_public
-            })
+            session.add(whistleblowerfile)
 
     for rfile, itip in session.query(models.ReceiverFile, models.InternalTip)\
                                .filter(models.ReceiverFile.new.is_(True),
@@ -66,17 +77,14 @@ def file_delivery(session):
                                .order_by(models.ReceiverFile.creation_date) \
                                .limit(20):
         rfile.new = False
-        src = rfile.id
 
-        whistleblowerfiles_maps[rfile.id] = {
+        files_map[rfile.id] = {
             'key': itip.crypto_tip_pub_key,
-            'src': src,
+            'src': rfile.id,
             'dst': os.path.abspath(os.path.join(Settings.attachments_path, rfile.id)),
         }
 
-        rfile.new = False
-
-    return receiverfiles_maps, whistleblowerfiles_maps
+    return files_map
 
 
 def write_plaintext_file(sf, dest_path):
@@ -105,48 +113,6 @@ def write_encrypted_file(key, sf, dest_path):
         log.err("Unable to create plaintext file %s: %s", dest_path, excep)
 
 
-def process_receiverfiles(state, files_maps):
-    """
-    Function that process uploaded receiverfiles
-
-    :param state: A reference to the application state
-    :param files_maps: descriptors of whistleblower files to be processed
-    """
-    for a, m in files_maps.items():
-        sf = state.get_tmp_file_by_name(m['src'])
-
-        for rcounter, rf in enumerate(m['wbfiles']):
-            try:
-                if m['key']:
-                    write_encrypted_file(m['key'], sf, rf['dst'])
-                elif rf['pgp_key_public']:
-                    with sf.open('rb') as encrypted_file:
-                        PGPContext(rf['pgp_key_public']).encrypt_file(encrypted_file, rf['dst'])
-                else:
-                    write_plaintext_file(sf, rf['dst'])
-            except:
-                pass
-
-
-def process_whistleblowerfiles(state, files_maps):
-    """
-    Function that process uploaded whistleblowerfiles
-
-    :param state: A reference to the application state
-    :param files_maps: descriptors of whistleblower files to be processed
-    """
-    for _, m in files_maps.items():
-        try:
-            sf = state.get_tmp_file_by_name(m['src'])
-
-            if m['key']:
-                write_encrypted_file(m['key'], sf, m['dst'])
-            else:
-                write_plaintext_file(sf, m['dst'])
-        except:
-            pass
-
-
 class Delivery(LoopingJob):
     interval = 5
     monitor_interval = 180
@@ -156,7 +122,15 @@ class Delivery(LoopingJob):
         """
         This function creates receiver files
         """
-        receiverfiles_maps, whistleblowerfiles_maps = yield file_delivery()
+        files_map = yield file_delivery()
 
-        process_receiverfiles(self.state, receiverfiles_maps)
-        process_whistleblowerfiles(self.state, whistleblowerfiles_maps)
+        for _, file in files_map.items():
+            try:
+                sf = self.state.get_tmp_file_by_name(file['src'])
+
+                if file['key']:
+                    write_encrypted_file(file['key'], sf, file['dst'])
+                else:
+                    write_plaintext_file(sf, file['dst'])
+            except:
+                pass
