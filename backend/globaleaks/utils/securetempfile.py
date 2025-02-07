@@ -7,6 +7,8 @@ from cryptography.hazmat.primitives.ciphers.algorithms import ChaCha20
 CHUNK_SIZE = 4096
 
 class SecureTemporaryFile:
+    fd = enc = dec = None
+
     def __init__(self, filesdir):
         """
         Initializes an ephemeral file with ChaCha20 encryption.
@@ -18,10 +20,6 @@ class SecureTemporaryFile:
         filename = str(uuid.uuid4())
         self.filepath = os.path.join(filesdir, filename)
         self.cipher = Cipher(ChaCha20(os.urandom(32), os.urandom(16)), mode=None)
-        self.enc = self.cipher.encryptor()
-        self.dec = self.cipher.decryptor()
-
-        self.fd = None
 
     @property
     def size(self):
@@ -40,8 +38,15 @@ class SecureTemporaryFile:
         :param mode: 'w' for writing, 'r' for reading.
         :return: The file object.
         """
+        if self.fd:
+            self.close()
+
         self.fd = os.open(self.filepath, os.O_RDWR | os.O_CREAT | os.O_APPEND, mode)
         os.chmod(self.filepath, mode)
+
+        self.enc = self.cipher.encryptor()
+        self.dec = self.cipher.decryptor()
+
         return self
 
     def write(self, data):
@@ -82,9 +87,11 @@ class SecureTemporaryFile:
         """
         Closes the file descriptor.
         """
-        if self.fd is not None:
+        if self.fd:
             os.close(self.fd)
-            self.fd = None
+            del self.enc
+            del self.dec
+            self.fd = self.enc = self.dec = None
 
     def __enter__(self):
         """
