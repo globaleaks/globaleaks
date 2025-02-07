@@ -18,7 +18,6 @@ describe('admin add and configure accreditor', () => {
       name: "Accreditation_Resp_Accreditation",
       value: "accreditor",
       address: "globaleaks-accred-accreditator@mailinator.com",
-      idp_id: "PRKPTR88H01L219U",
     };
 
   it("should add accreditor", () => {
@@ -30,7 +29,6 @@ describe('admin add and configure accreditor', () => {
       cy.get('select[name="role"]').select(user.value);
       cy.get('input[name="username"]').clear().type(user.name);
       cy.get('input[name="name"]').clear().type(user.name);
-      cy.get('input[name="idp_id"]').clear().type(user.idp_id);
       cy.get('input[name="email"]').clear().type(user.address);
       cy.get("#add-btn").click();
     };
@@ -58,7 +56,7 @@ describe('admin add and configure accreditor', () => {
 
 describe("Resp_Accreditation first login", () => {
   it("should require password change upon successful authentication", () => {
-    cy.login_accreditor("Resp_Accreditation", Cypress.env("init_password"), "#/login", true);
+    cy.login_accreditor("Accreditation_Resp_Accreditation", Cypress.env("init_password"), "#/login", true);
     cy.get('[name="changePasswordArgs.password"]').should('be.visible', { timeout: 10000 }).type(Cypress.env("user_password"));
     cy.get('[name="changePasswordArgs.confirm"]').type(Cypress.env("user_password"));
     cy.get('button[name="submit"]').click();

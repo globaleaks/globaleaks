@@ -56,8 +56,14 @@ def count_user_tip(session, accreditation_item: Subscriber):
     Returns:
         A tuple containing the count of tips and users.
     """
-    status = accreditation_item.state if isinstance(accreditation_item.state, str) else EnumSubscriberStatus(
-        accreditation_item.state).name
+    if isinstance(accreditation_item.state, str):
+        status = accreditation_item.state
+    else:
+        try:
+            status = EnumSubscriberStatus(accreditation_item.state).name
+        except:
+            status = None
+
     if status != EnumSubscriberStatus.accredited.name:
         return {}, 2
     count_user = (
@@ -91,14 +97,20 @@ def serialize_element(accreditation_item, count_tip, count_user, t):
     Returns:
         A dictionary containing serialized accreditation information.
     """
+    if isinstance(accreditation_item.state, str):
+        state = accreditation_item.state
+    else:
+        try:
+            state = EnumSubscriberStatus(accreditation_item.state).name
+        except:
+            state = None
     return {
         'id': accreditation_item.id,
         'organization_name': accreditation_item.organization_name,
         'organization_institutional_site': accreditation_item.organization_institutional_site,
         'type': "AFFILIATED" if t.affiliated else 'NOT_AFFILIATED',
         'accreditation_date': accreditation_item.creation_date,
-        'state': accreditation_item.state if isinstance(accreditation_item.state, str) else EnumSubscriberStatus(
-            accreditation_item.state).name,
+        'state': state,
         'num_user_profiled': count_user,
         'opened_tips': count_tip
     }

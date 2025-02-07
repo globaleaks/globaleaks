@@ -1,4 +1,4 @@
-import {PageIdleDetector} from "./PageIdleDetector";
+import { PageIdleDetector } from "./PageIdleDetector";
 
 declare global {
   namespace Cypress {
@@ -27,7 +27,7 @@ declare global {
 
 Cypress.Commands.add("confirm_accreditation_request", (reqId) => {
 
-  cy.visit("#/accreditation-request/"+reqId);
+  cy.visit("#/accreditation-request/" + reqId);
 
   cy.get('input[name="privacyAccept"]').click();
 
@@ -35,7 +35,7 @@ Cypress.Commands.add("confirm_accreditation_request", (reqId) => {
   cy.get("#proceed").click();
 
   cy.wait(1000);
-  
+
   cy.get(".modal").should("be.visible");
   cy.get(".modal #closeConfirmModal").click();
 
@@ -43,13 +43,15 @@ Cypress.Commands.add("confirm_accreditation_request", (reqId) => {
 
 Cypress.Commands.add("request_external_organization", (denomination, pec, url, idp_id) => {
 
-  denomination = denomination === undefined ? "Organizzazione 1" : denomination;
-  pec = pec === undefined ? "example@examplepec.com" : pec;
-  url = url === undefined ? "http://exampleurl.com" : url;
-  idp_id = idp_id === undefined ? "LLNBRY89A18D969M" : idp_id;
+  denomination = denomination ?? "Organizzazione 1";
+  pec = pec ?? "example@examplepec.com";
+  url = url ?? "http://exampleurl.com";
+  idp_id = idp_id ?? "LLNBRY89A18D969M";
 
-
-  cy.visit({ url: '/#/accreditation-request', headers: {'x-idp-userid': idp_id} });
+  cy.intercept('*', (req) => {
+    req.headers['x-idp-userid'] = idp_id
+  })
+  cy.visit({ url: '/#/accreditation-request', headers: { 'x-idp-userid': idp_id } });
 
   cy.get('input[name="denomination"]').type(denomination);
   cy.get('input[name="pec"]').type(pec);
@@ -72,7 +74,7 @@ Cypress.Commands.add("request_external_organization", (denomination, pec, url, i
   cy.get("#proceed").click();
 
   cy.wait(1000);
-  
+
   cy.get(".modal").should("be.visible");
   cy.get(".modal #closeConfirmModal").click();
 
@@ -120,11 +122,11 @@ Cypress.Commands.add("simple_login_receiver", (username, password, url, firstlog
   let finalURL = "/actions/forcedpasswordchange";
 
   cy.visit(url);
-  cy.get('ng-select[name="authentication.loginData.loginUsername"]').click(); 
+  cy.get('ng-select[name="authentication.loginData.loginUsername"]').click();
   cy.get('.ng-option').first().click();
 
   // @ts-ignore
-  
+
   cy.get("[name=\"password\"]").type(password);
   cy.get("#login-button").click();
 
@@ -223,9 +225,10 @@ Cypress.Commands.add("login_custodian", (username, password, url, firstlogin) =>
 });
 
 Cypress.Commands.add("login_accreditor", (username, password, url, firstlogin) => {
-  username = username === undefined ? "Resp_Accreditation" : username;
+  username = username ?? "Resp_Accreditation";
   password = password === undefined ? Cypress.env("user_password") : password;
   url = url === undefined ? "#/login" : url;
+  firstlogin = firstlogin ?? false
 
   let finalURL = "/actions/forcedpasswordchange";
 
@@ -238,7 +241,9 @@ Cypress.Commands.add("login_accreditor", (username, password, url, firstlogin) =
 
   if (!firstlogin) {
     cy.url().should("include", "#/login").then(() => {
+      console.log(cy.url())
       cy.url().should("not.include", "#/login").then((currentURL) => {
+        console.log(cy.url())
         const hashPart = currentURL.split("#")[1];
         finalURL = hashPart === "login" ? "/accreditor/home" : hashPart;
         cy.waitForUrl(finalURL);
@@ -276,7 +281,7 @@ Cypress.Commands.add("takeScreenshot", (filename: string, locator?: string) => {
     cy.wait(500);
 
     if (locator && locator !== ".modal") {
-      return cy.get(locator).screenshot("../" + filename, {overwrite: true, scale: true});
+      return cy.get(locator).screenshot("../" + filename, { overwrite: true, scale: true });
     }
 
     return cy.screenshot("../" + filename, {
@@ -289,13 +294,13 @@ Cypress.Commands.add("takeScreenshot", (filename: string, locator?: string) => {
 
 Cypress.Commands.add("waitUntilClickable", (locator: string, timeout?: number) => {
   const t = timeout === undefined ? Cypress.config().defaultCommandTimeout : timeout;
-  cy.get(locator).click({timeout: t});
+  cy.get(locator).click({ timeout: t });
 });
 
 Cypress.Commands.add("waitForLoader", () => {
   cy.intercept("**").as("httpRequests");
 
-  cy.get('[data-cy="page-loader-overlay"]', {timeout: 500, log: false})
+  cy.get('[data-cy="page-loader-overlay"]', { timeout: 500, log: false })
     .should(($overlay) => {
       return new Cypress.Promise((resolve, _) => {
         const startTime = Date.now();
@@ -320,7 +325,7 @@ Cypress.Commands.add("waitForLoader", () => {
 
 Cypress.Commands.add("waitForUrl", (url: string, timeout?: number) => {
   const t = timeout === undefined ? Cypress.config().defaultCommandTimeout : timeout;
-  return cy.url().should("include", url, {timeout: t});
+  return cy.url().should("include", url, { timeout: t });
 });
 
 Cypress.Commands.add("login_whistleblower", (receipt) => {
