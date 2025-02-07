@@ -1,3 +1,15 @@
+Changes in version 5.0.47
+    Adopt new angular builder: angular-devkit/build-angular:browser-esbuild
+      to optimize packaging
+    Adopt variable fonts when available (#4388)
+    Correct globaleaks/utils/securetempfile.py enabling to call open() on
+      already opened file to fix bug on encryption of files introduced in
+      5.0.44 preventing correct storage of files on setups with more than
+      one recipient (#4394)
+    Reimplementing python packaging replacing setup.py with pyproject.toml
+    Fix issue #4390
+    Bump client dependencies to latest versions
+
 Changes in version 5.0.46
     Fix issue on creation of users on multitenant systems introduced in 5.0.44
 
