@@ -83,8 +83,8 @@
     "@lodder/grunt-postcss": "3.1.1",
     "@popperjs/core": "2.11.8",
     "angular-eslint": "19.0.2",
-    "cypress": "14.0.1",
-    "eslint": "9.19.0",
+    "cypress": "14.0.2",
+    "eslint": "9.20.0",
     "gettext-parser": "8.0.0",
     "grunt": "1.6.1",
     "grunt-confirm": "1.0.8",
@@ -104,7 +104,7 @@
     "superagent": "10.1.1",
     "ts-node": "10.9.2",
     "typescript": "5.5.4",
-    "typescript-eslint": "8.22.0",
+    "typescript-eslint": "8.23.0",
     "webpack-dev-server": "5.2.0"
   }
 }
