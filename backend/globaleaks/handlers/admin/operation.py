@@ -37,21 +37,13 @@ def check_hostname(session, tid, hostname):
     :param tid: A tenant id
     :param hostname: The hostname to be evaluated
     """
-    if hostname == '':
-        return
-
-    forbidden_endings = ['onion', 'localhost']
-
-    for v in forbidden_endings:
-        if hostname.endswith(v):
-            raise errors.InputValidationError('Hostname contains a forbidden origin')
-
+    forbidden_endings = ('onion', 'localhost')
     existing_hostnames = {h.value for h in session.query(Config)
                                                   .filter(Config.tid != tid,
                                                           Config.var_name == 'hostname')}
 
-    if hostname in existing_hostnames:
-        raise errors.InputValidationError('Hostname already reserved')
+    if hostname and (hostname.endswith(forbidden_endings) or hostname in existing_hostnames):
+        raise errors.InputValidationError('Hostname contains a forbidden origin or is already reserved')
 
 
 @transact
@@ -130,7 +122,7 @@ def toggle_user_escrow(session, tid, user_session, user_id):
     :param user_id: The user for which togling the key escrow access
     """
     if user_session.user_id == user_id or not user_session.ek:
-        return
+        raise errors.InputValidationError('Auto revokation of keys prevented for security reasons')
 
     user = db_get_user(session, tid, user_id)
     if not user.crypto_pub_key:

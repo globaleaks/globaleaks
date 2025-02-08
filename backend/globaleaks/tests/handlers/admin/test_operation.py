@@ -2,6 +2,7 @@
 from globaleaks import models
 from globaleaks.handlers.admin.operation import AdminOperationHandler
 from globaleaks.jobs import delivery
+from globaleaks.rest import errors
 from globaleaks.tests import helpers
 
 from twisted.internet import defer
@@ -58,13 +59,33 @@ class TestAdminOperations(helpers.TestHandlerWithPopulatedDB):
 
         return handler.put()
 
+    def atest_admin_test_set_hostname(self):
+        return self._test_operation_handler('set_hostname',
+                                           {'value': 'www.nsa.gov'})
+
+    def test_admin_test_set_hostname_invalid_because_used(self):
+        return self.assertFailure(self._test_operation_handler('set_hostname',
+                                                               {'value': 'www.gov.il'}),
+                                  errors.InputValidationError),
+
+
+    def test_admin_test_set_hostname_invalid_because_onion(self):
+        return self.assertFailure(self._test_operation_handler('set_hostname',
+                                                               {'value': 'vlltmarak3cn67bu32gq356azn2gkjl5seytdhotpa5uhofejlbeemqd.onion'}),
+                                  errors.InputValidationError)
+
+    def test_admin_test_set_hostname_invalid_because_localhost(self):
+        return self.assertFailure(self._test_operation_handler('set_hostname',
+                                                               {'value': 'localhost'}),
+                                  errors.InputValidationError)
+
     def test_admin_test_mail(self):
         return self._test_operation_handler('test_mail')
 
     def test_admin_test_set_user_password(self):
         return self._test_operation_handler('set_user_password',
                                            {'user_id': self.dummyReceiver_1['id'],
-                                            'password': helpers.VALID_PASSWORD})
+                                            'password': helpers.VALID_KEY})
 
     def test_admin_test_send_password_reset_email(self):
         return self._test_operation_handler('send_password_reset_email',
@@ -74,10 +95,30 @@ class TestAdminOperations(helpers.TestHandlerWithPopulatedDB):
         return self._test_operation_handler('reset_smtp_settings')
 
     def test_admin_test_toggle_escrow(self):
-        return self._test_operation_handler('toggle_escrow')
+        return self._test_operation_handler('enable_encryption')
+
+    @defer.inlineCallbacks
+    def test_admin_test_toggle_escrow(self):
+        # double toggle is needed to test disabling and enabling
+        yield self._test_operation_handler('toggle_escrow')
+        yield self._test_operation_handler('toggle_escrow')
+
+    @defer.inlineCallbacks
+    def test_admin_test_toggle_user_escrow_on_a_user(self):
+        # double toggle is needed to test disabling and enabling
+        yield self._test_operation_handler('toggle_user_escrow', {'value': self.dummyReceiver_1['id']})
+        yield self._test_operation_handler('toggle_user_escrow', {'value': self.dummyReceiver_1['id']})
+
+    def test_admin_test_toggle_user_escrow_prevents_auto_revocation(self):
+        return self.assertFailure(self._test_operation_handler('toggle_user_escrow',
+                                                               {'value': self.dummyAdmin['id']}),
+                                  errors.InputValidationError)
 
     def test_admin_test_reset_templates(self):
         return self._test_operation_handler('reset_templates')
 
     def test_admin_test_reset_onion_private_key(self):
         return self._test_operation_handler('reset_onion_private_key')
+
+    def test_admin_test_enable_user_permission_file_upload(self):
+        return self._test_operation_handler('enable_user_permission_file_upload')
