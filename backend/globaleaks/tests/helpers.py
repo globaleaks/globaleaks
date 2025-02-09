@@ -827,7 +827,6 @@ class TestGLWithPopulatedDB(TestGL):
 
             user.crypto_escrow_bkp1_key = Base64Encoder.encode(GCE.asymmetric_encrypt(ESCROW_PUB_KEY, USER_PRV_KEY))
 
-
     @inlineCallbacks
     def fill_data(self):
         # fill_data/create_admin
