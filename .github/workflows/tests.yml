@@ -1,4 +1,4 @@
-name: Tests (B)
+name: Tests
 
 on: [ push, pull_request ]
 
@@ -41,4 +41,4 @@ jobs:
       - name: Run tests
         run: |
           cd $GITHUB_WORKSPACE
-          ./.github/workflows/scripts/run_tests_backend.sh
+          ./.github/workflows/scripts/run_tests.sh
