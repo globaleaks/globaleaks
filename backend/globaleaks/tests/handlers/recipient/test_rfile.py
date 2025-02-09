@@ -6,7 +6,7 @@ from globaleaks.handlers.whistleblower import wbtip
 from globaleaks.jobs.delivery import Delivery
 from globaleaks.tests import helpers
 
-attachment = b'hello world'
+file_content = b'Hello World'
 
 
 class TestWBFileWorkFlow(helpers.TestHandlerWithPopulatedDB):
@@ -19,7 +19,8 @@ class TestWBFileWorkFlow(helpers.TestHandlerWithPopulatedDB):
         self._handler = rtip.ReceiverFileUpload
         rtips_desc = yield self.get_rtips()
         for rtip_desc in rtips_desc:
-            handler = self.request(role='receiver', user_id=rtip_desc['receiver_id'], attached_file=attachment)
+            attachment = self.get_dummy_attachment(content=file_content)
+            handler = self.request(role='receiver', user_id=rtip_desc['receiver_id'], attachment=attachment)
             yield handler.post(rtip_desc['id'])
 
         yield Delivery().run()
@@ -31,7 +32,7 @@ class TestWBFileWorkFlow(helpers.TestHandlerWithPopulatedDB):
             for rfile_desc in rfiles_desc:
                 handler = self.request(role='whistleblower', user_id=wbtip_desc['id'])
                 yield handler.get(rfile_desc['id'])
-                self.assertEqual(handler.request.getResponseBody(), attachment)
+                self.assertEqual(handler.request.getResponseBody(), file_content)
 
         self._handler = rtip.ReceiverFileDownload
         rtips_desc = yield self.get_rtips()

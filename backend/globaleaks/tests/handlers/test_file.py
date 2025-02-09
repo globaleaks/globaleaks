@@ -16,7 +16,7 @@ class TestFileInstance(helpers.TestHandler):
         yield self.assertFailure(handler.get(u'custom'), ResourceNotFound)
 
         self._handler = admin_file.FileInstance
-        handler = self.request({}, role='admin')
+        handler = self.request({}, role='admin', permissions={'can_upload_files': True})
         yield handler.post('custom')
 
         self._handler = admin_file.FileCollection

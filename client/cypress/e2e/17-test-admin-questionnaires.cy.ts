@@ -85,15 +85,17 @@ describe("admin add, configure and delete questionnaires", () => {
       cy.get("#modal-action-ok").click();
     });
 
-
     cy.get('[data-cy="question_templates"]').click();
 
     fieldTypes.forEach((questionType: string, index: number) => {
       add_question(questionType, index);
     });
 
+    cy.get(".fa-file-export").last().click();
+
     cy.logout();
   });
+
   it("should import custom questionnaire file", () => {
     cy.login_admin();
 
@@ -130,12 +132,20 @@ describe("admin add, configure and delete questionnaires", () => {
     cy.get("#questionnaire-2").should("be.visible");
     cy.logout();
   });
+
   it("should add duplicate questionnaire", function () {
     cy.login_admin();
     cy.visit("/#/admin/questionnaires");
     cy.get(".fa-clone").first().click();
     cy.get('input[name="name"]').type("duplicate questionnaire");
     cy.get("#modal-action-ok").click();
+    cy.logout();
+  });
+
+  it("should export questionnaire", function () {
+    cy.login_admin();
+    cy.visit("/#/admin/questionnaires");
+    cy.get(".fa-file-export").first().click();
     cy.logout();
   });
 });

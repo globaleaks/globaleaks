@@ -75,7 +75,7 @@ def get_file_id_by_name(session, tid, name):
 
 
 @transact
-def delete_file(session, tid, id_or_name):
+def delete_file_if_existing(session, tid, id_or_name):
     file_obj = db_get_file_by_id_or_name(session, tid, id_or_name)
     if not file_obj:
         return
@@ -108,13 +108,15 @@ class FileInstance(BaseHandler):
     ]
 
     def permission_check(self, name):
-        if name in ['css', 'favicon', 'script'] and \
-                not self.session.has_permission('can_upload_files'):
-            raise errors.InvalidAuthentication
+        if self.session.role == 'admin':
+            if name not in ['logo'] and \
+                    not self.session.has_permission('can_upload_files'):
+                raise errors.InvalidAuthentication
 
-        if self.session.role != 'admin' and \
-                not self.session.has_permission('can_edit_general_settings'):
-            raise errors.InvalidAuthentication
+        else:
+            if name not in ['logo'] or \
+                    not self.session.has_permission('can_edit_general_settings'):
+                raise errors.InvalidAuthentication
 
     @inlineCallbacks
     def post(self, name):
@@ -130,7 +132,7 @@ class FileInstance(BaseHandler):
             self.allowed_mimetypes = ['text/javascript']
 
         if self.uploaded_file['type'] not in self.allowed_mimetypes:
-            raise errors.ForbiddenOperation
+            raise errors.InputValidationError
 
         if name in special_files or re.match(requests.uuid_regexp, name):
             self.uploaded_file['name'] = name
@@ -139,8 +141,7 @@ class FileInstance(BaseHandler):
 
         path = os.path.join(self.state.settings.files_path, id)
 
-        if os.path.exists(path):
-            return
+        yield delete_file_if_existing(self.request.tid, name)
 
         yield tw(db_add_file, self.request.tid, id, self.uploaded_file['name'])
 
@@ -152,21 +153,14 @@ class FileInstance(BaseHandler):
     def delete(self, name):
         self.permission_check(name)
 
-        yield delete_file(self.request.tid, name)
+        yield delete_file_if_existing(self.request.tid, name)
 
 
 class FileCollection(BaseHandler):
     check_roles = 'user'
 
-    def permission_check(self):
-        if self.session.role != 'admin' and \
-                not self.session.has_permission('can_edit_general_settings'):
-            raise errors.InvalidAuthentication
-
     def get(self):
         """
         Return the list of files and their info
         """
-        self.permission_check()
-
         return get_files(self.request.tid)

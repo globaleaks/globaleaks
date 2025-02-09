@@ -11,7 +11,7 @@
       <div class="form-group">
         <div>
           @for (admin_file of admin_files; track admin_file) {
-          <src-admin-file [adminFile]="admin_file"[present]="files_names.indexOf(admin_file.varname) !== -1"></src-admin-file>
+          <src-admin-file [adminFile]="admin_file" [present]="files_names.indexOf(admin_file.varname) !== -1" [callback]="this.updateFiles"></src-admin-file>
           }
         </div>
         <div class="mb-2">
@@ -40,7 +40,7 @@
                     </a>
                     <button class="btn btn-sm btn-danger" (click)="deleteFile('api/admin/files/' + file.id)">
                       <i class="fa-solid fa-trash"></i>
-                      <span id="delete">{{ 'Delete' | translate }}</span>
+                      <span>{{ 'Delete' | translate }}</span>
                     </button>
                   </td>
                 </tr>

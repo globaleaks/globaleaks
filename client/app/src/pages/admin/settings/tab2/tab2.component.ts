@@ -90,7 +90,7 @@ export class Tab2Component implements OnInit {
       
       flowJsInstance.on("fileSuccess", (_) => {
         this.appConfigService.reinit(false);
-        this.utilsService.reloadComponent();
+        this.updateFiles();
       });
 
       flowJsInstance.on("fileError", (_) => {
@@ -111,7 +111,6 @@ export class Tab2Component implements OnInit {
     this.utilsService.deleteFile(url).subscribe(
       () => {
         this.updateFiles();
-        this.utilsService.reloadComponent();
       }
     );
   }

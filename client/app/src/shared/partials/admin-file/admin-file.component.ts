@@ -26,6 +26,7 @@ export class AdminFileComponent {
 
   @Input() adminFile: AdminFile;
   @Input() present: boolean;
+  @Input() callback!: () => void;
   @ViewChild("uploader") uploaderInput!: ElementRef<HTMLInputElement>;
 
   onFileSelected(files: FileList | null, filetype: string) {
@@ -46,7 +47,9 @@ export class AdminFileComponent {
 
       flowJsInstance.on("fileSuccess", (_) => {
         this.appConfigService.reinit(false);
-        this.utilsService.reloadCurrentRoute();
+	if (this.callback) {
+          this.callback();
+	}
       });
       flowJsInstance.on("fileError", (_) => {
         if (this.uploaderInput) {
@@ -61,7 +64,9 @@ export class AdminFileComponent {
     this.utilsService.deleteFile(url).subscribe(
       () => {
         this.appConfigService.reinit(false);
-        this.utilsService.reloadCurrentRoute();
+	if (this.callback) {
+          this.callback();
+	}
       }
     );
   }

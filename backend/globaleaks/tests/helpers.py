@@ -3,6 +3,7 @@
 Utilities and basic TestCases.
 """
 import json
+import mimetypes
 import os
 import shutil
 
@@ -421,13 +422,14 @@ class MockDict:
         }
 
 
-def get_dummy_file(content=None):
-    filename = generateRandomKey() + ".pdf"
+def get_dummy_attachment(name=None, content=None):
+    if name is None:
+        name = generateRandomKey() + ".pdf"
 
-    content_type = 'application/pdf'
+    content_type, _ = mimetypes.guess_type(name)
 
     if content is None:
-        content = Base64Encoder.decode(VALID_BASE64_IMG)
+        content = name.encode()
 
     temporary_file = SecureTemporaryFile(Settings.tmp_path)
 
@@ -437,9 +439,9 @@ def get_dummy_file(content=None):
     State.TempUploadFiles[os.path.basename(temporary_file.filepath)] = temporary_file
 
     return {
-        'id': filename,
+        'id': name,
         'date': datetime_now(),
-        'name': filename,
+        'name': name,
         'description': 'description',
         'body': temporary_file,
         'size': len(content),
@@ -456,13 +458,6 @@ def check_confirmation(self):
 
 
 BaseHandler.check_confirmation = check_confirmation
-
-
-def get_file_upload(self):
-    return get_dummy_file()
-
-
-BaseHandler.get_file_upload = get_file_upload
 
 
 def forge_request(uri=b'https://www.globaleaks.org/',
@@ -718,8 +713,8 @@ class TestGL(unittest.TestCase):
             'receipt': GCE.derive_key(GCE.generate_receipt(), VALID_SALT)
         })
 
-    def get_dummy_file(self, content=None):
-        return get_dummy_file(content)
+    def get_dummy_attachment(self, name=None, content=None):
+        return get_dummy_attachment(name=name, content=content)
 
     def get_dummy_redirect(self, x=''):
         return {
@@ -732,7 +727,7 @@ class TestGL(unittest.TestCase):
         This emulates the file upload of an incomplete submission
         """
         for _ in range(n):
-            session.files.append(self.get_dummy_file())
+            session.files.append(self.get_dummy_attachment())
 
     def pollute_events(self, number_of_times=10):
         for _ in range(number_of_times):
@@ -886,7 +881,7 @@ class TestGLWithPopulatedDB(TestGL):
 
     def perform_submission_uploads(self, submission_id):
         for _ in range(self.population_of_attachments):
-            Sessions.get(submission_id).files.append(self.get_dummy_file())
+            Sessions.get(submission_id).files.append(self.get_dummy_attachment())
 
     @inlineCallbacks
     def perform_submission_actions(self, session_id):
@@ -973,14 +968,16 @@ class TestHandler(TestGLWithPopulatedDB):
     #
     #  }
     # }
+    can_upload_files = True
 
     def setUp(self):
         return TestGL.setUp(self)
 
     def request(self, body='', uri=b'https://www.globaleaks.org/',
-                user_id=None, role=None, multilang=False, headers=None, args=None,
-                client_addr=b'127.0.0.1', handler_cls=None, attached_file=None,
-                kwargs=None, token=False):
+                user_id=None, role=None, multilang=False, headers=None, token=False, permissions=None,
+                client_addr=b'127.0.0.1',
+                handler_cls=None, attachment=None,
+                args=None, kwargs=None):
         """
         Constructs a handler for preforming mock requests using the bag of params described below.
         """
@@ -1012,6 +1009,9 @@ class TestHandler(TestGLWithPopulatedDB):
             else:
                 session = Sessions.new(1, user_id, 1, role, USER_PRV_KEY, USER_ESCROW_PRV_KEY if role == 'admin' else '')
 
+            if permissions:
+                session.permissions = permissions
+
             headers[b'x-session'] = session.id
 
         # during unit tests a token is always provided to any handler
@@ -1041,7 +1041,7 @@ class TestHandler(TestGLWithPopulatedDB):
             request.language = None
 
         if handler.upload_handler:
-            handler.uploaded_file = self.get_dummy_file(attached_file)
+            handler.uploaded_file = attachment if attachment else self.get_dummy_attachment()
 
         return handler
 

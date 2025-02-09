@@ -1,5 +1,5 @@
-describe("Admin configure custom CSS and JS", () => {
-  it("should be able to configure the file upload", () => {
+describe("Admin configure files", () => {
+  it("should be able to upload, download and delete files", () => {
     cy.login_admin();
 
     cy.visit("#/admin/settings");
@@ -34,10 +34,6 @@ describe("Admin configure custom CSS and JS", () => {
       });
     });
 
-    cy.get("#project_name").should("be.visible");
-
-    cy.get('[data-cy="files"]').click();
-
     const customJSFile = "files/test.js.txt";
     cy.fixture(customJSFile).then((fileContent) => {
       cy.get('div.uploadfile.file-script input[type="file"]').then(($input) => {
@@ -51,20 +47,6 @@ describe("Admin configure custom CSS and JS", () => {
         cy.wrap($input).trigger('change', { force: true });
       });
     });
-
-    cy.get("#project_name").should("be.visible");
-  });
-
-  it("should upload a file and make it available for download and deletion", () => {
-    cy.login_admin();
-    cy.visit("#/admin/settings");
-    cy.get('[data-cy="files"]').click();
-
-    cy.get("[name='authenticationData.session.permissions.can_upload_files']").should("not.be.checked");
-    cy.get("[name='authenticationData.session.permissions.can_upload_files_switch']").click();
-    cy.get(".modal").should("be.visible");
-    cy.get(".modal [type='password']").type(Cypress.env("user_password"));
-    cy.get(".modal .btn-primary").click();
 
     const customFile = "files/test.txt";
     cy.fixture(customFile).then((fileContent) => {
@@ -80,28 +62,11 @@ describe("Admin configure custom CSS and JS", () => {
       });
     });
 
-    cy.get("#project_name").should("be.visible");
-
-    cy.get('[data-cy="files"]').click();
     cy.get('table#fileList').find('td#file_name').should('contain', 'test.txt').should('be.visible');
-    cy.get("#fileList").get("#delete").click();
-  });
+    cy.get("table#fileList").get(".fa-download").last().click();
+    cy.get("table#fileList").get(".fa-trash").last().click();
 
-
-  it("should be able to disable the file upload", () => {
-    cy.login_admin();
-    cy.visit("#/admin/settings");
-    cy.get('[data-cy="files"]').click();
-
-    cy.get("[name='authenticationData.session.permissions.can_upload_files']").should("not.be.checked");
     cy.get("[name='authenticationData.session.permissions.can_upload_files_switch']").click();
-    cy.get(".modal").should("be.visible");
-    cy.get(".modal [type='password']").type(Cypress.env("user_password"));
-    cy.get(".modal .btn-primary").click();
-
-    cy.get("[name='authenticationData.session.permissions.can_upload_files']").should("be.checked");
-    cy.get("[name='authenticationData.session.permissions.can_upload_files_switch']").click();
-    cy.get('[data-cy="files"]').click();
     cy.get("[name='authenticationData.session.permissions.can_upload_files']").should("not.be.checked");
 
     cy.logout();
