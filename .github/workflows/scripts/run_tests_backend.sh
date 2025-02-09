@@ -17,7 +17,7 @@ echo "Running setup"
 sudo apt-get update
 sudo apt-get install -y tor
 npm install -g grunt grunt-cli
-pip install coverage
+pip3 install coverage
 
 setupBackend
 setupClient

@@ -17,10 +17,13 @@ echo "Running setup"
 sudo apt-get update
 sudo apt-get install -y tor
 npm install -g grunt grunt-cli
+pip3 install coverage
+
 setupBackend
 setupClient
 
-$GITHUB_WORKSPACE/backend/bin/globaleaks -z
+cd $GITHUB_WORKSPACE/backend/ && coverage run ./bin/globaleaks -z -n &
+
 sleep 5
 
 # Running client tests locally
@@ -30,9 +33,13 @@ if [ $? -ne 0 ]; then
   client_test_failed=1
 fi
 
-sed -i 's|SF:dist/|SF:client/|g' $GITHUB_WORKSPACE/client/cypress/coverage/lcov.info
+killall coverage -9
 
+sed -i 's|SF:dist/|SF:client/|g' $GITHUB_WORKSPACE/client/cypress/coverage/lcov.info
 bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l TypeScript -r $GITHUB_WORKSPACE/client/cypress/coverage/lcov.info
+
+cd $GITHUB_WORKSPACE/backend && coverage xml
+bash <(curl -Ls https://coverage.codacy.com/get.sh) report -l Python -r $GITHUB_WORKSPACE/backend/coverage.xml
 
 if [ $client_test_failed -eq 1 ]; then
   echo "Client tests: FAILED"
