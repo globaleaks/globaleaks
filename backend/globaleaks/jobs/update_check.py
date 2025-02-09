@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from pkg_resources import parse_version
 from twisted.internet.defer import inlineCallbacks
 

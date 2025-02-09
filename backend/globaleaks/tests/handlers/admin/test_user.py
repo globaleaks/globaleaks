@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from globaleaks import models
 from globaleaks.handlers.admin import user
 from globaleaks.tests import helpers

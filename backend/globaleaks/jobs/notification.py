@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Implement the notification of new submissions
 import itertools
 

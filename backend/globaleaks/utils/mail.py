@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 # GlobaLeaks Utility used to handle Mail, format, exception, etc
 from io import BytesIO
 

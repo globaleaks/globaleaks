@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Handlers dealing with public API exporting main platform configuration/resources
 import copy
 

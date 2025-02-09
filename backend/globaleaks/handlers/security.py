@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Implementation of security.txt resource
 from datetime import timedelta
 

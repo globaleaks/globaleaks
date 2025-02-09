@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import copy
 from nacl.utils import random as nacl_random
 from globaleaks.settings import Settings

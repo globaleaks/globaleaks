@@ -1,5 +1,3 @@
-# -*- coding: utf-8
-#
 # Handlers dealing with user preferences
 from globaleaks import models
 from globaleaks.handlers.base import BaseHandler

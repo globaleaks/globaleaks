@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import copy
 from twisted.internet.address import IPv4Address
 from twisted.internet.defer import inlineCallbacks

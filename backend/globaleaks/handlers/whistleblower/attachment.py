@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Handler dealing with submissions file uploads and subsequent submissions attachments
 
 from nacl.encoding import Base64Encoder

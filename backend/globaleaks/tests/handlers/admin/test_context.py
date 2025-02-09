@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from globaleaks.handlers.admin import context
 from globaleaks.models import Context
 from globaleaks.tests import helpers

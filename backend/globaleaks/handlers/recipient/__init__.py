@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # API handling recipient user functionalities
 import json
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from globaleaks import models
 from globaleaks.jobs import pgp_check
 from globaleaks.tests import helpers

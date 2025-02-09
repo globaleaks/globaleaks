@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from OpenSSL import crypto, SSL
 from twisted.internet.defer import inlineCallbacks
 

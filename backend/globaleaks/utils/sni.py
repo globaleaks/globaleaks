@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 # This TLS SNI implementation is an extract of https://github.com/glyph/txsni
 # For original authors and related LICENSE refer to the original repository

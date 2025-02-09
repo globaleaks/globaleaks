@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 from globaleaks import models
 from globaleaks.handlers.admin.operation import AdminOperationHandler
 from globaleaks.jobs import delivery

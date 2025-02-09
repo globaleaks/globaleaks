@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 class Cache(object):
     memory_cache_dict = {}
 

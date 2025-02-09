@@ -1,5 +1,3 @@
-# -*- coding: utf-8
-#
 # Handlers implementing platform wizard
 from nacl.encoding import Base64Encoder
 

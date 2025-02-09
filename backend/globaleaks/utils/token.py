@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 # Implement a proof of work token to prevent resources exhaustion
 from nacl.encoding import Base64Encoder
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Implement anomalies check
 from twisted.internet.defer import inlineCallbacks
 

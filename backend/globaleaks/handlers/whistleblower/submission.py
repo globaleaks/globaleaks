@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Handlerse dealing with submission interface
 import json
 import re

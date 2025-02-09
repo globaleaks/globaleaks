@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Implementation of robots.txt resource
 from globaleaks.handlers.base import BaseHandler
 

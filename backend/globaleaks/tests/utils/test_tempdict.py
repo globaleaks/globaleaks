@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*
 from globaleaks.tests import helpers
 from globaleaks.utils.tempdict import TempDict
 

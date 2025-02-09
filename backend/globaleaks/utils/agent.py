@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from globaleaks.utils.socks import SOCKS5Agent
 
 from twisted.internet import reactor

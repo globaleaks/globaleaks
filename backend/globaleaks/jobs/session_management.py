@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 # Implement reset of variables related to sessions
 from globaleaks.jobs.job import LoopingJob
 

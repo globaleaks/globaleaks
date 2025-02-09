@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Handlers implementing special redirects
 from globaleaks.handlers.base import BaseHandler
 

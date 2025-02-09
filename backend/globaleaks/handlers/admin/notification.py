@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from globaleaks.handlers.base import BaseHandler
 from globaleaks.models.config import ConfigFactory, ConfigL10NFactory
 from globaleaks.models.config_desc import ConfigL10NFilters

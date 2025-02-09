@@ -1,5 +1,3 @@
-# -*- coding: utf-8
-#
 # Handlers dealing with user operations
 import os
 from nacl.encoding import Base32Encoder, Base64Encoder

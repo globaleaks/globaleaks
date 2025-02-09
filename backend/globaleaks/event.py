@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 
 from globaleaks.state import State
 from globaleaks.utils.utility import datetime_now

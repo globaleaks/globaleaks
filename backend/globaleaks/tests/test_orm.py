@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from globaleaks.models import Tenant
 from globaleaks.orm import get_session, transact
 from globaleaks.tests import helpers

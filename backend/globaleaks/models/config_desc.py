@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 
 from globaleaks import __version__, DATABASE_VERSION
 from globaleaks.utils.crypto import GCE

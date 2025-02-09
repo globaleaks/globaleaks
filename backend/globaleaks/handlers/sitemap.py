@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Implementation of sitemap resource
 from globaleaks.handlers.base import BaseHandler
 from globaleaks.rest import errors

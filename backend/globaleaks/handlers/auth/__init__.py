@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Handlers dealing with platform authentication
 import json
 from datetime import timedelta

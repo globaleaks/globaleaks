@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 GlobaLeaks - Free and Open-Source Whistleblowing Software
 """

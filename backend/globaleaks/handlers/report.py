@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Handlers dealing with user support requests
 from globaleaks.handlers.base import BaseHandler
 from globaleaks.rest import requests

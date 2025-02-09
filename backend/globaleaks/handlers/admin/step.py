@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 from globaleaks import models
 from globaleaks.handlers.admin.field import db_create_field, db_update_field, db_create_option_trigger, db_reset_option_triggers
 from globaleaks.handlers.base import BaseHandler

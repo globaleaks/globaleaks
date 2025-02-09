@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # API handling export of submissions
 import os
 from io import BytesIO

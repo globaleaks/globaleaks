@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from globaleaks import models
 from globaleaks.models import config
 from globaleaks.orm import transact

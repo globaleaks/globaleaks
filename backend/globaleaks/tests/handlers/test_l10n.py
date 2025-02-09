@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from globaleaks.handlers import l10n
 from globaleaks.handlers.admin import l10n as admin_l10n
 from globaleaks.tests import helpers

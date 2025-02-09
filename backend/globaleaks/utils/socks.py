@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Minimal SOCKS5 implementation
 # The implementation supports:
 # - Plaintexts connections

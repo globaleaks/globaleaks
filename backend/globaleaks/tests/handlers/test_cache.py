@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from twisted.internet.defer import inlineCallbacks
 
 from globaleaks.rest.cache import Cache

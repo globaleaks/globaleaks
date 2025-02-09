@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Implementation of health status resource
 from globaleaks.handlers.base import BaseHandler
 

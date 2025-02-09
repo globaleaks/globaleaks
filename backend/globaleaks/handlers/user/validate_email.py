@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Validates the token for email changes
 
 from datetime import datetime, timedelta

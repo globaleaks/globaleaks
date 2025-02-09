@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Handlers dealing with tip interface for receivers (rtip)
 import copy
 import json

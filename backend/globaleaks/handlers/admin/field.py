@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 from sqlalchemy.sql.expression import not_
 
 from globaleaks import models

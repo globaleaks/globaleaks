@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from globaleaks import DATABASE_VERSION, FIRST_DATABASE_VERSION_SUPPORTED
 from globaleaks.db.appdata import load_appdata
 from globaleaks.utils.log import log

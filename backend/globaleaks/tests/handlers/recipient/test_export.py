@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 from globaleaks.handlers.recipient import export
 from globaleaks.jobs.delivery import Delivery

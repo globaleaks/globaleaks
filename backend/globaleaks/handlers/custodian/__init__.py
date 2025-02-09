@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Handlers dealing with custodian user functionalities
 
 from nacl.encoding import Base64Encoder

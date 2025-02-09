@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # This filte contains routines dealing with texts templates and variables replacement used
 # mainly in mail notifications.
 import collections

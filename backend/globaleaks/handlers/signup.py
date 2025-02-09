@@ -1,5 +1,3 @@
-# -*- coding: utf-8
-#
 # Handlers implementing platform signup
 from sqlalchemy import not_
 from twisted.internet.threads import deferToThread

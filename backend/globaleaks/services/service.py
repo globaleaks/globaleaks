@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 from twisted.internet import task, defer
 
 from globaleaks.state import State, extract_exception_traceback_and_schedule_email

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Handlers dealing with analyst user functionalities
 from sqlalchemy.sql.expression import func, and_
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from globaleaks import anomaly
 from globaleaks.jobs import anomalies
 from globaleaks.tests import helpers

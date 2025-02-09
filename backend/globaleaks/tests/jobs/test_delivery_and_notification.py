@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import timedelta
 from twisted.internet.defer import inlineCallbacks
 

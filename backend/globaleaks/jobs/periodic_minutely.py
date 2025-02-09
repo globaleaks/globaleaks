@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Implement set of actions statistics actions executed on an minutely basis
 from globaleaks.jobs.job import MinutelyJob
 

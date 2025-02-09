@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Implements configuration of Tor onion services
 import os
 import txtorcon

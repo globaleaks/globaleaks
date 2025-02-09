@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from globaleaks.anomaly import check_anomalies
 from globaleaks.jobs.job import LoopingJob
 

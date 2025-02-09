@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from twisted.trial import unittest
 from globaleaks.utils.objectdict import ObjectDict
 

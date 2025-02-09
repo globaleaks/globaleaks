@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 # Implement a job that reset the system cache when State.reset_cache is set to True
 from twisted.internet.defer import inlineCallbacks
 

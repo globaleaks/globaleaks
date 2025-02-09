@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Handler exposing application files
 import os
 

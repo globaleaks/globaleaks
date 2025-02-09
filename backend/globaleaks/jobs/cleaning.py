@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 # Implementation of the daily operations.
 import os
 from datetime import datetime, timedelta

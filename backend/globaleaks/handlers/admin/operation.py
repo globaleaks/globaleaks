@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 import os
 from nacl.encoding import Base64Encoder
 from twisted.internet.defer import inlineCallbacks, returnValue

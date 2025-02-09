@@ -1,4 +1,3 @@
-# -*- coding: utf-8
 from globaleaks import models
 from globaleaks.handlers.admin.step import db_create_step
 from globaleaks.handlers.base import BaseHandler

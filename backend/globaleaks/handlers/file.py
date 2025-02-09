@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Handlers exposing customization files
 import os
 import urllib
