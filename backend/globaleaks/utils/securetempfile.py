@@ -1,5 +1,6 @@
 import os
 import uuid
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import ChaCha20
 
@@ -18,7 +19,7 @@ class SecureTemporaryFile:
         """
         filename = str(uuid.uuid4())
         self.filepath = os.path.join(filesdir, filename)
-        self.cipher = Cipher(ChaCha20(os.urandom(32), os.urandom(16)), mode=None)
+        self.cipher = Cipher(ChaCha20(os.urandom(32), os.urandom(16)), mode=None, backend=default_backend)
 
     @property
     def size(self):
