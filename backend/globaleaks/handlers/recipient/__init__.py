@@ -11,12 +11,29 @@ from sqlalchemy.sql.expression import distinct, func, and_, or_
 from globaleaks import models
 from globaleaks.handlers.base import BaseHandler
 from globaleaks.handlers.recipient.rtip import db_grant_tip_access, db_revoke_tip_access, db_notify_grant_access
-from globaleaks.models import serializers
-from globaleaks.orm import db_get, db_del, db_log, transact
+from globaleaks.orm import db_get, db_log, db_query, transact
 from globaleaks.rest import requests, errors
 from globaleaks.utils.crypto import GCE
 
 import globaleaks.handlers.recipient.export
+import globaleaks.handlers.recipient.sendtip
+
+def db_get_interaltip_forwardings(session, tip_id):
+    return db_query(session, models.InternalTipForwarding, models.InternalTipForwarding.internaltip_id == tip_id).all()
+
+def db_get_content_forwardings(session, internaltip_forwarding_id):
+    return db_query(session, models.ContentForwarding, models.ContentForwarding.internaltip_forwarding_id == internaltip_forwarding_id).all()
+
+def get_internaltip_forwarding(session, itip_id):
+    internaltip_forwardings = db_get_interaltip_forwardings(session, itip_id)
+    tenants = []
+
+    for itip_forwarding in internaltip_forwardings:
+        t = dict()
+        t['tid'] = itip_forwarding.tid
+        t['name'] = db_get(session, models.Config, (models.Config.tid == itip_forwarding.tid, models.Config.var_name == 'name')).value
+        tenants.append(t)
+    return len(internaltip_forwardings), tenants
 
 
 @transact
@@ -45,7 +62,7 @@ def get_receivertips(session, tid, receiver_id, user_key, language, args={}):
                                  .filter(models.ReceiverTip.receiver_id == receiver_id,
                                          models.ReceiverTip.internaltip_id == models.InternalTip.id,
                                          models.Comment.internaltip_id == models.InternalTip.id,
-                                         models.Comment.visibility == 0) \
+                                         models.Comment.visibility == models.EnumVisibility.public.value) \
                                  .group_by(models.InternalTip.id):
         comments_by_itip[itip_id] = count
 
@@ -109,6 +126,8 @@ def get_receivertips(session, tid, receiver_id, user_key, language, args={}):
         else:
             subscription = 2
 
+        forwardings_count, tenants = get_internaltip_forwarding(session, itip.id)
+
         if accessible or itip.id not in dict_ret:
             dict_ret[itip.id] = {
                 'id': itip.id,
@@ -132,7 +151,9 @@ def get_receivertips(session, tid, receiver_id, user_key, language, args={}):
                 'comment_count': comments_by_itip.get(itip.id, 0),
                 'receiver_count': receiver_count_by_itip.get(itip.id, 0),
                 'subscription': subscription,
-                'accessible': accessible
+                'accessible': accessible,
+                'total_forwardings_eo': forwardings_count,
+                'forwardings': tenants
             }
 
     return list(dict_ret.values())

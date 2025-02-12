@@ -7,22 +7,24 @@
         </span>
     </div>
     <div class="card-body" *ngIf="!collapsed">
-        <div *ngFor="let rfile of tip.rfiles | filter : 'visibility' : key | orderBy: 'creation_date' as index">
+        <div *ngFor="let rfile of getFilteredAndSortedFiles(onlyNew? newFiles : tip.rfiles) as index">
             <div id="rfile-{{index}}" data-wbfile data-ctx="'rtip'">
-                <src-wbfiles [ctx]="'rtip'" (dataToParent)="listenToWbfiles($event)" [receivers_by_id]="{}" [wbFile]="rfile"></src-wbfiles>
+                <src-wbfiles [ctx]="'rtip'" [canDelete]="canUpload" (dataToParent)="listenToWbfiles($event)" [receivers_by_id]="{}" [wbFile]="rfile"></src-wbfiles>
             </div>
         </div>
-        <div *ngIf="tip.status !== 'closed'">
-            <div>{{'Upload a file:'|translate}}</div>
+        <div *ngIf="tip.status !== 'closed' && canUpload">
+            <div>{{'Upload a file:' | translate}}</div>
             <div class="form">
                 <div class="input-group">
-                    <span class="input-group-prepend">
+                    <span *ngIf="!disableDescriptionOnUpload" class="input-group-prepend">
                         <span class="input-group-text rounded-end-0">{{'Description'|translate}}</span>
                     </span>
-                    <input type="text" class="form-control" id="upload_description" [(ngModel)]="file_upload_description" />
-                    <span class="input-group-append" [ngClass]="{'disabled': !file_upload_description}">
-                        <input #uploader [attr.id]="fileInput" id="customFile" type="file" flowButton [style.display]="'none'" class="custom-file-input inputelem" (change)="onFileSelected(uploader.files)" />
-                        <label [attr.for]="fileInput" for="customFile" class="btn btn-primary rounded-start-0 m-0">
+                    <input  *ngIf="!disableDescriptionOnUpload" type="text" class="form-control" id="upload_description" [(ngModel)]="file_upload_description" [disabled]="isUploadDisabled()"/>
+                    <span class="input-group-append" [ngClass]="{
+                        'disabled': (!file_upload_description && !disableDescriptionOnUpload) || isUploadDisabled()
+                        }">
+                        <input #uploader [attr.id]="fileInput" id="customFile" type="file" flowButton [style.display]="'none'" class="custom-file-input inputelem" (change)="onFileSelected(uploader.files)" [disabled]="isUploadDisabled()" />
+                        <label [attr.for]="fileInput" for="customFile" [class]="disableDescriptionOnUpload ? 'btn btn-primary' : 'btn btn-primary rounded-start-0 m-0'">
                             <i class="fa-solid fa-upload "></i>
                             <span>{{'Upload'|translate}}</span>
                         </label>
@@ -34,7 +36,9 @@
                         <div>
                             <span>{{'File size not accepted.'|translate}}</span> {{errorFile?.name}} {{'Maximum file size is:' | translate}} {{appDataService.public.node.maximum_filesize}} MB
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" (click)="dismissError();errorFile?.cancel(); showError=false"></button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="alert" aria-label="Close" (click)="dismissError();errorFile?.cancel(); showError=false">
+                            <i class="fa fa-times"></i>
+                        </button>
                     </div>
                 </div>
             </div>

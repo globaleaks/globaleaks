@@ -35,6 +35,10 @@ import {IarData} from "@app/models/reciever/Iar-data";
 import {statusResolverModel} from "@app/models/resolvers/status-resolver-model";
 import {statisticsResolverModel} from "@app/models/resolvers/statistics-resolver-model";
 import { RedactionData } from "@app/models/component-model/redaction";
+import { SendTip } from "@app/models/reciever/sendtip-data";
+import { AccreditationSubscriberModel } from "@app/models/resolvers/accreditation-model";
+import { EOExtendedInfo, EOInfo, ExternalOrganization } from "@app/models/accreditor/organization-data";
+import { StatisticalRequestModel } from "@app/analyst/statistical-data";
 
 
 @Injectable({
@@ -55,6 +59,10 @@ export class HttpService {
 
   requestGeneralLogin(param: string): Observable<Session> {
     return this.httpClient.post<Session>("api/auth/authentication", param);
+  }
+
+  requestEOLogin(param: string): Observable<Session> {
+    return this.httpClient.post<Session>("api/auth/authentication/external", param);
   }
 
   requestWhistleBlowerLogin(param: string, header: HttpHeaders): Observable<Session> {
@@ -123,6 +131,10 @@ export class HttpService {
     return this.httpClient.post<void>("api/user/reset/password", param);
   }
 
+  requestResetEOLogin(param: string): Observable<void> {
+    return this.httpClient.post<void>("api/user/reset/password/external", param);
+  }
+
   requestSignup(param: string): Observable<void> {
     return this.httpClient.post<void>("api/signup", param);
   }
@@ -141,6 +153,11 @@ export class HttpService {
 
   requestReportSubmission(param: string): Observable<{ receipt: string }> {
     return this.httpClient.post<{ receipt: string }>("api/whistleblower/submission", param);
+  }
+
+  requestForwardedReportClosing(uuid:string, param: any): Observable<any>{
+    const body = {answers: param}
+    return this.httpClient.post("api/recipient/wbtip/"+uuid+"/close", body, {responseType: "text"});
   }
 
   requestSupport(param: string): Observable<void> {
@@ -177,6 +194,10 @@ export class HttpService {
 
   requestQuestionnairesResource(): Observable<questionnaireResolverModel[]> {
     return this.httpClient.get<questionnaireResolverModel[]>("api/admin/questionnaires");
+  }
+
+  requestForwardingQuestionnairesResource(): Observable<questionnaireResolverModel[]> {
+    return this.httpClient.get<questionnaireResolverModel[]>("api/recipient/questionnaires/forwarding");
   }
 
   requestTipResource(): Observable<tipsResolverModel> {
@@ -341,6 +362,10 @@ export class HttpService {
     return this.httpClient.get<tenantResolverModel[]>("api/admin/tenants");
   }
 
+  fetchForwardingTenants(): Observable<tenantResolverModel[]> {
+    return this.httpClient.get<tenantResolverModel[]>("api/recipient/tenants/forwarding");
+  }
+
   addTenant(param: {
     name: string,
     active: boolean,
@@ -427,6 +452,18 @@ export class HttpService {
     return this.httpClient.put<RedactionData>("api/recipient/redactions/"+ data.id, data);
   }
 
+  requestAccreditationEO(data:AccreditationSubscriberModel): Observable<AccreditationSubscriberModel> {
+    return this.httpClient.post<AccreditationSubscriberModel>("api/accreditation/request", data);
+  }
+
+  requestAccreditationFromInviteEO(uuid: string, data:AccreditationSubscriberModel): Observable<AccreditationSubscriberModel> {
+    return this.httpClient.post<AccreditationSubscriberModel>("api/accreditation/request/"+uuid+"/confirm_invited", data);
+  }
+
+  requestUpdateEOAccredited(uuid: string, data: any) : Observable<any>{
+    return this.httpClient.post<any>("api/accreditation/request/"+uuid+"/accredited", data);
+  }
+
   runOperation(url: string, operation: string, args: any, refresh: boolean) {
 
     const data = {
@@ -453,5 +490,50 @@ export class HttpService {
     };
     return this.httpClient.put("api/recipient/rtips/" + tipId, req);
   };
+
+  accreditorRequestResource(): Observable<EOExtendedInfo[]> {
+    return this.httpClient.get<EOExtendedInfo[]>("api/accreditation/all");
+  }
+
+  sendAccreditationInvitation(id: string): Observable<void> {
+    return this.httpClient.post<void>(`/api/accreditation/request/${id}/invited`, { responseType: 'text' as 'json'});
+  }
+
+  sendAccreditationApproved(id: string): Observable<void> {
+    return this.httpClient.post<void>(`/api/accreditation/request/${id}/approved`, { responseType: 'text' as 'json'});
+  }
+
+  deleteAccreditationRequest(id: string, bodyReq: any): Observable<any> {
+    return this.httpClient.delete<void>(`/api/accreditation/request/${id}/deleted`, {body : bodyReq});
+  }
+
+  updateOrganizationInfoRequest(id: string, dataToUpdate: { 
+    organization_name?: string, 
+    organization_email?: string, 
+    organization_institutional_site?: string, 
+    type?: 'AFFILIATED' | 'NOT_AFFILIATED' 
+  }): Observable<void> {
+    return this.httpClient.put<void>(`/api/accreditation/request/${id}`, dataToUpdate);
+  }
+
+  toggleAccreditedOrganizationStatus(id: string): Observable<void> {
+    return this.httpClient.put<void>(`/api/accreditation/request/${id}/toggle-status-active`, { responseType: 'text' as 'json'});
+  }
+
+  accreditorAccreditationDetail(org_id: string | null): Observable<ExternalOrganization>{
+    return this.httpClient.get<any>("api/accreditation/request/"+org_id);
+  }
+
+  sendAccreditationRequest(dataToStore: EOInfo): Observable<void> {
+    return this.httpClient.post<void>(`/api/accreditation/request/instructor_request`, dataToStore);
+  }
+
+  sendTipRequest(data: SendTip): Observable<any> {
+    return this.httpClient.post(`api/recipient/wbtip/${data.tip_id}/send`, data, {responseType: "text"});
+  }
+
+  getStatisticalData(bodyReq: StatisticalRequestModel): Observable<any> {
+    return this.httpClient.post<any>('api/analyst/statistical', bodyReq);
+  }
 
 }

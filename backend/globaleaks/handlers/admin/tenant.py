@@ -84,17 +84,25 @@ def create_and_initialize(session, desc, *args, **kwargs):
     return serializers.serialize_tenant(session, t)
 
 
-def db_get_tenant_list(session):
+def db_get_tenant_list(session, external:bool=False):
     ret = []
 
     configs = db_get_configs(session, 'tenant')
 
-    for t, s in session.query(models.Tenant, models.Subscriber).join(models.Subscriber, models.Subscriber.tid == models.Tenant.id, isouter=True):
-        tenant_dict = serializers.serialize_tenant(session, t, configs[t.id])
-        if s:
-            tenant_dict['signup'] = serializers.serialize_signup(s)
+    query = (session.query(models.Tenant, models.Subscriber)
+             .join(models.Subscriber,
+                   models.Subscriber.tid == models.Tenant.id,
+                   isouter=True
+                   )
+             )
 
-        ret.append(tenant_dict)
+    for t, s in query:
+        if t.external == external and (not t.external or t.active):
+                tenant_dict = serializers.serialize_tenant(session, t, configs[t.id])
+                if s:
+                    tenant_dict['signup'] = serializers.serialize_signup(s)
+
+                ret.append(tenant_dict)
 
     return ret
 

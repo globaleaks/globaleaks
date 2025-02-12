@@ -80,4 +80,3 @@ describe("Analyst first login", () => {
     cy.logout();
   });
 });
-

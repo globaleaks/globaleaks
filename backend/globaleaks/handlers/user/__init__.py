@@ -4,6 +4,7 @@
 from globaleaks import models
 from globaleaks.handlers.base import BaseHandler
 from globaleaks.models import get_localized_values
+from globaleaks.models.config import ConfigFactory
 from globaleaks.orm import db_get, db_log, transact
 from globaleaks.rest import errors, requests
 from globaleaks.state import State
@@ -47,6 +48,11 @@ def user_serialize_user(session, user, language):
     """
     picture = session.query(models.File).filter(models.File.name == user.id).one_or_none() is not None
 
+    tenant = session.query(models.Tenant).filter(models.Tenant.id == user.tid).one_or_none()
+
+    t_external = None if not tenant else tenant.external
+    t_affiliated = None if not tenant else tenant.affiliated
+
     # take only contexts for the current tenant
     contexts = [x[0] for x in session.query(models.ReceiverContext.context_id)
                                      .filter(models.ReceiverContext.receiver_id == user.id)]
@@ -72,11 +78,14 @@ def user_serialize_user(session, user, language):
         'pgp_key_remove': False,
         'picture': picture,
         'tid': user.tid,
+        't_external': t_external,
+        't_affiliated': t_affiliated,
         'notification': user.notification,
         'encryption': user.crypto_pub_key != '',
         'escrow': user.crypto_escrow_prv_key != '',
         'two_factor': user.two_factor_secret != '',
         'forcefully_selected': user.forcefully_selected,
+        'can_download_infected': user.can_download_infected,
         'can_postpone_expiration': user.can_postpone_expiration,
         'can_delete_submission': user.can_delete_submission,
         'can_grant_access_to_reports': user.can_grant_access_to_reports,
@@ -87,8 +96,8 @@ def user_serialize_user(session, user, language):
         'can_edit_general_settings': user.can_edit_general_settings,
         'clicked_recovery_key': user.clicked_recovery_key,
         'accepted_privacy_policy': user.accepted_privacy_policy,
-        'contexts': contexts
-
+        'contexts': contexts,
+        'idp_id': user.idp_id
     }
 
     if State.tenants[user.tid].cache.two_factor and \

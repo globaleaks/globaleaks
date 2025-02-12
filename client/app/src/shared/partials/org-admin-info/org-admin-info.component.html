@@ -1,0 +1,37 @@
+<div class="card">
+    <div class="card-header">{{ 'Admin info' | translate }}</div>
+    <div class="card-body text-left">
+        <div class="form-group" >
+            <label>
+                <span>{{'Name'|translate}}</span>
+                <span *ngIf="!visualization" class="text-danger">*</span>
+            </label>
+            <input name="adminName" class="form-control" [placeholder]="'Name' | translate" type="text" [(ngModel)]="adminInfo.admin_name" required [disabled]="visualization">
+        </div>
+
+        <div class="form-group" >
+            <label>
+                <span>{{'Surname'|translate}}</span>
+                <span *ngIf="!visualization" class="text-danger">*</span>
+            </label>
+            <input name="adminSurname" class="form-control" [placeholder]="'Surname' | translate" type="text" [(ngModel)]="adminInfo.admin_surname" required [disabled]="visualization">
+        </div>
+
+        <div class="form-group" >
+            <label>
+                <span>{{'Fiscal Code'|translate}}</span>
+                <span *ngIf="!visualization" class="text-danger">*</span>
+            </label>
+            <input name="adminTaxCode" class="form-control" [placeholder]="'Fiscal Code' | translate" type="text" [(ngModel)]="adminInfo.idp_id" required #adminTaxCode="ngModel" [disabled]="visualization">
+        </div>
+
+
+        <div class="form-group" >
+            <label>
+                <span>{{'Email'|translate}}</span>
+                <span *ngIf="!visualization" class="text-danger">*</span>
+            </label>
+            <input name="adminEmail" class="form-control" [placeholder]="'Email' | translate" type="email" [(ngModel)]="adminInfo.admin_email"  required #adminEmail="ngModel" [disabled]="visualization">
+        </div>
+    </div>
+</div>

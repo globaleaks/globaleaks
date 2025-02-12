@@ -1,13 +1,17 @@
 # -*- coding: utf-8
 import copy
+import logging
 import os
 
-from datetime import datetime
+from datetime import datetime, timedelta
+from pyexpat import model
 
 from globaleaks import models
+from globaleaks.models import EnumStateFile
 from globaleaks.models.config import ConfigFactory
-from globaleaks.orm import transact
+from globaleaks.orm import db_get, db_query, transact
 from globaleaks.state import State
+from globaleaks.utils.log import log
 from sqlalchemy import or_, not_
 
 
@@ -135,6 +139,22 @@ def serialize_ifile(session, ifile):
     """
     error = not os.path.exists(os.path.join(State.settings.attachments_path, ifile.id))
 
+    status = "PENDING"
+    try:
+        verification_date = ifile.verification_date
+        if isinstance(verification_date, str):
+            verification_date = datetime.strptime(verification_date, '%Y-%m-%d')
+        current_date = datetime.now()
+        date_diff = current_date - verification_date
+        if date_diff.days > 60:
+            status = "PENDING"
+            ifile.state = EnumStateFile.pending.value
+            session.commit()
+        else:
+            status = "PENDING" if ifile.state is None or ifile.state == '' else ifile.state.upper()
+    except Exception as e:
+        logging.debug(e)
+
     return {
         'id': ifile.id,
         'creation_date': ifile.creation_date,
@@ -142,6 +162,8 @@ def serialize_ifile(session, ifile):
         'size': ifile.size,
         'type': ifile.content_type,
         'reference_id': ifile.reference_id,
+        'status': status,
+        'verification_date': ifile.verification_date,
         'error': error
     }
 
@@ -158,6 +180,22 @@ def serialize_wbfile(session, ifile, wbfile):
     error = not os.path.exists(os.path.join(State.settings.attachments_path, ifile.id)) and \
         not os.path.exists(os.path.join(State.settings.attachments_path, wbfile.id))
 
+    status = "PENDING"
+    try:
+        verification_date = ifile.verification_date
+        if isinstance(verification_date, str):
+            verification_date = datetime.strptime(verification_date, '%Y-%m-%d')
+        current_date = datetime.now()
+        date_diff = current_date - verification_date
+        if date_diff.days > 60:
+            status = "PENDING"
+            ifile.state = EnumStateFile.pending.value
+            session.commit()
+        else:
+            status = "PENDING" if ifile.state is None or ifile.state == '' else ifile.state.upper()
+    except Exception as e:
+        logging.debug(e)
+
     return {
         'id': wbfile.id,
         'ifile_id': ifile.id,
@@ -166,6 +204,8 @@ def serialize_wbfile(session, ifile, wbfile):
         'size': ifile.size,
         'type': ifile.content_type,
         'reference_id': ifile.reference_id,
+        'status': status,
+        'verification_date': ifile.verification_date,
         'error': error
     }
 
@@ -180,6 +220,22 @@ def serialize_rfile(session, rfile):
     """
     error = not os.path.exists(os.path.join(State.settings.attachments_path, rfile.id))
 
+    status = "PENDING"
+    try:
+        verification_date = rfile.verification_date
+        if isinstance(verification_date, str):
+            verification_date = datetime.strptime(verification_date, '%Y-%m-%d')
+        current_date = datetime.now()
+        date_diff = current_date - verification_date
+        if date_diff.days > 60:
+            status = "PENDING"
+            rfile.state = EnumStateFile.pending.value
+            session.commit()
+        else:
+            status = "PENDING" if rfile.state is None or rfile.state == '' else rfile.state.upper()
+    except Exception as e:
+        logging.debug(e)
+
     return {
         'id': rfile.id,
         'creation_date': rfile.creation_date,
@@ -188,7 +244,9 @@ def serialize_rfile(session, rfile):
         'type': rfile.content_type,
         'description': rfile.description,
         'visibility': rfile.visibility,
-        'error': error
+        'error': error,
+        'status': status,
+        'verification_date': rfile.verification_date
     }
 
 def serialize_itip(session, internaltip, language):
@@ -295,23 +353,70 @@ def serialize_rtip(session, itip, rtip, language):
         ret['wbfiles'].append(serialize_wbfile(session, ifile, wbfile))
 
     for rfile in session.query(models.ReceiverFile) \
-                         .filter(models.ReceiverFile.internaltip_id == itip.id,
-                                 or_(models.ReceiverFile.visibility != 2,
-                                     models.ReceiverFile.author_id == user_id)):
+        .filter(models.ReceiverFile.internaltip_id == itip.id,
+                or_(models.ReceiverFile.visibility not in (models.EnumVisibility.personal.value, models.EnumVisibility.whistleblower.value),
+                    models.ReceiverFile.author_id == user_id)):
         ret['rfiles'].append(serialize_rfile(session, rfile))
 
     for comment in session.query(models.Comment) \
                           .filter(models.Comment.internaltip_id == itip.id,
-                                  or_(models.Comment.visibility != 2,
+                                  or_(models.Comment.visibility not in (models.EnumVisibility.personal.value, models.EnumVisibility.whistleblower.value),
                                       models.Comment.author_id == user_id)):
         ret['comments'].append(serialize_comment(session, comment))
+
+    forwardings = []
+    internaltip_forwardings = db_query(
+        session, models.InternalTipForwarding, models.InternalTipForwarding.internaltip_id == itip.id).all()
+    for internaltip_forwarding in internaltip_forwardings:
+        forwarding = dict()
+        forwarding['id'] = internaltip_forwarding.forwarding_internaltip_id
+        forwarding['tid'] = internaltip_forwarding.tid
+        forwarding['name'] = db_get(session, models.Config, (models.Config.tid ==
+                                    internaltip_forwarding.tid, models.Config.var_name == 'name')).value
+        forwarding['state'] = internaltip_forwarding.state
+        forwarding['creation_date'] = internaltip_forwarding.creation_date
+        contents = db_query(session, models.ContentForwarding,
+                            models.ContentForwarding.internaltip_forwarding_id == internaltip_forwarding.id).all()
+        files = []
+        comments = []
+        for content in contents:
+            if content.content_origin == models.EnumContentForwarding.comment.name:
+                comment = dict()
+                comment['id'] = content.content_id
+                comment['author_type'] = content.author_type
+                comments.append(comment)
+            elif content.content_origin == models.EnumContentForwarding.internal_file.name:
+                internal_file = dict()
+                internal_file['id'] = content.content_id
+                internal_file['author_type'] = content.author_type
+                files.append(internal_file)
+            elif content.content_origin == models.EnumContentForwarding.receiver_file.name:
+                rfile = dict()
+                rfile['id'] = content.content_id
+                rfile['author_type'] = content.author_type
+                files.append(rfile)
+        forwarding['files'] = files
+        forwarding['comments'] = comments
+
+        aqs = session.query(models.ArchivedSchema) \
+            .filter(models.ArchivedSchema.hash == internaltip_forwarding.questionnaire_hash) \
+            .one_or_none()
+
+        forwarding['questionnaire'] = {
+            'steps': serialize_archived_questionnaire_schema(aqs.schema, language),
+            'answers': internaltip_forwarding.data
+        }
+
+        forwardings.append(forwarding)
+    ret['forwardings'] = forwardings
 
     return ret
 
 
 def serialize_wbtip(session, itip, language):
     ret = serialize_itip(session, itip, language)
-
+    ret['max_eo_to_whistleblower_comments'] = ConfigFactory(
+        session, 1).get_val('max_msg_external_to_whistle')
     for receiver in session.query(models.User) \
                            .filter(models.User.id == models.ReceiverTip.receiver_id,
                                    models.ReceiverTip.internaltip_id == itip.id):
@@ -325,14 +430,24 @@ def serialize_wbtip(session, itip, language):
         ret['wbfiles'].append(serialize_ifile(session, ifile))
 
     for rfile in session.query(models.ReceiverFile) \
-                         .filter(models.ReceiverFile.internaltip_id == itip.id,
-                                 models.ReceiverFile.visibility == 0):
+        .filter(models.ReceiverFile.internaltip_id == itip.id,
+                models.ReceiverFile.visibility == models.EnumVisibility.public.value):
         ret['rfiles'].append(serialize_rfile(session, rfile))
 
     for comment in session.query(models.Comment) \
                           .filter(models.Comment.internaltip_id == itip.id,
-                                  models.Comment.visibility == 0):
-        ret['comments'].append(serialize_comment(session, comment))
+                                  models.Comment.visibility.in_([models.EnumVisibility.public.value, models.EnumVisibility.whistleblower.value])):
+        eo_name = session.query(models.Config)\
+            .filter(models.ContentForwarding.content_id == comment.id,
+                    models.ContentForwarding.content_origin == models.EnumContentForwarding.comment.value,
+                    models.ContentForwarding.author_type == models.EnumAuthorType.eo.value,
+                    models.InternalTipForwarding.id == models.ContentForwarding.internaltip_forwarding_id,
+                    models.Config.tid == models.InternalTipForwarding.tid,
+                    models.Config.var_name == 'name').one_or_none()
+        ret_comment = serialize_comment(session, comment)
+        if eo_name:
+            ret_comment['eo_name'] = eo_name.value
+        ret['comments'].append(ret_comment)
 
     return ret
 

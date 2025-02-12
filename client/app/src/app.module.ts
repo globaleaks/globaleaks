@@ -24,11 +24,11 @@ import {NgSelectModule} from "@ng-select/ng-select";
 import {FormsModule} from "@angular/forms";
 import {ActionModule} from "@app/pages/action/action.module";
 import {WhistleblowerModule} from "@app/pages/whistleblower/whistleblower.module";
-import {MarkdownModule, MarkedOptions, MARKED_OPTIONS} from "ngx-markdown";
+import {MarkdownModule, MARKED_OPTIONS} from "ngx-markdown";
 import {ReceiptValidatorDirective} from "@app/shared/directive/receipt-validator.directive";
 import {NgxFlowModule, FlowInjectionToken} from "@flowjs/ngx-flow";
 import * as Flow from "@flowjs/flow.js";
-import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
+import {NgbModule, NgbDatepickerI18n} from "@ng-bootstrap/ng-bootstrap";
 import {SignupModule} from "@app/pages/signup/signup.module";
 import {WizardModule} from "@app/pages/wizard/wizard.module";
 import {RecipientModule} from "@app/pages/recipient/recipient.module";
@@ -39,8 +39,8 @@ import {AnalystModule} from "@app/pages/analyst/analyst.module";
 import {mockEngine} from './services/helper/mocks';
 import {HttpService} from "./shared/services/http.service";
 import {CryptoService} from "@app/shared/services/crypto.service";
-import {TranslationService} from "@app/services/helper/translation.service";
-import {NgbDatepickerI18n} from '@ng-bootstrap/ng-bootstrap';
+import { AccredModule } from "./pages/accred/accred.module";
+import { AccreditorModule } from "./pages/accreditor/accreditor.module";
 import {CustomDatepickerI18n} from '@app/shared/services/custom-datepicker-i18n';
 import {registerLocales} from '@app/services/helper/locale-provider';
 
@@ -82,6 +82,8 @@ const translationModule = TranslateModule.forRoot({
     HttpClientModule,
     BrowserModule,
     BrowserAnimationsModule,
+    AccredModule,
+    AccreditorModule,
     AuthModule,
     SignupModule,
     ActionModule,

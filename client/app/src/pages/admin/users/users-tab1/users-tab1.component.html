@@ -13,12 +13,18 @@
                 <span class="text-danger" data-toggle="tooltip" title="{{'This field is mandatory' | translate}}">*</span>
                 <div>
                     <select name="role" class="form-select-custom" [(ngModel)]="new_user.role" required>
-                        <option value="admin">{{ 'Admin' | translate }}</option>
-                        <option value="analyst">{{ 'Analyst' | translate }}</option>
-                        <option value="custodian">{{ 'Custodian' | translate }}</option>
-                        <option value="receiver">{{ 'Recipient' | translate }}</option>
+                        <ng-container *ngIf="!appDataService.public.node.external; else restrictedOptions">
+                            <option value="admin">{{ 'Admin' | translate }}</option>
+                            <option value="analyst">{{ 'Analyst' | translate }}</option>
+                            <option value="custodian">{{ 'Custodian' | translate }}</option>
+                            <option value="receiver">{{ 'Recipient' | translate }}</option>
+                            <option *ngIf="nodeResolver.dataModel.mode === 'accreditation'" value="accreditor">{{ 'Accreditation Manager' | translate }}</option>
+                        </ng-container>
+                        <ng-template #restrictedOptions>
+                            <option value="receiver">{{ 'Recipient' | translate }}</option>
+                        </ng-template>
                     </select>
-                </div>
+                </div>                
             </div>
             <div class="form-group" *ngIf="new_user.role !== 'receiver' || !nodeResolver.dataModel.simplified_login">
                 <label>{{ 'Username' | translate }}</label>
@@ -32,6 +38,13 @@
                 <span class="text-danger" data-toggle="tooltip" title="{{'This field is mandatory' | translate}}">*</span>
                 <div>
                     <input class="form-control" name="name" [(ngModel)]="new_user.name" type="text" required />
+                </div>
+            </div>
+            <div class="form-group" *ngIf="nodeResolver.dataModel.mode === 'accreditation'">
+                <label>{{ 'Fiscal Code' | translate }}</label>
+                <span *ngIf="appDataService.public.node.external" class="text-danger" data-toggle="tooltip" title="{{'This field is mandatory' | translate}}">*</span>
+                <div>
+                    <input class="form-control" name="idp_id" [(ngModel)]="new_user.idp_id" type="text" [required]="appDataService.public.node.external" />
                 </div>
             </div>
             <div class="form-group">
@@ -56,7 +69,7 @@
 <ng-container *ngIf="usersData.length > 0">
     <div class="userList" *ngFor="let user of usersData | orderBy:'name'; let index = index">
         <form id="user-{{index}}" name="editUser" #editUser="ngForm" novalidate>
-            <src-user-editor [user]="user" [editUser]="editUser" [index]="index" [users]="usersData"></src-user-editor>
+            <src-user-editor [user]="user" [editUser]="editUser" [index]="index" [users]="usersData" [preferenceData]="preferenceData"></src-user-editor>
         </form>
     </div>
 </ng-container>

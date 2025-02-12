@@ -1,4 +1,4 @@
-import {PageIdleDetector} from "./PageIdleDetector";
+import { PageIdleDetector } from "./PageIdleDetector";
 
 declare global {
   namespace Cypress {
@@ -18,9 +18,68 @@ declare global {
       simple_login_admin: (username?: string, password?: string, url?: string, firstlogin?: boolean) => void;
       login_custodian: (username?: string, password?: string, url?: string, firstlogin?: boolean) => void;
       login_analyst: (username?: string, password?: string, url?: string, firstlogin?: boolean) => void;
+      login_accreditor: (username?: string, password?: string, url?: string, firstlogin?: boolean) => void;
+      request_external_organization: (denomination?: string, pec?: string, url?: string, idp_id?: string) => void;
+      confirm_accreditation_request: (reqId: string) => void;
     }
   }
 }
+
+Cypress.Commands.add("confirm_accreditation_request", (reqId) => {
+
+  cy.visit("#/accreditation-request/" + reqId);
+
+  cy.get('input[name="privacyAccept"]').click();
+
+  cy.get("#proceed").should("be.enabled");
+  cy.get("#proceed").click();
+
+  cy.wait(1000);
+
+  cy.get(".modal").should("be.visible");
+  cy.get(".modal #closeConfirmModal").click();
+
+});
+
+Cypress.Commands.add("request_external_organization", (denomination, pec, url, idp_id) => {
+
+  denomination = denomination ?? "Organizzazione 1";
+  pec = pec ?? "example@examplepec.com";
+  url = url ?? "http://exampleurl.com";
+  idp_id = idp_id ?? "LLNBRY89A18D969M";
+
+  cy.intercept('*', (req) => {
+    req.headers['x-idp-userid'] = idp_id
+  })
+  cy.visit({ url: '/#/accreditation-request', headers: { 'x-idp-userid': idp_id } });
+
+  cy.get('input[name="denomination"]').type(denomination);
+  cy.get('input[name="pec"]').type(pec);
+  cy.get('input[name="confirmPec"]').type(pec);
+  cy.get('input[name="institutionalWebsite"]').type(url);
+
+  cy.get('input[name="adminName"]').type("Barry");
+  cy.get('input[name="adminSurname"]').type("Allen");
+
+  cy.get('input[name="adminEmail"]').type("example@example.com");
+
+  cy.get('input[name="recipientName"]').type("Clark");
+  cy.get('input[name="recipientSurname"]').type("Kent");
+  cy.get('input[name="recipientTaxCode"]').type("KNTCRK91S11I480G");
+  cy.get('input[name="recipientEmail"]').type("example1@example1.com");
+
+  cy.get('input[name="privacyAccept"]').click();
+
+  cy.get("#proceed").should("be.enabled");
+  cy.get("#proceed").click();
+
+  cy.wait(1000);
+
+  cy.get(".modal").should("be.visible");
+  cy.get(".modal #closeConfirmModal").click();
+
+});
+
 
 Cypress.Commands.add("waitForPageIdle", () => {
   const pageIdleDetector = new PageIdleDetector();
@@ -63,11 +122,11 @@ Cypress.Commands.add("simple_login_receiver", (username, password, url, firstlog
   let finalURL = "/actions/forcedpasswordchange";
 
   cy.visit(url);
-  cy.get('ng-select[name="authentication.loginData.loginUsername"]').click(); 
+  cy.get('ng-select[name="authentication.loginData.loginUsername"]').click();
   cy.get('.ng-option').first().click();
 
   // @ts-ignore
-  
+
   cy.get("[name=\"password\"]").type(password);
   cy.get("#login-button").click();
 
@@ -165,6 +224,36 @@ Cypress.Commands.add("login_custodian", (username, password, url, firstlogin) =>
 
 });
 
+Cypress.Commands.add("login_accreditor", (username, password, url, firstlogin) => {
+  username = username ?? "Resp_Accreditation";
+  password = password === undefined ? Cypress.env("user_password") : password;
+  url = url === undefined ? "#/login" : url;
+  firstlogin = firstlogin ?? false
+
+  let finalURL = "/actions/forcedpasswordchange";
+
+  cy.visit(url);
+  cy.get("[name=\"username\"]").type(username);
+
+  // @ts-ignore
+  cy.get("[name=\"password\"]").type(password);
+  cy.get("#login-button").click();
+
+  if (!firstlogin) {
+    cy.url().should("include", "#/login").then(() => {
+      console.log(cy.url())
+      cy.url().should("not.include", "#/login").then((currentURL) => {
+        console.log(cy.url())
+        const hashPart = currentURL.split("#")[1];
+        finalURL = hashPart === "login" ? "/accreditor/home" : hashPart;
+        cy.waitForUrl(finalURL);
+      });
+    });
+  }
+
+  cy.waitForPageIdle();
+});
+
 Cypress.Commands.add("takeScreenshot", (filename: string, locator?: string) => {
   if (!Cypress.env("takeScreenshots")) {
     return;
@@ -192,7 +281,7 @@ Cypress.Commands.add("takeScreenshot", (filename: string, locator?: string) => {
     cy.wait(500);
 
     if (locator && locator !== ".modal") {
-      return cy.get(locator).screenshot("../" + filename, {overwrite: true, scale: true});
+      return cy.get(locator).screenshot("../" + filename, { overwrite: true, scale: true });
     }
 
     return cy.screenshot("../" + filename, {
@@ -205,13 +294,13 @@ Cypress.Commands.add("takeScreenshot", (filename: string, locator?: string) => {
 
 Cypress.Commands.add("waitUntilClickable", (locator: string, timeout?: number) => {
   const t = timeout === undefined ? Cypress.config().defaultCommandTimeout : timeout;
-  cy.get(locator).click({timeout: t});
+  cy.get(locator).click({ timeout: t });
 });
 
 Cypress.Commands.add("waitForLoader", () => {
   cy.intercept("**").as("httpRequests");
 
-  cy.get('[data-cy="page-loader-overlay"]', {timeout: 500, log: false})
+  cy.get('[data-cy="page-loader-overlay"]', { timeout: 500, log: false })
     .should(($overlay) => {
       return new Cypress.Promise((resolve, _) => {
         const startTime = Date.now();
@@ -236,7 +325,7 @@ Cypress.Commands.add("waitForLoader", () => {
 
 Cypress.Commands.add("waitForUrl", (url: string, timeout?: number) => {
   const t = timeout === undefined ? Cypress.config().defaultCommandTimeout : timeout;
-  return cy.url().should("include", url, {timeout: t});
+  return cy.url().should("include", url, { timeout: t });
 });
 
 Cypress.Commands.add("login_whistleblower", (receipt) => {

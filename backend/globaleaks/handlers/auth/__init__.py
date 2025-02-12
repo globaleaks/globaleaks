@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 #
 # Handlers dealing with platform authentication
+import logging
 from datetime import timedelta
 from random import SystemRandom
 from sqlalchemy import or_
 from twisted.internet.defer import inlineCallbacks, returnValue
 
+from globaleaks import models
 import globaleaks.handlers.auth.token
 
 from globaleaks.handlers.base import connection_check, BaseHandler
 from globaleaks.models import InternalTip, User
+from globaleaks.models.config import ConfigFactory
 from globaleaks.orm import db_log, transact, tw
 from globaleaks.rest import errors, requests
 from globaleaks.sessions import initialize_submission_session, Sessions
@@ -96,9 +99,20 @@ def login_whistleblower(session, tid, receipt, client_using_tor, operator_id=Non
 
     return session
 
+def check_user_tax_code(session, user, tax_code, tid):
+    accreditation_mode = ConfigFactory(session, 1).get_val('mode') == 'accreditation'
+    proxy_idp_enabled = ConfigFactory(session, 1).get_val('proxy_idp_enabled')
+
+    if tid == 1 or not accreditation_mode:
+        return True
+
+    if proxy_idp_enabled and user.idp_id and user.idp_id != tax_code:
+        raise errors.ForbiddenOperation
+
+    return not proxy_idp_enabled
 
 @transact
-def login(session, tid, username, password, authcode, client_using_tor, client_ip):
+def login(session, tid, username, password, authcode, client_using_tor, client_ip, tax_code):
     """
     Login transaction for users' access
 
@@ -109,6 +123,7 @@ def login(session, tid, username, password, authcode, client_using_tor, client_i
     :param authcode: A provided authcode
     :param client_using_tor: A boolean signaling Tor usage
     :param client_ip:  The client IP
+    :param tax_code: The tax code
     :return: Returns a user session in case of success
     """
     if tid in State.tenants and State.tenants[tid].cache.simplified_login:
@@ -131,6 +146,8 @@ def login(session, tid, username, password, authcode, client_using_tor, client_i
             raise errors.TwoFactorAuthCodeRequired
 
         State.totp_verify(user.two_factor_secret, authcode)
+
+    check_user_tax_code(session, user, tax_code, tid)
 
     crypto_prv_key = ''
     if user.crypto_prv_key:
@@ -163,6 +180,10 @@ class AuthenticationHandler(BaseHandler):
     """
     check_roles = 'any'
 
+    def get_tax_code(self):
+        tax_code = self.request.headers.get(b'x-idp-userid')
+        return tax_code.decode() if tax_code else None
+
     @inlineCallbacks
     def post(self):
         request = self.validate_request(self.request.content.read(), requests.AuthDesc)
@@ -178,7 +199,9 @@ class AuthenticationHandler(BaseHandler):
                               request['password'],
                               request['authcode'],
                               self.request.client_using_tor,
-                              self.request.client_ip)
+                              self.request.client_ip,
+                              self.get_tax_code()
+                              )
 
         if tid != self.request.tid:
             returnValue({
@@ -263,8 +286,8 @@ class SessionHandler(BaseHandler):
         try:
             self.session.token.validate(request['token'].encode())
             Sessions.reset_timeout(self.session)
-        except:
-            pass
+        except Exception as e:
+            logging.debug(e)
         else:
             self.session.token = self.state.tokens.new(self.request.tid)
 
@@ -283,6 +306,12 @@ class SessionHandler(BaseHandler):
 
         del Sessions[self.session.id]
 
+@transact
+def external_tenant_redirect(session, tid, uuid_tenant):
+    tenant = session.query(models.Tenant).filter(models.Tenant.id == tid).one_or_none()
+    if tenant and tenant.external:
+        return {'redirect': '/t/%s/#/login' % (uuid_tenant)}
+    return None
 
 class TenantAuthSwitchHandler(BaseHandler):
     """
@@ -290,11 +319,17 @@ class TenantAuthSwitchHandler(BaseHandler):
     """
     check_roles = 'admin'
 
+    @inlineCallbacks
     def get(self, tid):
+        tid = int(tid)
         if self.request.tid != 1:
             raise errors.InvalidAuthentication
+        uuid_tenant = State.tenants[tid].cache.uuid
 
-        tid = int(tid)
+        external_tenant_redirect_res = yield external_tenant_redirect(tid, uuid_tenant)
+        if external_tenant_redirect_res:
+            returnValue(external_tenant_redirect_res)
+
         session = Sessions.new(tid,
                                self.session.user_id,
                                self.session.user_tid,
@@ -304,7 +339,7 @@ class TenantAuthSwitchHandler(BaseHandler):
 
         session.properties['management_session'] = True
 
-        return {'redirect': '/t/%s/#/login?token=%s' % (State.tenants[tid].cache.uuid, session.id)}
+        returnValue({'redirect': '/t/%s/#/login?token=%s' % (uuid_tenant, session.id)})
 
 
 class OperatorAuthSwitchHandler(BaseHandler):

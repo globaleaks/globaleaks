@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
 #
 # Handlers dealing with tip interface for receivers (rtip)
+import ast
 import base64
 import copy
 import json
+import logging
 import os
 import re
 import time
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
+from twisted.internet import defer
 from twisted.internet.threads import deferToThread
 from twisted.internet.defer import inlineCallbacks, returnValue
 
+from globaleaks.handlers.recipient.sendtip import add_file_forwarding, copy_receiverfile
 from globaleaks import models
 from globaleaks.handlers.admin.context import admin_serialize_context
 from globaleaks.handlers.admin.node import db_admin_serialize_node
@@ -22,12 +26,13 @@ from globaleaks.handlers.operation import OperationHandler
 from globaleaks.handlers.whistleblower.submission import db_create_receivertip, decrypt_tip
 from globaleaks.handlers.whistleblower.wbtip import db_notify_report_update
 from globaleaks.handlers.user import user_serialize_user
-from globaleaks.models import serializers
-from globaleaks.models.serializers import process_logs
-from globaleaks.orm import db_get, db_del, db_log, transact
+from globaleaks.models import serializers, EnumStateFile
+from globaleaks.models.config import ConfigFactory
+from globaleaks.orm import db_get, db_del, db_log, db_query, transact
 from globaleaks.rest import errors, requests
 from globaleaks.state import State
 from globaleaks.utils.crypto import GCE
+from globaleaks.utils.file_analysis.utils import is_download, is_exportable
 from globaleaks.utils.fs import directory_traversal_check
 from globaleaks.utils.log import log
 from globaleaks.utils.templating import Templating
@@ -47,6 +52,10 @@ def db_notify_grant_access(session, user):
 
     data['user'] = user_serialize_user(session, user, user.language)
     data['node'] = db_admin_serialize_node(session, user.tid, user.language)
+    tenant = db_get(session, models.Tenant, models.Tenant.id == user.tid)
+    if tenant.external:
+        data['node']['is_eo'] = True
+        data['node']['parent'] = db_admin_serialize_node(session, 1, user.language)
 
     if data['node']['mode'] == 'default':
         data['notification'] = db_get_notification(session, user.tid, user.language)
@@ -597,7 +606,6 @@ def db_access_rfile(session, tid, user_id, rfile_id):
                    models.InternalTip.tid == tid))
 
 
-@transact
 def register_rfile_on_db(session, tid, user_id, itip_id, uploaded_file):
     """
     Register a file on the database
@@ -616,7 +624,7 @@ def register_rfile_on_db(session, tid, user_id, itip_id, uploaded_file):
                                 models.InternalTip.tid == tid).one()
 
     rtip.last_access = datetime_now()
-    if uploaded_file['visibility'] == 0:
+    if uploaded_file['visibility'] == models.EnumVisibility.public.value:
         itip.update_date = rtip.last_access
 
     if itip.crypto_tip_pub_key:
@@ -702,8 +710,9 @@ def redact_answers(answers, redactions):
 @transact
 def redact_report(session, user_id, report, enforce=False):
     user = session.query(models.User).get(user_id)
-
     redactions = session.query(models.Redaction).filter(models.Redaction.internaltip_id == report['id']).all()
+    report['max_eo_to_whistleblower_comments'] = ConfigFactory(session, 1).get_val('max_msg_external_to_whistle')
+    antivirus_enabled = ConfigFactory(session, 1).get_val('antivirus_enabled')
 
     if not enforce and \
             (user.can_mask_information or \
@@ -724,7 +733,14 @@ def redact_report(session, user_id, report, enforce=False):
         if comment['id'] in redactions_by_reference_id:
             comment['content'] = redact_content(comment['content'], redactions_by_reference_id[comment['id']][0].temporary_redaction, '0x2591')
 
-    report['wbfiles'] = [x for x in report['wbfiles'] if x['ifile_id'] not in redactions_by_reference_id]
+    report['wbfiles'] = [x for x in report['wbfiles']
+                         if x['ifile_id'] not in redactions_by_reference_id]
+
+    if antivirus_enabled and any(file.get('status', '').upper() == EnumStateFile.pending.name.upper() for file in report['wbfiles']):
+        raise errors.ForbiddenOperation
+
+    if not user.can_download_infected and any(file.get('status', '').upper() == EnumStateFile.infected.name.upper() for file in report['wbfiles']):
+        raise errors.ForbiddenOperation
 
     return report
 
@@ -982,8 +998,86 @@ def create_identityaccessrequest(session, tid, user_id, user_cc, itip_id, reques
     return serializers.serialize_identityaccessrequest(session, iar)
 
 
+def db_add_comment(session, internaltip_id, type, author_id, content, visibility):
+    comment = models.Comment()
+    comment.internaltip_id = internaltip_id
+    comment.type = type
+    comment.author_id = author_id
+    comment.content = content
+    comment.visibility = visibility
+    session.add(comment)
+    session.flush()
+    return comment
+
+
+def db_add_content_forwarding(session, internaltip_forwarding_id, forwarding_content_id, content_id, content_origin, author_type):
+    comment_forwarding = models.ContentForwarding()
+    comment_forwarding.internaltip_forwarding_id = internaltip_forwarding_id
+    comment_forwarding.forwarding_content_id = forwarding_content_id
+    comment_forwarding.content_id = content_id
+    comment_forwarding.content_origin = content_origin
+    comment_forwarding.author_type = author_type
+    session.add(comment_forwarding)
+    session.flush()
+    return comment_forwarding
+
+
+def forward_comment_from_eo(session, user_id, internaltip_forwarding, content, visibility, content_id):
+
+    main_itip = db_get(session, models.InternalTip,
+                       models.InternalTip.id == internaltip_forwarding.internaltip_id)
+
+    if main_itip is None or visibility not in (models.EnumVisibility.eo.name, models.EnumVisibility.whistleblower.name):
+        return
+
+    if main_itip.crypto_tip_pub_key:
+        _content = base64.b64encode(GCE.asymmetric_encrypt(
+            main_itip.crypto_tip_pub_key, content)).decode()
+
+    comment = db_add_comment(session, main_itip.id,
+                             'receiver', user_id, _content, visibility)
+    comment_forwarding = db_add_content_forwarding(session, internaltip_forwarding.id, content_id, comment.id,
+                                                   models.EnumContentForwarding.comment.value, models.EnumAuthorType.eo.value)
+    return comment_forwarding.id
+
+
+def forward_comment_from_main(session, user_id, internaltip_forwardings, content, visibility, content_id):
+    comment_forwardings = list()
+    for internaltip_forwarding in internaltip_forwardings:
+        eo_itip = db_get(session, models.InternalTip, models.InternalTip.id ==
+                         internaltip_forwarding.forwarding_internaltip_id)
+
+        if eo_itip is None or visibility not in (models.EnumVisibility.eo.name):
+            return
+
+        if eo_itip.crypto_tip_pub_key:
+            _content = base64.b64encode(GCE.asymmetric_encrypt(
+                eo_itip.crypto_tip_pub_key, content)).decode()
+
+        comment = db_add_comment(
+            session, eo_itip.id, 'receiver', user_id, _content, visibility)
+        comment_forwarding = db_add_content_forwarding(session, internaltip_forwarding.id, comment.id, content_id,
+                                                   models.EnumContentForwarding.comment.value, models.EnumAuthorType.main.value)
+        comment_forwardings.append(comment_forwarding.id)
+    return comment_forwardings
+
+
+def forward_comment(session, user_id, itip_id, content, visibility, content_id, tids_to_forward=[]):
+    internaltip_forwarding_from_eo = db_query(
+        session, models.InternalTipForwarding, models.InternalTipForwarding.forwarding_internaltip_id == itip_id).one_or_none()
+    internaltip_forwarding_from_main = db_query(session, models.InternalTipForwarding,
+                                                (models.InternalTipForwarding.internaltip_id == itip_id, models.InternalTipForwarding.tid.in_(tids_to_forward))).all()
+
+    if internaltip_forwarding_from_eo is not None and internaltip_forwarding_from_eo:
+        return forward_comment_from_eo(session, user_id, internaltip_forwarding_from_eo, content, visibility, content_id)
+    elif internaltip_forwarding_from_main is not None and internaltip_forwarding_from_main:
+        return forward_comment_from_main(session, user_id, internaltip_forwarding_from_main, content, visibility, content_id)
+    else:
+        return
+
+
 @transact
-def create_comment(session, tid, user_id, itip_id, content, visibility=0):
+def create_comment(session, tid, user_id, itip_id, content, visibility=0, tids_to_forward=[]):
     """
     Transaction for registering a new comment
     :param session: An ORM session
@@ -996,9 +1090,17 @@ def create_comment(session, tid, user_id, itip_id, content, visibility=0):
     """
     _, rtip, itip = db_access_rtip(session, tid, user_id, itip_id)
 
+    max_eo_to_whistleblower_comments = ConfigFactory(session, 1).get_val('max_msg_external_to_whistle')
+
     rtip.last_access = datetime_now()
-    if visibility == 0:
+    if visibility == models.EnumVisibility.public.value:
         itip.update_date = rtip.last_access
+
+    if visibility == models.EnumVisibility.whistleblower.value and tid != 1:
+        comments = db_query(session, models.Comment,
+                            (models.Comment.internaltip_id == itip_id, models.Comment.visibility == models.EnumVisibility.whistleblower.value)).all()
+        if len(comments) + 1 > max_eo_to_whistleblower_comments:
+            raise errors.ForbiddenOperation()
 
     _content = content
     if itip.crypto_tip_pub_key:
@@ -1015,6 +1117,8 @@ def create_comment(session, tid, user_id, itip_id, content, visibility=0):
 
     ret = serializers.serialize_comment(session, comment)
     ret['content'] = content
+    forward_comment(session, user_id, itip_id, content,
+                    visibility, comment.id, tids_to_forward)
     return ret
 
 
@@ -1209,8 +1313,9 @@ class RTipCommentCollection(BaseHandler):
     check_roles = 'receiver'
 
     def post(self, itip_id):
-        request = self.validate_request(self.request.content.read(), requests.CommentDesc)
-        return create_comment(self.request.tid, self.session.user_id, itip_id, request['content'], request['visibility'])
+        request = self.validate_request(
+            self.request.content.read(), requests.RTipCommentDesc)
+        return create_comment(self.request.tid, self.session.user_id, itip_id, request['content'], request['visibility'], request['tids'])
 
 
 class WhistleblowerFileDownload(BaseHandler):
@@ -1247,17 +1352,22 @@ class WhistleblowerFileDownload(BaseHandler):
         log.debug("Download of file %s by receiver %s" %
                   (wbfile.internalfile_id, rtip.receiver_id))
 
-        return ifile.name, ifile.id, wbfile.id, rtip.crypto_tip_prv_key, rtip.deprecated_crypto_files_prv_key, user.pgp_key_public
+        return ifile.name, ifile.id, wbfile.id, rtip.crypto_tip_prv_key, rtip.deprecated_crypto_files_prv_key, user.pgp_key_public, ifile.state, user.can_download_infected
+
 
     @inlineCallbacks
     def get(self, wbfile_id):
-        name, ifile_id, wbfile_id, tip_prv_key, tip_prv_key2, pgp_key = yield self.download_wbfile(self.request.tid,
-                                                                                                   self.session.user_id,
-                                                                                                   wbfile_id)
+        name, ifile_id, wbfile_id, tip_prv_key, tip_prv_key2, pgp_key, state, dl_infected = yield self.download_wbfile(
+            self.request.tid,
+            self.session.user_id,
+            wbfile_id
+        )
 
         filelocation = os.path.join(self.state.settings.attachments_path, wbfile_id)
+        aux_file = os.path.join(self.state.settings.attachments_path, wbfile_id)
         if not os.path.exists(filelocation):
             filelocation = os.path.join(self.state.settings.attachments_path, ifile_id)
+            aux_file = os.path.join(self.state.settings.attachments_path, ifile_id)
 
         directory_traversal_check(self.state.settings.attachments_path, filelocation)
         self.check_file_presence(filelocation)
@@ -1268,16 +1378,24 @@ class WhistleblowerFileDownload(BaseHandler):
 
             try:
                 # First attempt
+                aux_path = filelocation
                 filelocation = GCE.streaming_encryption_open('DECRYPT', tip_prv_key, filelocation)
+                aux_file = GCE.streaming_encryption_open('DECRYPT', tip_prv_key, aux_path)
             except:
                 # Second attempt
                 if not tip_prv_key2:
                     raise
 
                 files_prv_key2 = GCE.asymmetric_decrypt(self.session.cc, base64.b64decode(tip_prv_key2))
+                aux_path = filelocation
                 filelocation = GCE.streaming_encryption_open('DECRYPT', files_prv_key2, filelocation)
-
-        yield self.write_file_as_download(name, filelocation, pgp_key)
+                aux_file = GCE.streaming_encryption_open('DECRYPT', files_prv_key2, aux_path)
+            status, run_download = yield is_download(aux_file, name, state, dl_infected, ifile_id)
+            if not run_download:
+                if status == EnumStateFile.infected:
+                    raise errors.FileInfectedDownloadPermissionDenied
+                raise errors.FilePendingDownloadPermissionDenied
+            yield self.write_file_as_download(name, filelocation, pgp_key)
 
 
 class ReceiverFileUpload(BaseHandler):
@@ -1287,8 +1405,133 @@ class ReceiverFileUpload(BaseHandler):
     check_roles = 'receiver'
     upload_handler = True
 
+    def __init__(self, state, request):
+        super().__init__(state, request)
+        self.deferred = defer.Deferred()
+
+    def forward_rfile_from_eo(self, session, internaltip_forwarding, visibility, content_id, source_prv_key):
+        eo_receiverfile = db_query(
+            session, models.ReceiverFile, models.ReceiverFile.id == content_id).one_or_none()
+        if eo_receiverfile is None:
+            raise errors.ResourceNotFound()
+
+        main_itip = db_query(session, models.InternalTip, models.InternalTip.id ==
+                             internaltip_forwarding.internaltip_id).one_or_none()
+
+        if main_itip is None or visibility != models.EnumVisibility.eo.value:
+            return
+
+        destination_id = self.wrap_retry_fs_copy_file(session, eo_receiverfile.id, source_prv_key)
+        if destination_id:
+            destination_rfile = copy_receiverfile(
+                session, main_itip, eo_receiverfile, source_prv_key, models.EnumVisibility.eo.name, destination_id)
+            file_forwarding = add_file_forwarding(
+                session, internaltip_forwarding.id, destination_rfile, eo_receiverfile.id)
+
+        return file_forwarding.id
+
+    def forward_rfile_from_main(self, session, internaltip_forwardings, visibility, content_id, source_prv_key):
+        main_receiverfile = db_query(
+            session, models.ReceiverFile, models.ReceiverFile.id == content_id).one_or_none()
+        if main_receiverfile is None:
+            raise errors.ResourceNotFound()
+        file_forwardings = list()
+        for internaltip_forwarding in internaltip_forwardings:
+
+            eo_itip = db_query(session, models.InternalTip, models.InternalTip.id ==
+                               internaltip_forwarding.forwarding_internaltip_id).one_or_none()
+
+            if eo_itip is None or visibility != models.EnumVisibility.eo.name:
+                return
+
+            destination_id = self.wrap_retry_fs_copy_file(
+                session, main_receiverfile.id, source_prv_key)
+            if destination_id:
+                destination_rfile = copy_receiverfile(
+                    session, eo_itip, main_receiverfile, source_prv_key, models.EnumVisibility.eo.name, destination_id)
+                file_forwarding = add_file_forwarding(
+                    session, internaltip_forwarding.id, destination_rfile, main_receiverfile.id)
+            file_forwardings.append(file_forwarding.id)
+
+        return file_forwardings
+
+    def wrap_retry_fs_copy_file(self, session, source_id, source_prv_key):
+        destination_id = None
+        retries = 1
+        max_retries = 50
+        interval = 2
+        success = False
+        while not success:
+            try:
+                rfile = db_query(
+                    session, models.ReceiverFile, models.ReceiverFile.id == source_id).one_or_none()
+                if not rfile:
+                    break
+                destination_id = self.fs_copy_file(source_id, source_prv_key)
+                success = True
+            except Exception as e:
+                logging.debug(e)
+                wait = retries * interval
+                time.sleep(wait)
+                retries += 1
+                if retries > max_retries:
+                    break
+        return destination_id
+
+    @transact
+    def forward_file(self, session, rfile_id, itip_id, visibility):
+        tids = self.extract_tids()
+
+        rtip = db_get(session, models.ReceiverTip, (models.ReceiverTip.receiver_id == self.session.user_id,
+                                                        models.ReceiverTip.internaltip_id == itip_id))
+        if rtip is None:
+            raise errors.ForbiddenOperation()
+
+        source_itip_private_key = GCE.asymmetric_decrypt(
+            self.session.cc, base64.b64decode(rtip.crypto_tip_prv_key))
+
+        internaltip_forwarding_from_eo = db_query(
+            session, models.InternalTipForwarding, models.InternalTipForwarding.forwarding_internaltip_id == itip_id).one_or_none()
+        internaltip_forwarding_from_main = session.query(models.InternalTipForwarding)\
+            .filter(models.InternalTipForwarding.internaltip_id == itip_id, models.InternalTipForwarding.tid.in_(tids)).all()
+
+        if internaltip_forwarding_from_eo is not None and internaltip_forwarding_from_eo:
+            return self.forward_rfile_from_eo(session, internaltip_forwarding_from_eo, visibility, rfile_id, source_itip_private_key)
+        elif internaltip_forwarding_from_main is not None and internaltip_forwarding_from_main:
+            return self.forward_rfile_from_main(session, internaltip_forwarding_from_main, visibility, rfile_id, source_itip_private_key)
+        return None
+
+    @transact
+    def upload_file(self, session, tid, user_id, itip_id, uploaded_file):
+        response = register_rfile_on_db(
+            session, tid, user_id, itip_id, uploaded_file)
+        return response
+
+    def extract_tids(self):
+        if b'tids' in self.request.args:
+            try:
+                tids = ast.literal_eval(self.request.args.get(b"tids", [])[0].decode())
+                if not isinstance(tids, list):
+                    raise ValueError('is not a list')
+                return tids
+            except Exception as e:
+                logging.debug(e)
+        return []
+
+    @inlineCallbacks
+    def process(self, tid, user_id, itip_id, uploaded_file):
+        ret = yield self.upload_file(tid, user_id, itip_id, uploaded_file)
+
+        if not isinstance(uploaded_file.get('visibility'), int):
+            uploaded_file['visibility'] = uploaded_file['visibility'].decode()
+
+        if self.extract_tids():
+            deferToThread(
+                self.forward_file, self.uploaded_file['filename'], itip_id, uploaded_file['visibility'])
+        return ret
+
     def post(self, itip_id):
-        return register_rfile_on_db(self.request.tid, self.session.user_id, itip_id, self.uploaded_file)
+        return self.process(self.request.tid, self.session.user_id, itip_id, self.uploaded_file)
 
 
 class ReceiverFileDownload(BaseHandler):
@@ -1302,37 +1545,47 @@ class ReceiverFileDownload(BaseHandler):
     @transact
     def download_rfile(self, session, tid, user_id, file_id):
         try:
-            rfile, rtip, pgp_key = db_get(session,
-                                          (models.ReceiverFile,
-                                           models.ReceiverTip,
-                                           models.User.pgp_key_public),
-                                          (models.User.id == user_id,
-                                           models.User.id == models.ReceiverTip.receiver_id,
-                                           models.ReceiverFile.id == file_id,
-                                           models.ReceiverFile.internaltip_id == models.ReceiverTip.internaltip_id))
-        except:
+            rfile, rtip, pgp_key, can_download_infected = db_get(session,
+                                                                 (models.ReceiverFile,
+                                                                  models.ReceiverTip,
+                                                                  models.User.pgp_key_public,
+                                                                  models.User.can_download_infected),
+                                                                 (models.User.id == user_id,
+                                                                  models.User.id == models.ReceiverTip.receiver_id,
+                                                                  models.ReceiverFile.id == file_id,
+                                                                  models.ReceiverFile.internaltip_id == models.ReceiverTip.internaltip_id))
+        except Exception as e:
+            logging.debug(e)
             raise errors.ResourceNotFound
         else:
-            return rfile.name, rfile.id, base64.b64decode(rtip.crypto_tip_prv_key), pgp_key
+            return rfile.name, rfile.id, base64.b64decode(
+                rtip.crypto_tip_prv_key), pgp_key, rfile.state, can_download_infected
 
     @inlineCallbacks
     def get(self, rfile_id):
-        name, filename, tip_prv_key, pgp_key = yield self.download_rfile(self.request.tid, self.session.user_id,
-                                                                         rfile_id)
+        name, filename, tip_prv_key, pgp_key, state, dl_infected = yield self.download_rfile(
+            self.request.tid,
+            self.session.user_id,
+            rfile_id
+        )
 
         filelocation = os.path.join(self.state.settings.attachments_path, filename)
-        if not os.path.exists(filelocation):
-            filelocation = os.path.join(self.state.settings.attachments_path, filename)
+        aux_file = os.path.join(self.state.settings.attachments_path, filename)
 
-        filelocation = os.path.join(self.state.settings.attachments_path, filename)
         directory_traversal_check(self.state.settings.attachments_path, filelocation)
         self.check_file_presence(filelocation)
 
         if tip_prv_key:
             tip_prv_key = GCE.asymmetric_decrypt(self.session.cc, tip_prv_key)
             name = GCE.asymmetric_decrypt(tip_prv_key, base64.b64decode(name.encode())).decode()
+            aux_path = filelocation
             filelocation = GCE.streaming_encryption_open('DECRYPT', tip_prv_key, filelocation)
-
+            aux_file = GCE.streaming_encryption_open('DECRYPT', tip_prv_key, aux_path)
+        status, run_download = yield is_download(aux_file, name, state, dl_infected, rfile_id)
+        if not run_download:
+            if status == EnumStateFile.infected:
+                raise errors.FileInfectedDownloadPermissionDenied
+            raise errors.FilePendingDownloadPermissionDenied
         yield self.write_file_as_download(name, filelocation, pgp_key)
 
     def delete(self, file_id):

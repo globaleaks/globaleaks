@@ -1,0 +1,28 @@
+name: Tests (C)
+
+on: [ push, pull_request ]
+
+# Declare default permissions as read only.
+permissions: read-all
+
+env:
+  CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+
+jobs:
+  run_tests:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 1
+
+      - name: Install git
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y git
+
+      - name: Run tests
+        run: |
+          cd $GITHUB_WORKSPACE
+          ./.github/workflows/scripts/run_tests_client.sh

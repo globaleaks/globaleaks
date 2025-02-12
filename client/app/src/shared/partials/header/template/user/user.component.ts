@@ -52,7 +52,14 @@ export class UserComponent {
       this.appConfigService.onValidateInitialConfiguration();
     };
 
-    this.authentication.logout(promise);
+
+    if(this.appDataService.page === 'accreditation-request' && this.appDataService.public.proxy_idp_enabled){
+      window.location.href='/logout';
+    }     
+    else{
+      this.authentication.logout(promise);
+    }
+      
   }
 
   onChangeLanguage() {

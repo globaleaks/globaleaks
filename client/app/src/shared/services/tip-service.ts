@@ -1,12 +1,21 @@
 import {Injectable} from '@angular/core';
 import {FieldUtilitiesService} from "@app/shared/services/field-utilities.service";
+import { UtilsService } from './utils.service';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TipService {
 
-  constructor(private fieldUtilities: FieldUtilitiesService) {
+  private reloadSubject = new Subject<void>();
+  reload$ = this.reloadSubject.asObservable();
+
+  constructor(private fieldUtilities: FieldUtilitiesService, private utilsService: UtilsService) {
+  }
+
+  triggerReload(): void {
+    this.reloadSubject.next();
   }
 
   filterNotTriggeredField(tip: any, parent: any, field: any, answers: any): void {
@@ -58,4 +67,25 @@ export class TipService {
       }
     }
   }
+
+
+  preprocessForwardingAnswers(forwarding: any){
+
+    let i, step, j;
+
+    let questionnaire = forwarding.questionnaire;
+    this.fieldUtilities.parseQuestionnaire(questionnaire, {fields: [], fields_by_id: {}, options_by_id: {}});
+
+    for (i = 0; i < questionnaire.steps.length; i++) {
+      step = questionnaire.steps[i];
+      if (this.fieldUtilities.isFieldTriggered(null, step, questionnaire.answers, 0)) {
+        for (j = 0; j < step.children.length; j++) {
+          this.filterNotTriggeredField({score: 0}, step, step.children[j], questionnaire.answers);
+        }
+      }
+    }
+
+  }
+
+
 }

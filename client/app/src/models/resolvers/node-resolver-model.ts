@@ -75,4 +75,11 @@ export class nodeResolverModel {
   onionservice: string;
   user_privacy_policy_url: string;
   can_postpone_expiration: boolean;
+  max_msg_external_to_whistle: number;
+  max_msg_external_to_whistle_not_aff: number;
+  forwarding_enabled: boolean;
+  antivirus_enabled: boolean;
+  antivirus_clamd_ip: string;
+  antivirus_clamd_port: number;
+  proxy_idp_enabled: boolean;
 }

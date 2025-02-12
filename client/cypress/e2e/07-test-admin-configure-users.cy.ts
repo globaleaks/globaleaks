@@ -64,6 +64,7 @@ describe("admin add, configure, and delete users", () => {
       cy.get('input[name="can_reopen_reports"]').click();
       cy.get('input[name="can_delete_submission"]').click();
       cy.get('input[name="can_edit_general_settings"]').click();
+      cy.get('input[name="can_download_infected"]').click();
       cy.get("#save_user").click();
     });
   });
@@ -73,7 +74,7 @@ describe("admin add, configure, and delete users", () => {
     cy.visit("/#/admin/users");
 
     cy.get(".userList").its("length").then(userListLength => {
-      const numberOfUsers = Math.min(userListLength, 7);
+      const numberOfUsers = Math.min(userListLength, 8);
       for (let i = 1; i < numberOfUsers; i++) {
         cy.get(".userList").eq(i).within(() => {
           if (Cypress.$("#edit_user").length > 0) {

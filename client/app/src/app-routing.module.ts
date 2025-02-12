@@ -15,6 +15,7 @@ import {ActivationComponent} from "@app/pages/signup/templates/activation/activa
 import {NodeResolver} from "@app/shared/resolvers/node.resolver";
 import {RTipsResolver} from "@app/shared/resolvers/r-tips-resolver.service";
 import {TipComponent} from "@app/pages/recipient/tip/tip.component";
+import { TipEoComponent } from "@app/pages/recipient/tip-eo/tip-eo.component";
 import {TitleResolver} from "@app/shared/resolvers/title-resolver.resolver";
 import {IarResolver} from "@app/shared/resolvers/iar-resolver.service";
 import {BlankComponent} from "@app/shared/blank/blank.component";
@@ -22,7 +23,11 @@ import {WbTipResolver} from "@app/shared/resolvers/wb-tip-resolver.service";
 import {WhistleblowerLoginResolver} from "@app/shared/resolvers/whistleblower-login.resolver";
 import {SubmissionComponent} from "@app/pages/whistleblower/submission/submission.component";
 import {AuthRoutingModule} from "@app/pages/auth/auth-routing.module";
-
+import { AccreditorGuard } from "./shared/guards/accreditor.guard";
+import { OrganizationComponent } from "@app/pages/accreditor/organization/organization.component";
+import { SendtipComponent } from "./pages/recipient/sendtip/sendtip.component";
+import { SendtipDetailComponent } from "./pages/recipient/sendtip-detail/sendtip-detail.component";
+import { AccredRoutingGuard } from "./pages/accred/accred.guard";
 
 const routes: Routes = [
   {
@@ -127,12 +132,72 @@ const routes: Routes = [
     loadChildren: () => import("./pages/wizard/wizard-routing.module").then(m => m.WizardRoutingModule)
   },
   {
+    path: "accreditation-request",
+    data: {pageTitle: "Accreditation"},
+    canActivate: [AccredRoutingGuard],
+    resolve: {
+      PreferenceResolver,
+      title: TitleResolver
+    },
+    loadChildren: () => import("./pages/accred/accred-routing.module").then(m => m.AccredRoutingModule)
+  },
+  {
+    path: "accreditation-request/:org_id",
+    data: {pageTitle: "Accreditation"},
+    canActivate: [AccredRoutingGuard],
+    resolve: {
+      PreferenceResolver,
+      title: TitleResolver
+    },
+    loadChildren: () => import("./pages/accred/accred-routing.module").then(m => m.AccredRoutingModule)
+  },
+  {
     path: "reports/:tip_id",
     data: {pageTitle: "Report"},
     resolve: {
       PreferenceResolver,
     },
     component: TipComponent,
+    canActivate: [SessionGuard],
+    pathMatch: "full",
+  },
+  { 
+    path: 'accreditor', 
+    canActivate: [AccreditorGuard],
+    data: {
+      sidebar: "accreditor-sidebar",
+      pageTitle: "Home",
+    },
+    loadChildren: () => import('./pages/accreditor/accreditor-routing.module').then(m => m.AccreditorRoutingModule) 
+  },
+  {
+    path: "organizations/:org_id",
+    data: {pageTitle: "Organization"},
+    component: OrganizationComponent,
+    canActivate: [AccreditorGuard],
+    pathMatch: "full",
+  },
+  {
+    path: "reports-eo/:tip_id",
+    data: {pageTitle: "Report"},
+    resolve: {
+      PreferenceResolver,
+    },
+    component: TipEoComponent,
+    canActivate: [SessionGuard],
+    pathMatch: "full",
+  },
+  {
+    path: "sendtip",
+    data: {pageTitle: "Send tip"},
+    component: SendtipComponent,
+    canActivate: [SessionGuard],
+    pathMatch: "full",
+  },
+  {
+    path: "sendtip-detail",
+    data: {pageTitle: "Sent tip detail"},
+    component: SendtipDetailComponent,
     canActivate: [SessionGuard],
     pathMatch: "full",
   },

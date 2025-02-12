@@ -1,0 +1,153 @@
+<ng-template #content let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">{{ 'Confirmation' | translate }}</h4>
+    </div>
+    <div class="modal-body">
+        <p>{{ modalMessage | translate }}</p>
+    </div>
+    <div class="modal-footer">
+        <button id="closeConfirmModal" type="button" class="btn btn-primary" (click)="closeModal(modal)">{{ 'Close' | translate }}</button>
+    </div>
+</ng-template>
+
+<form name="accredForm" #accredForm="ngForm" novalidate (ngSubmit)="onSubmit()">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">{{ 'Organization info' | translate }}</div>
+                <div class="card-body text-left">
+                    <div class="form-group" ngModelGroup="organizationInfo">
+                        <label for="denomination">
+                            <span>{{'Denomination'|translate}}</span>
+                            <span class="text-danger">*</span>
+                       </label>
+                       <input name="denomination" class="form-control" [placeholder]="'Denomination' | translate" type="text" [(ngModel)]="organizationInfo.organization_name" required [disabled]="readOnly">
+                        
+                    </div>
+                    <div class="form-group" ngModelGroup="organizationInfo">
+                        <label for="pec">
+                            <span>{{'PEC'|translate}}</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input name="pec" class="form-control" [placeholder]="'PEC' | translate" type="email" [(ngModel)]="organizationInfo.organization_email" [pattern]="Constants.emailRegexp" required #pec="ngModel" [disabled]="readOnly">
+                      
+                        <div class="text-danger" *ngIf="pec.errors?.['pattern']">{{'Invalid PEC format' | translate}}</div>
+                    </div>
+                    <div class="form-group" [ngClass]="{'has-error': !pecsMatch}" ngModelGroup="organizationInfo" *ngIf="!readOnly">
+                        <label for="confirmPec">
+                            <span>{{'Confirm PEC'|translate}}</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input name="confirmPec" class="form-control" [placeholder]="'Confirm PEC' | translate" type="email" [(ngModel)]="pecConfirmed" (ngModelChange)="checkPecsMatch()" [pattern]="Constants.emailRegexp" required #confirmPec="ngModel">
+                  
+                        <div class="text-danger" *ngIf="confirmPec.errors?.['pattern']">{{'Invalid PEC format' | translate}}</div>
+                        <div class="text-danger" *ngIf="!pecsMatch">{{'PEC and Confirm PEC must match' | translate}}</div>
+                    </div>
+                    <div class="form-group" ngModelGroup="organizationInfo">
+                        <label for="institutionalWebsite">
+                            <span>{{'Institutional website'|translate}}</span>
+                        </label>
+                        <input name="institutionalWebsite" class="form-control" [placeholder]="'Institutional website' | translate" type="url" [(ngModel)]="organizationInfo.organization_institutional_site" [disabled]="readOnly">
+                     
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">{{ 'Admin info' | translate }}</div>
+                <div class="card-body text-left">
+                    <div class="form-group" ngModelGroup="adminInfo">
+                        <label for="adminName">
+                            <span>{{'Name'|translate}}</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input name="adminName" class="form-control" [placeholder]="'Name' | translate" type="text" [(ngModel)]="adminInfo.admin_name" required [disabled]="readOnly">
+                        
+                    </div>
+                    <div class="form-group" ngModelGroup="adminInfo">
+                        <label for="adminSurname">
+                            <span>{{'Surname'|translate}}</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input name="adminSurname" class="form-control" [placeholder]="'Surname' | translate" type="text" [(ngModel)]="adminInfo.admin_surname" required [disabled]="readOnly">
+                    </div>
+
+                    <div class="form-group" ngModelGroup="adminInfo">
+                        <label for="adminEmail">
+                            <span>{{'Email'|translate}}</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input name="adminEmail" class="form-control" [placeholder]="'Email' | translate" type="email" [(ngModel)]="adminInfo.admin_email" [pattern]="Constants.emailRegexp" required #adminEmail="ngModel" [disabled]="readOnly">
+                      
+                        <div class="text-danger" *ngIf="adminEmail.errors?.['pattern']">{{'Invalid email format' | translate}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">{{ 'Primary recipient info' | translate }}</div>
+                <div class="card-body text-left">
+                    <div class="form-group" ngModelGroup="receiverInfo">
+                        <label for="recipientName">
+                            <span>{{'Name'|translate}}</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input name="recipientName" class="form-control" [placeholder]="'Name' | translate" type="text" [(ngModel)]="receiverInfo.name" required [disabled]="readOnly">
+                        
+                    </div>
+                    <div class="form-group" ngModelGroup="receiverInfo">
+                        <label for="recipientSurname">
+                            <span>{{'Surname'|translate}}</span>
+                            <span class="text-danger">*</span>    
+                        </label>    
+                    <input name="recipientSurname" class="form-control" [placeholder]="'Surname' | translate" type="text" [(ngModel)]="receiverInfo.surname" required [disabled]="readOnly">
+                    </div>
+                    <div class="form-group" ngModelGroup="receiverInfo">
+                        <label for="recipientTaxCode">
+                            <span>{{'Fiscal Code'|translate}}</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input name="recipientTaxCode" class="form-control" [placeholder]="'Fiscal Code' | translate" type="text" [(ngModel)]="receiverInfo.idp_id" required #recipientTaxCode="ngModel" [disabled]="readOnly">
+                    </div>
+                    <div class="form-group" ngModelGroup="receiverInfo">
+                        <label for="recipientEmail">
+                            <span>{{'Email'|translate}}</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input name="recipientEmail" class="form-control" [placeholder]="'Email' | translate" type="email" [(ngModel)]="receiverInfo.email" [pattern]="Constants.emailRegexp" required #recipientEmail="ngModel" [disabled]="readOnly">
+                        <div class="text-danger" *ngIf="recipientEmail.errors?.['pattern']">{{'Invalid email format' | translate}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group" id="AccreditationRequestPrivacy">
+                <div>
+                    <a *ngIf="appDataService.public.node.footer_privacy_policy" href="{{appDataService.public.node.footer_privacy_policy}}">{{'Privacy Policy'}}</a>
+                </div>
+                
+                <div class="tos-text">
+                    {{ org_id ? appDataService.public.node.signup_tos2_text : appDataService.public.node.signup_tos1_text }}
+                </div>
+                <div class="form-check">
+                    <input name="privacyAccept" class="tos-agreement-input inputelem" type="checkbox" [(ngModel)]="privacyAccept" required>
+                    <span class="tos-agreement-label form-check-label" [ngClass]="{'text-danger': !privacyAccept}">{{ 'I have read and agree to the privacy policy.' | translate }}</span>
+                    
+                </div>
+                <span class="tos-agreement-label form-check-label" >{{ 'Una volta inoltrata la richiesta di accreditamento riceverai una notifica via email.' | translate }}</span>
+            </div>
+
+            
+        </div>
+    </div>
+    <br>
+    <div class="pager float-start">
+        <button name="proceed" id="proceed" class="ButtonNext btn btn-primary" type="submit" [disabled]="accredForm.invalid || !pecsMatch">
+            <span>{{'Proceed'|translate}}</span>
+        </button>
+    </div>
+</form>

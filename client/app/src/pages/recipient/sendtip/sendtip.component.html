@@ -1,0 +1,102 @@
+<div class="reveal">
+  <div class="row">
+    <div id="Toolbar" class="col-md-12">
+        <a id="link-tiplist" (click)="backClicked();" data-toggle="tooltip" title="{{'Reports' | translate}}"
+            class="btn btn-outline-secondary">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+</div>
+    <div class="row">
+      <div class="col-6" style="margin-bottom: 1rem;">
+        <div class="row form-group">
+          <div class="col-md-12">
+            <span>{{'Select External Organization'|translate}}</span>
+          </div>
+          <div class="col-md-12 mt-2">
+            <src-selecteo-dropdown [organizations]="organizations" (dataToParent)="addOrganization($event)"></src-selecteo-dropdown>
+          </div>
+        </div>
+        <div class="row" id="selected-eo">
+          <div class="col-12">
+              <button *ngFor="let org of selectedOrganizations" class="btn btn-outline-secondary" style="margin-right: 10px;">
+                <i class="fa-solid fa-times text-danger" (click)="removeOrganization(org.tid)"></i>
+                <span>{{ org.name }}</span>
+              </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-6" *ngIf="appDataService.public.node.mode == 'accreditation'">
+        <div class="row form-group">
+          <div class="col-md-12">
+            <span>{{'Register new organization'|translate}}</span>
+          </div>
+          <div class="col-md-12 mt-2">
+            <button class="btn btn-sm btn-primary" id="add-organization"  (click)="utilsService.go('/recipient/accreditation')">
+              <i class="fa-solid fa-check"></i>
+              <span>{{ 'Register EO' | translate }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div class="row">
+      <div class="col-12">
+        <div class="row form-group">
+          <div class="col-md-12">
+            <span data-toggle="tooltip" title="{{'tooltip forward text' | translate}}">{{'Text'|translate}}</span>
+          </div>
+          <div class="col-md-12 mt-2">
+            <textarea id="SendTipText" name="sendTipText" maxlength="4096" autocomplete="off" class="form-control" [(ngModel)]="sendTipRequest.text"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div class="row">
+      <div class="col-6">
+        <div class="row form-group">
+            <div class="col-md-12">
+              <span data-toggle="toolptip review form" title="{{'tooltip forward text' | translate}}">{{'Review Form'|translate}}</span>
+            </div>
+            <div class="col-md-12 mt-2">
+              <select id="assignSubmissionStatus" class="form-control" [(ngModel)]="sendTipRequest.questionnaire_id">
+                <option value="" disabled selected>{{ 'Select a review form' | translate }}</option>
+                <option *ngFor="let form of reviewForms" [value]="form.id">{{ form.name }}</option>
+              </select>
+            </div>
+          </div>
+          
+      </div>
+    </div>
+
+    <div class="row mt-2">
+      <sendtip-files [tip]="tip" [(selectedFiles)]="sendTipRequest.files"
+                     [canDownloadInfected]="preferenceResolver.dataModel.can_download_infected"
+                     [isAntivirusEnable]="appDataService.public.node.antivirus_enabled"></sendtip-files>
+    </div>
+  
+
+    <div class="row mt-2">
+        <sendtip-file-upload [(files)]="uploadedFiles"></sendtip-file-upload>
+    </div>
+  
+
+    <div class="row">
+      <div class="col-md-8"></div>
+      <div class="col-md-4">
+        <button class="btn btn-outline-secondary float-end" id="discard" (click)="backClicked()">
+          <i class="fa-solid fa-times"></i>
+          <span>{{ 'Discard' | translate }}</span>
+        </button>
+        <button class="btn btn-primary float-end" id="send" style="margin-right: 10px;"
+        (click)="sendForm();" 
+        [disabled]="!isFormValid()"
+        [ngClass]="{'disabled': !isFormValid()}">
+            <i class="fa-solid fa-check"></i>
+            <span>{{ 'Send' | translate }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  

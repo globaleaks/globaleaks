@@ -3,6 +3,7 @@ cryptography==41.0.7
 fpdf2==2.7.8
 h2==4.1.0
 idna==3.6
+josepy==1.14.0
 priority==2.0.0
 pyopenSSL==23.2.0
 pynacl==1.5.0
@@ -11,3 +12,4 @@ python_gnupg==0.5.2
 sqlalchemy==1.4.50
 twisted==24.3.0
 txtorcon==23.11.0
+pyclamd==0.4.0

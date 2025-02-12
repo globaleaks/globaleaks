@@ -6,7 +6,7 @@ from globaleaks.tests import helpers
 
 # special guest:
 
-stuff = u"³²¼½¬¼³²"
+stuff = "stuff"
 
 
 class TestNotificationInstance(helpers.TestHandlerWithPopulatedDB):
@@ -25,6 +25,8 @@ class TestNotificationInstance(helpers.TestHandlerWithPopulatedDB):
 
         notif_desc['smtp_server'] = stuff
         notif_desc['smtp_password'] = 'widdlyscuds'
+        notif_desc['smtp2_authentication'] = False
+        notif_desc['smtp2_enabled'] = False
 
         handler = self.request(notif_desc, role='admin')
         response = yield handler.put()

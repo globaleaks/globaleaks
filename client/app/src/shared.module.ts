@@ -83,6 +83,22 @@ import {ReopenSubmissionComponent} from "@app/shared/modals/reopen-submission/re
 import {OtkcAccessComponent} from "@app/shared/modals/otkc-access/otkc-access.component";
 import {OperationComponent} from "@app/shared/partials/operation/operation.component";
 import {RedactInformationComponent} from "@app/shared/modals/redact-information/redact-information.component";
+import { DownloadConfirmationComponent } from "./shared/modals/download-confirmation/download-confirmation.component";
+import { OrgInfoComponent } from "@app/shared/partials/org-info/org-info.component";
+import { OrgAdminInfoComponent } from "@app/shared/partials/org-admin-info/org-admin-info.component";
+import { OrgRecipientInfoComponent } from "@app/shared/partials/org-recipient-info/org-recipient-info.component";
+import { OrgOverviewComponent } from "@app/shared/partials/org-overview/org-overview.component";
+import { OrgUsersListComponent } from "@app/shared/partials/org-users-list/org-users-list.component";
+import { CustomModalComponent } from "./shared/modals/custom-modal/custom-modal.component";
+import { SendtipFilesComponent } from "@app/shared/partials/sendtip-files/sendtip-files.component";
+import { SendTipFileUploadComponent } from "@app/shared/partials/sendtip-file-upload/sendtip-file-upload.component";
+import { TipEoListComponent } from "@app/shared/partials/tip-eo-list/tip-eo-list.component";
+import { TipEoFormComponent } from "@app/shared/partials/tip-eo-form/tip-eo-form.component";
+import { SelectEODropdownComponent } from "@app/shared/partials/selecteo-dropdown/selecteo-dropdown.component";
+import { TipEoCommentsComponent } from "./shared/partials/tip-eo-comments/tip-eo-comments.component";
+import { TipEoRfilesReceiverComponent } from "./shared/partials/tip-eo-rfiles-receiver/tip-eo-rfiles-receiver.component";
+import { SendtipDetailQuestionnaireAnswersComponent } from "./shared/partials/sendtip-detail-questionnaire-answers/sendtip-detail-questionnaire-answers.component";
+import { TipFieldQuestionEntryComponent } from "./shared/partials/tip-field-question-entry/tip-field-question-entry.component";
 
 @NgModule({
   imports: [
@@ -125,10 +141,13 @@ import {RedactInformationComponent} from "@app/shared/modals/redact-information/
     DatePipe,
     ReceiptValidatorDirective,
     TipInfoComponent,
+    TipEoFormComponent,
     TipQuestionnaireAnswersComponent,
+    SendtipDetailQuestionnaireAnswersComponent,
     TipAdditionalQuestionnaireInviteComponent,
     TipFieldComponent,
     TipFieldAnswerEntryComponent,
+    TipFieldQuestionEntryComponent,
     DatePipe,
     SplitPipe,
     TipFilesWhistleblowerComponent,
@@ -137,6 +156,7 @@ import {RedactInformationComponent} from "@app/shared/modals/redact-information/
     RFileUploadButtonComponent,
     RFileUploadStatusComponent,
     TipCommentsComponent,
+    TipEoCommentsComponent,
     LimitToPipe,
     OrderByPipe,
     TipReceiverListComponent,
@@ -165,6 +185,10 @@ import {RedactInformationComponent} from "@app/shared/modals/redact-information/
     ConfirmationWith2faComponent,
     TipOperationFileIdentityAccessRequestComponent,
     TipFilesReceiverComponent,
+    TipEoRfilesReceiverComponent,
+    TipEoListComponent,
+    SendtipFilesComponent,
+    SendTipFileUploadComponent,
     TipOperationSetReminderComponent,
     TipOperationPostponeComponent,
     FileViewComponent,
@@ -191,7 +215,15 @@ import {RedactInformationComponent} from "@app/shared/modals/redact-information/
     SwitchComponent,
     OtkcAccessComponent,
     OperationComponent,
-    RedactInformationComponent
+    RedactInformationComponent,
+    SelectEODropdownComponent,
+    DownloadConfirmationComponent,
+    OrgInfoComponent,
+    OrgRecipientInfoComponent,
+    OrgAdminInfoComponent,
+    OrgOverviewComponent,
+    OrgUsersListComponent,
+    CustomModalComponent
   ],
   exports: [
     FooterComponent,
@@ -204,12 +236,15 @@ import {RedactInformationComponent} from "@app/shared/modals/redact-information/
     FilterPipe,
     OrderByPipe,
     TipInfoComponent,
+    TipEoFormComponent,
     TipQuestionnaireAnswersComponent,
+    SendtipDetailQuestionnaireAnswersComponent,
     TipAdditionalQuestionnaireInviteComponent,
     TipFieldComponent,
     TipFilesWhistleblowerComponent,
     WidgetWbFilesComponent,
     TipCommentsComponent,
+    TipEoCommentsComponent,
     TipReceiverListComponent,
     RFileUploadStatusComponent,
     RFileUploadButtonComponent,
@@ -226,9 +261,14 @@ import {RedactInformationComponent} from "@app/shared/modals/redact-information/
     GrantAccessComponent,
     RevokeAccessComponent,
     DeleteConfirmationComponent,
+    DownloadConfirmationComponent,
     DateRangeSelectorComponent,
     TipOperationFileIdentityAccessRequestComponent,
     TipFilesReceiverComponent,
+    TipEoRfilesReceiverComponent,
+    TipEoListComponent,
+    SendtipFilesComponent,
+    SendTipFileUploadComponent,
     TipOperationSetReminderComponent,
     TipUploadWbFileComponent,
     EnableEncryptionComponent,
@@ -251,7 +291,14 @@ import {RedactInformationComponent} from "@app/shared/modals/redact-information/
     SwitchComponent,
     OtkcAccessComponent,
     OperationComponent,
-    RedactInformationComponent
+    RedactInformationComponent,
+    SelectEODropdownComponent,
+    OrgInfoComponent,
+    OrgRecipientInfoComponent,
+    OrgAdminInfoComponent,
+    OrgOverviewComponent,
+    OrgUsersListComponent,
+    CustomModalComponent
   ]
 })
 export class SharedModule {

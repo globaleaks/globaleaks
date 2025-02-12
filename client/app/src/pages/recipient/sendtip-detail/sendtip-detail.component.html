@@ -1,0 +1,75 @@
+<div class="reveal">
+  <div id="Toolbar" class="row">
+    <div class="col-md-12">
+      <a
+        id="link-tiplist"
+        (click)="backClicked()"
+        data-toggle="tooltip"
+        title="{{ 'Reports' | translate }}"
+        class="btn btn-outline-secondary"
+      >
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+    </div>
+
+    <div class="reveal">
+      <div id="TipPageDetails" class="card card-default mt-2">
+        <div class="card-header clearfix">
+          <span>{{ "Details" | translate }}</span>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>{{ "Organization" | translate }}</th>
+                  <th>{{ "Date" | translate }}</th>
+                  <th>{{ "File sent" | translate }}</th>
+                  <th>{{ "Status" | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="detail">
+                  <td>{{ detail.name }}</td>
+                  <td>{{ detail.creation_date | date:'dd-MM-yyyy HH:mm'}}</td>
+                  <td>{{ detail.files?.length }}</td>
+                  <td>{{ detail.state | translate }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col-6">
+        <div id="TipPageDetails" class="card card-default">
+          <div class="card-header clearfix">
+            <span>{{ "Text" | translate }}</span>
+          </div>
+          <div class="card-body">
+            <span id="TipDetailText">
+              {{ detail.questionnaire ? (detail.questionnaire.steps[0].children[0].type==='textarea' ? detail.questionnaire.answers[detail.questionnaire.steps[0].children[0].id][0].value : null) : null }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">          
+        <src-sendtip-detail-questionnaire-answers [questionnaire]="detail.questionnaire" 
+                 [label]="'Form Istruttoria'"></src-sendtip-detail-questionnaire-answers>
+      </div>
+    </div>
+
+    <sendtip-files *ngIf="tip && detail.files && detail.files.length > 0" [tip]="tip" 
+                    [canDownloadInfected]="preferencesService.dataModel.can_download_infected"
+                    [isAntivirusEnable]="appDataService.public.node.antivirus_enabled"
+                    [isSelectable]="false"
+                    [forwardingDetailFiles]="detail.files">
+    </sendtip-files>
+
+    <src-tip-upload-wbfile *ngIf="detail && detail.state !== 'closed'" [tip]="tip" [key]="'eo'" [organizations]="[detail]" [onlyNew]="true" [disableDescriptionOnUpload]="true"></src-tip-upload-wbfile>
+
+    <src-tip-eo-comments  *ngIf="tip" [tipService]="RTipService" [key]="'eo'"  [organizations]="[detail]" ></src-tip-eo-comments>
+  
+  </div>
+</div>
