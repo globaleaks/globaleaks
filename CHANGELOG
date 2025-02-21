@@ -1,3 +1,9 @@
+Changes in version 5.0.53
+   Revise fix of bug loading of questionnaires designed with informative steps
+     without questions reintroduced in 5.0.47 and short term fixed in 5.0.52
+   Update application to use Angular 19
+   Bump client dependencies to latest version
+
 Changes in version 5.0.52
    Fix bug loading of questionnaires designed with informative steps
      without questions reintroduced in 5.0.47
